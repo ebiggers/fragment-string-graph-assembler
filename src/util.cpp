@@ -149,6 +149,27 @@ const unsigned char ascii_to_bin_tab[256] = {
 /* Map a nucleotide in binary form to ASCII. */
 const char bin_to_ascii_tab[4] = { 'A', 'C', 'G', 'T' };
 
+const char ascii_complement_tab[256] = {
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', /* A */ 'T', 'N', /* C */ 'G', 'N', 'N', 'N', /* G */ 'C',
+                'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', /* T */ 3, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', /* a */ 'T', 'N', /* c */ 'G', 'N', 'N', 'N', /* g */ 'C',
+                'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', /* t */ 'A', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+        'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+};
+
 /* Translates a kmer into the ASCII string representing it.  Warning:
  * not re-entrant */
 const char *kmer_str(uint64_t kmer, unsigned kmer_len)

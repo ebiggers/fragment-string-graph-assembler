@@ -14,6 +14,7 @@ extern const char *kmer_str(uint64_t kmer, unsigned kmer_len);
 extern void kmer_str_r(uint64_t kmer, unsigned kmer_len, char buf[]);
 extern const unsigned char ascii_to_bin_tab[256];
 extern const char bin_to_ascii_tab[4];
+extern const char ascii_complement_tab[256];
 
 
 /* Returns the canonical form of two k-mers. */
@@ -32,6 +33,11 @@ static inline uint64_t to_canonical_form(uint64_t kmer, unsigned kmer_len)
 static inline unsigned char complement(unsigned char base)
 {
 	return base ^ 3;
+}
+
+static inline char ascii_complement(char base)
+{
+	return ascii_complement_tab[(unsigned char)base];
 }
 
 /* Returns true iff the kmer is in canonical form. */
@@ -64,6 +70,7 @@ static inline bool bin_base_is_dna(unsigned char base)
 {
 	return (base < 4);
 }
+
 
 /* Adds a binary nucleobase to the end of a sequence of nucleobases stored
  * together in a 64-bit number. */

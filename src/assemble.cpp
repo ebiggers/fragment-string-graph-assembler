@@ -4,13 +4,16 @@
 #include <vector>
 #include <limits>
 #include "Read.h"
+#include "dna-util.h"
+#include "util.h"
 #include "parse-reads.h"
 using std::vector;
 
-static const char *optstring = "hO:e:";
+static const char *optstring = "hO:e:t:";
 static const struct option longopts[] = {
 	{"overlap-len", required_argument, NULL, 'O'},
 	{"errors-per-overlap", required_argument, NULL, 'e'},
+	{"threads", required_argument, NULL, 't'},
 	{"help", no_argument, NULL, 'h'},
 	{NULL, 0, NULL, 0},
 };
@@ -29,8 +32,8 @@ static void load_read(Read &read, void *vec_reads)
 }
 
 struct Overlap {
-	unsigned read_id_1 : 24;
-	unsigned read_id_2 : 24;
+	unsigned read_1_idx : 24;
+	unsigned read_2_idx : 24;
 	unsigned read_1_beg : 12;
 	unsigned read_1_end : 12;
 	unsigned read_2_beg : 12;
@@ -38,49 +41,94 @@ struct Overlap {
 };
 
 static void add_overlaps(const vector<Read> &reads, size_t read_1_idx,
-			 size_t read_2_idx, int overlap_len,
-			 int errors_per_overlap, vector<Overlap> &overlaps)
+			 size_t read_2_idx, size_t overlap_len,
+			 size_t errors_per_overlap, vector<Overlap> &overlaps)
 {
-	const Read &read1 = reads[read_1_idx];
-	const Read &read2 = reads[read_2_idx];
-	const char *seq1  = read1.seq;
-	size_t seq_len1   = read1.seq_len;
-	const char *seq2  = read2.seq;
-	size_t seq_len2   = read2.seq_len;
+	const Read &read_1 = reads[read_1_idx];
+	const Read &read_2 = reads[read_2_idx];
+	const char *seq_1  = read_1.seq;
+	size_t seq_1_len   = read_1.seq_len;
+	const char *seq_2  = read_2.seq;
+	size_t seq_2_len   = read_2.seq_len;
 	Overlap overlap;
-	overlap.read_1_id = read_1_idx;
-	overlap.read_2_id = read_2_idx;
+	overlap.read_1_idx = read_1_idx;
+	overlap.read_2_idx = read_2_idx;
 
-	int num_differences;
-	if (read1.seq_len < overlap_len || read2.seq_len < overlap_len)
+	size_t num_differences;
+	if (seq_1_len <= overlap_len || seq_2_len <= overlap_len)
 		return;
 
-	/*
+	/*    read_1
 	 * -------------->
 	 *          ---------------->
+	 *                 read_2
 	 */
 	num_differences = 0;
-	for (int i = 0; i < overlap_len; i++)
-		if (seq1[seq_len1 - i - 1] != seq2[i])
+	for (size_t i = 0; i < overlap_len; i++)
+		if (seq_1[seq_1_len - overlap_len + i] != seq_2[i])
 			if (++num_differences > errors_per_overlap)
 				goto overlap_2;
-	overlap.read_1_beg = seq_len1 - overlap_len;
-	overlap.read_1_end = seq_len1 - 1;
+	overlap.read_1_beg = seq_1_len - overlap_len;
+	overlap.read_1_end = seq_1_len - 1;
 	overlap.read_2_beg = 0;
-	overlap.read_2_end = overlap_len;
+	overlap.read_2_end = overlap_len - 1;
 	overlaps.push_back(overlap);
 overlap_2:
 	/*
+	 *     read_1
 	 * -------------->
 	 *          <----------------
+	 *                 read_2
 	 */
 	num_differences = 0;
-	for (int i = 0; i < overalp_len; i++)
-		complement
+	for (size_t i = 0; i < overlap_len; i++)
+		if (base_ascii_to_bin(seq_1[seq_1_len - overlap_len + i])
+		    != complement(base_ascii_to_bin(seq_2[seq_2_len - 1 - i])))
+			if (++num_differences > errors_per_overlap)
+				goto overlap_3;
+	overlap.read_1_beg = seq_1_len - overlap_len;
+	overlap.read_1_end = seq_1_len - 1;
+	overlap.read_2_beg = seq_2_len - 1;
+	overlap.read_2_end = seq_2_len - overlap_len;
+	overlaps.push_back(overlap);
+overlap_3:
+	/*
+	 *     read_1
+	 * <------------- 
+	 *          <----------------
+	 *                 read_2
+	 */
+	num_differences = 0;
+	for (size_t i = 0; i < overlap_len; i++)
+		if (seq_1[overlap_len - 1 - i] != seq_2[seq_2_len - 1 - i])
+			if (++num_differences > errors_per_overlap)
+				goto overlap_4;
+	overlap.read_1_beg = overlap_len - 1;
+	overlap.read_1_end = 0;
+	overlap.read_2_beg = seq_2_len - 1;
+	overlap.read_2_end = seq_2_len - overlap_len;
+	overlaps.push_back(overlap);
+overlap_4:
+	/*
+	 *     read_1
+	 * <------------- 
+	 *          ---------------->
+	 *                 read_2
+	 */
+	num_differences = 0;
+	for (size_t i = 0; i < overlap_len; i++)
+		if (seq_1[i] != ascii_complement(seq_2[overlap_len - 1 - i]))
+			if (++num_differences > errors_per_overlap)
+				return;
+	overlap.read_1_beg = overlap_len - 1;
+	overlap.read_1_end = 0;
+	overlap.read_2_beg = 0;
+	overlap.read_2_end = overlap_len - 1;
+	overlaps.push_back(overlap);
 }
 
-static void compute_overlaps(const vector<Read> &reads, int overlap_len,
-			     int errors_per_overlap, vector<Overlap> &overlaps,
+static void compute_overlaps(const vector<Read> &reads, size_t overlap_len,
+			     size_t errors_per_overlap, vector<Overlap> &overlaps,
 			     int num_threads)
 {
 	size_t num_reads = reads.size();
@@ -90,27 +138,39 @@ static void compute_overlaps(const vector<Read> &reads, int overlap_len,
 		vector<Overlap> my_overlaps;
 		#pragma omp for schedule(dynamic, 32)
 		for (size_t i = 0; i < num_reads; i++) {
-			for (size_t j = i + 1; j < num_reads; j++) {
-				add_overlaps(reads, i, j, overlap_len,
-					     errors_per_overlap, my_overlaps);
+			for (size_t j = 0; j < num_reads; j++) {
+				if (i != j) {
+					add_overlaps(reads, i, j, overlap_len,
+						     errors_per_overlap, my_overlaps);
+				}
 			}
 		}
+		#pragma omp critical
+		{
+			overlaps.insert(overlaps.end(), my_overlaps.begin(),
+					my_overlaps.end());
+		}
 	}
+	info("Found %zu overlaps", overlaps.size());
 }
 
 int main(int argc, char **argv)
 {
 	int c;
-	int overlap_len = 50;
-	int errors_per_overlap = 2;
+	size_t overlap_len = 50;
+	size_t errors_per_overlap = 2;
+	int num_threads = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
 		switch (c) {
 		case 'O':
-			overlap_len = atoi(optarg);
+			overlap_len = strtoul(optarg, NULL, 10);
 			break;
 		case 'e':
-			errors_per_overlap = atoi(optarg);
+			errors_per_overlap = strtoul(optarg, NULL, 10);
+			break;
+		case 't':
+			num_threads = atoi(optarg);
 			break;
 		case 'h':
 		default:
@@ -125,6 +185,8 @@ int main(int argc, char **argv)
 		usage();
 		return 2;
 	}
+	if (num_threads == 0)
+		num_threads = get_default_num_threads();
 
 	const char **reads_files = const_cast<const char **>(argv);
 	int num_reads_files = argc;
@@ -132,8 +194,8 @@ int main(int argc, char **argv)
 
 	info("Launching assembly");
 	info("Parameters:");
-	info("  overlap_len = %d", overlap_len);
-	info("  errors_per_overlap = %d", errors_per_overlap);
+	info("  overlap_len = %zu", overlap_len);
+	info("  errors_per_overlap = %zu", errors_per_overlap);
 	info("  reads files:");
 	for (int i = 0; i < num_reads_files; i++)
 		info("    \"%s\"", reads_files[i]);
@@ -165,6 +227,7 @@ int main(int argc, char **argv)
 	     min_len, avg_len, max_len);
 
 	vector<Overlap> overlaps;
-	compute_overlaps(reads, overlap_len, errors_per_overlap, overlaps);
+	compute_overlaps(reads, overlap_len, errors_per_overlap,
+			 overlaps, num_threads);
 	return 0;
 }
