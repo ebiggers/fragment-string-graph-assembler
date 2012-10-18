@@ -41,8 +41,8 @@ struct Overlap {
 };
 
 static void add_overlaps(const vector<Read> &reads, size_t read_1_idx,
-			 size_t read_2_idx, size_t overlap_len,
-			 size_t errors_per_overlap, vector<Overlap> &overlaps)
+			 size_t read_2_idx, size_t min_overlap_len,
+			 double max_edit_rate, vector<Overlap> &overlaps)
 {
 	const Read &read_1 = reads[read_1_idx];
 	const Read &read_2 = reads[read_2_idx];
@@ -53,8 +53,8 @@ static void add_overlaps(const vector<Read> &reads, size_t read_1_idx,
 	Overlap overlap;
 	overlap.read_1_idx = read_1_idx;
 	overlap.read_2_idx = read_2_idx;
-
 	size_t num_differences;
+
 	if (seq_1_len <= overlap_len || seq_2_len <= overlap_len)
 		return;
 
@@ -127,11 +127,12 @@ overlap_4:
 	overlaps.push_back(overlap);
 }
 
-static void compute_overlaps(const vector<Read> &reads, size_t overlap_len,
-			     size_t errors_per_overlap, vector<Overlap> &overlaps,
+static void compute_overlaps(const vector<Read> &reads, size_t min_overlap_len,
+			     double error_rate, vector<Overlap> &overlaps,
 			     int num_threads)
 {
 	size_t num_reads = reads.size();
+	double max_edit_rate = error_rate * 2.0;
 	overlaps.clear();
 	#pragma omp parallel num_threads(num_threads)
 	{
@@ -140,8 +141,8 @@ static void compute_overlaps(const vector<Read> &reads, size_t overlap_len,
 		for (size_t i = 0; i < num_reads; i++) {
 			for (size_t j = 0; j < num_reads; j++) {
 				if (i != j) {
-					add_overlaps(reads, i, j, overlap_len,
-						     errors_per_overlap, my_overlaps);
+					add_overlaps(reads, i, j, min_overlap_len,
+						     max_edit_rate, my_overlaps);
 				}
 			}
 		}
@@ -157,17 +158,17 @@ static void compute_overlaps(const vector<Read> &reads, size_t overlap_len,
 int main(int argc, char **argv)
 {
 	int c;
-	size_t overlap_len = 50;
-	size_t errors_per_overlap = 2;
+	size_t min_overlap_len = 50;
+	double error_rate = 0.0;
 	int num_threads = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
 		switch (c) {
 		case 'O':
-			overlap_len = strtoul(optarg, NULL, 10);
+			min_overlap_len = strtoul(optarg, NULL, 10);
 			break;
 		case 'e':
-			errors_per_overlap = strtoul(optarg, NULL, 10);
+			error_rate = strtod(optarg, NULL);
 			break;
 		case 't':
 			num_threads = atoi(optarg);
@@ -194,8 +195,8 @@ int main(int argc, char **argv)
 
 	info("Launching assembly");
 	info("Parameters:");
-	info("  overlap_len = %zu", overlap_len);
-	info("  errors_per_overlap = %zu", errors_per_overlap);
+	info("  min_overlap_len = %zu", overlap_len);
+	info("  error_rate = %.2f%%", 100 * error_rate);
 	info("  reads files:");
 	for (int i = 0; i < num_reads_files; i++)
 		info("    \"%s\"", reads_files[i]);
@@ -227,7 +228,7 @@ int main(int argc, char **argv)
 	     min_len, avg_len, max_len);
 
 	vector<Overlap> overlaps;
-	compute_overlaps(reads, overlap_len, errors_per_overlap,
+	compute_overlaps(reads, min_overlap_len, error_rate,
 			 overlaps, num_threads);
 	return 0;
 }
