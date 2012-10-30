@@ -33,13 +33,12 @@ BaseVecVec::file_type BaseVecVec::detect_file_type(const char *filename)
 	char buf[MAGIC_LEN];
 	std::ifstream in(filename);
 	in.read(buf, MAGIC_LEN);
-	if (memcmp(magic, buf, MAGIC_LEN) == 0) {
+	if (memcmp(magic, buf, MAGIC_LEN) == 0)
 		return NATIVE;
-	} else if (buf[0] == '@') {
+	else if (buf[0] == '@')
 		return FASTQ;
-	} else if (buf[0] == '>') {
+	else if (buf[0] == '>')
 		return FASTA;
-	}
 	fatal_error("`%s': Unknown file type", filename);
 }
 
@@ -48,7 +47,6 @@ void BaseVecVec::push_ascii_seq(const std::string &seq)
 	BaseVec bv;
 	bv.load_from_text(seq);
 	this->push_back(bv);
-	bv.leak();
 }
 
 void BaseVecVec::load_fasta(std::istream &in)
@@ -67,9 +65,8 @@ void BaseVecVec::load_fasta(std::istream &in)
 			seq += s;
 		}
 	}
-	if (seq.size() != 0) {
+	if (seq.size() != 0)
 		this->push_ascii_seq(seq);
-	}
 }
 
 void BaseVecVec::load_fastq(std::istream &in)
@@ -85,7 +82,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 {
 	if (ft == AUTODETECT)
 		ft = detect_file_type(filename);
-	info("Loading `%s' (filetype: %s)", filename, file_type_string(ft));
+	info("Loading \"%s\" (filetype: %s)", filename, file_type_string(ft));
 	std::ifstream in(filename);
 	switch (ft) {
 	case NATIVE: {
@@ -104,7 +101,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 	default:
 		assert(0);
 	}
-	info("Loaded `%s' (%zu reads)", filename, size());
+	info("Loaded %zu reads from \"%s\")", this->size(), filename);
 }
 
 void BaseVecVec::write(const char *filename, file_type ft)
@@ -119,7 +116,7 @@ void BaseVecVec::write(const char *filename, file_type ft)
 				ft = FASTA;
 		}
 	}
-	info("Writing `%s' [filetype: %s]", filename, file_type_string(ft));
+	info("Writing \"%s\" [filetype: %s]", filename, file_type_string(ft));
 	std::ofstream out(filename);
 	switch (ft) {
 	case NATIVE: {
@@ -146,17 +143,19 @@ void BaseVecVec::write(const char *filename, file_type ft)
 		for (size_t i = 0; i < this->size(); i++) {
 			const BaseVec &bv = (*this)[i];
 			out << "@read_" << i + 1 << '\n';
-			for (size_t j = 0; j < bv.size(); j++) {
+			for (size_t j = 0; j < bv.size(); j++)
 				out << BaseUtils::bin_to_ascii(bv[j]);
-			}
 			out << '\n';
-			for (size_t j = 0; j < bv.size(); j++) {
+			for (size_t j = 0; j < bv.size(); j++)
 				out << '@';
-			}
 			out << '\n';
 		}
 		break;
 	default:
 		assert(0);
 	}
+	if (out.bad())
+		fatal_error_with_errno("Error writing to \"%s\"", filename);
+	out.close();
+	info("Wrote %zu reads to \"%s\"", this->size(), filename);
 }

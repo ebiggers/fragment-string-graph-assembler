@@ -14,8 +14,10 @@ private:
 	static const size_t MAGIC_LEN;
 
 	friend class boost::serialization::access;
+
 	template <class Archive>
-	void serialize(Archive & ar, unsigned version) {
+	void serialize(Archive & ar, unsigned version)
+	{
 		ar & boost::serialization::base_object<std::vector<BaseVec> >(*this);
 	}
 
@@ -27,5 +29,11 @@ private:
 
 public:
 	BaseVecVec(const char *filename, file_type ft = AUTODETECT);
+
+	~BaseVecVec()
+	{
+		for (size_t i = 0; i < this->size(); i++)
+			(*this)[i].destroy();
+	}
 	void write(const char *filename, file_type ft = AUTODETECT);
 };
