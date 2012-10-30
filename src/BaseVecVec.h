@@ -1,16 +1,5 @@
 #include "BaseVec.h"
-#include "util.h"
-
-#include <string.h>
-
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <string>
 
 class BaseVecVec : public std::vector<BaseVec> {
 public:
@@ -38,5 +27,5 @@ private:
 
 public:
 	BaseVecVec(const char *filename, file_type ft = AUTODETECT);
-	void write(const char *filename, file_type ft = NATIVE);
+	void write(const char *filename, file_type ft = AUTODETECT);
 };

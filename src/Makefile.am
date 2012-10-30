@@ -1,9 +1,9 @@
 
 LDADD = -lboost_serialization
 
-bin_PROGRAMS = import_reads
+bin_PROGRAMS = convert-reads
 
-import_reads_SOURCES =	\
+convert_reads_SOURCES =	\
 	Base.h		\
 	BaseUtils.cc	\
 	BaseUtils.h	\
@@ -11,6 +11,6 @@ import_reads_SOURCES =	\
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
 	compiler.h	\
-	import_reads.cc	\
+	convert-reads.cc\
 	util.cc		\
 	util.h

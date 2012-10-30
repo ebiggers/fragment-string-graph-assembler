@@ -25,3 +25,7 @@ const unsigned char BaseUtils::_ascii_to_bin_tab[256] = {
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
+
+const unsigned char BaseUtils::_bin_to_ascii_tab[4] = {
+	'A', 'C', 'G', 'T',
+};

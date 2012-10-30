@@ -1,4 +1,15 @@
 #include "BaseVecVec.h"
+#include "util.h"
+#include <string.h>
+#include <string>
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/serialization/vector.hpp>
+
+#include <iostream>
+#include <fstream>
 
 const char BaseVecVec::magic[] = "BaseVecVec";
 const size_t BaseVecVec::MAGIC_LEN = sizeof(magic);
@@ -78,7 +89,9 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 	std::ifstream in(filename);
 	switch (ft) {
 	case NATIVE: {
-			boost::archive::text_iarchive ar(in);
+			char buf[MAGIC_LEN];
+			in.read(buf, MAGIC_LEN);
+			boost::archive::binary_iarchive ar(in);
 			ar >> *this;
 		}
 		break;
@@ -96,18 +109,53 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 
 void BaseVecVec::write(const char *filename, file_type ft)
 {
+	if (ft == AUTODETECT) {
+		const char *dot = strrchr(filename, '.');
+		ft = NATIVE;
+		if (dot) {
+			if (strcasecmp(dot + 1, "fq") == 0 || strcasecmp(dot + 1, "fastq") == 0)
+				ft = FASTQ;
+			else if (strcasecmp(dot + 1, "fa") == 0 || strcasecmp(dot + 1, "fasta") == 0)
+				ft = FASTA;
+		}
+	}
 	info("Writing `%s' [filetype: %s]", filename, file_type_string(ft));
+	std::ofstream out(filename);
 	switch (ft) {
 	case NATIVE: {
-			std::ofstream out(filename);
 			out.write(magic, MAGIC_LEN);
-			boost::archive::text_oarchive ar(out);
-			ar << magic << *this;
+			boost::archive::binary_oarchive ar(out);
+			ar << *this;
 		}
 		break;
 	case FASTA:
+		for (size_t i = 0; i < this->size(); i++) {
+			const BaseVec &bv = (*this)[i];
+			out << ">read_" << i + 1 << '\n';
+			size_t chars_in_line = 0;
+			for (size_t j = 0; j < bv.size(); j++) {
+				out << BaseUtils::bin_to_ascii(bv[j]);
+				if (++chars_in_line == 70) {
+					out << '\n';
+					chars_in_line = 0;
+				}
+			}
+		}
+		break;
 	case FASTQ:
-		unimplemented();
+		for (size_t i = 0; i < this->size(); i++) {
+			const BaseVec &bv = (*this)[i];
+			out << "@read_" << i + 1 << '\n';
+			for (size_t j = 0; j < bv.size(); j++) {
+				out << BaseUtils::bin_to_ascii(bv[j]);
+			}
+			out << '\n';
+			for (size_t j = 0; j < bv.size(); j++) {
+				out << '@';
+			}
+			out << '\n';
+		}
+		break;
 	default:
 		assert(0);
 	}

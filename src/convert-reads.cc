@@ -9,6 +9,5 @@ int main(int argc, char *argv[])
 					    "BASEVECVEC_FILE\n", argv[0]);
 		exit(1);
 	}
-	BaseVecVec bvv(argv[1]);
-	bvv.write(argv[2]);
+	BaseVecVec(argv[1]).write(argv[2]);
 }

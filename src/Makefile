@@ -48,7 +48,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = import_reads$(EXEEXT)
+bin_PROGRAMS = convert-reads$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp
@@ -62,11 +62,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_import_reads_OBJECTS = BaseUtils.$(OBJEXT) BaseVecVec.$(OBJEXT) \
-	import_reads.$(OBJEXT) util.$(OBJEXT)
-import_reads_OBJECTS = $(am_import_reads_OBJECTS)
-import_reads_LDADD = $(LDADD)
-import_reads_DEPENDENCIES =
+am_convert_reads_OBJECTS = BaseUtils.$(OBJEXT) BaseVecVec.$(OBJEXT) \
+	convert-reads.$(OBJEXT) util.$(OBJEXT)
+convert_reads_OBJECTS = $(am_convert_reads_OBJECTS)
+convert_reads_LDADD = $(LDADD)
+convert_reads_DEPENDENCIES =
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -80,8 +80,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(import_reads_SOURCES)
-DIST_SOURCES = $(import_reads_SOURCES)
+SOURCES = $(convert_reads_SOURCES)
+DIST_SOURCES = $(convert_reads_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -174,7 +174,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 LDADD = -lboost_serialization
-import_reads_SOURCES = \
+convert_reads_SOURCES = \
 	Base.h		\
 	BaseUtils.cc	\
 	BaseUtils.h	\
@@ -182,7 +182,7 @@ import_reads_SOURCES = \
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
 	compiler.h	\
-	import_reads.cc	\
+	convert-reads.cc\
 	util.cc		\
 	util.h
 
@@ -260,9 +260,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-import_reads$(EXEEXT): $(import_reads_OBJECTS) $(import_reads_DEPENDENCIES) $(EXTRA_import_reads_DEPENDENCIES) 
-	@rm -f import_reads$(EXEEXT)
-	$(CXXLINK) $(import_reads_OBJECTS) $(import_reads_LDADD) $(LIBS)
+convert-reads$(EXEEXT): $(convert_reads_OBJECTS) $(convert_reads_DEPENDENCIES) $(EXTRA_convert_reads_DEPENDENCIES) 
+	@rm -f convert-reads$(EXEEXT)
+	$(CXXLINK) $(convert_reads_OBJECTS) $(convert_reads_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -272,7 +272,7 @@ distclean-compile:
 
 include ./$(DEPDIR)/BaseUtils.Po
 include ./$(DEPDIR)/BaseVecVec.Po
-include ./$(DEPDIR)/import_reads.Po
+include ./$(DEPDIR)/convert-reads.Po
 include ./$(DEPDIR)/util.Po
 
 .cc.o:
