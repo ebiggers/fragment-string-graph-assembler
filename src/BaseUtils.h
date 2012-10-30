@@ -2,7 +2,7 @@
 
 class BaseUtils {
 private:
-	static const char _ascii_to_bin_tab[256];
+	static const unsigned char _ascii_to_bin_tab[256];
 public:
 
 	static inline unsigned char ascii_to_bin(char ascii_base) {

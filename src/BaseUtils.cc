@@ -5,7 +5,7 @@
  *
  * C99 designated initializers do not exist in C++, too bad...
  */
-const unsigned char BaseUtils::ascii_to_bin_tab[256] = {
+const unsigned char BaseUtils::_ascii_to_bin_tab[256] = {
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,

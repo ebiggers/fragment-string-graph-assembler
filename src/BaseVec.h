@@ -2,9 +2,12 @@
 
 //#include <boost/archive/text_oarchive.hpp>
 //#include <boost/archive/text_iarchive.hpp>
+#include "BaseUtils.h"
+#include "util.h"
+
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_member.hpp>
-#include "BaseUtils.h"
+#include <string>
 
 class BaseVec {
 public:
@@ -26,13 +29,13 @@ public:
 
 	unsigned char operator[](size_type idx) const {
 		size_type slot = idx / BASES_PER_STORAGE_TYPE;
-		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * 2;
+		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
 		return (_bases[slot] >> offset) & BASE_MASK;
 	}
 
 	void set(size_type idx, storage_type base) {
 		size_type slot = idx / BASES_PER_STORAGE_TYPE;
-		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * 2;
+		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
 		storage_type v = _bases[slot];
 		v &= ~(BASE_MASK << offset);
 		v |= base << offset;
@@ -61,6 +64,10 @@ public:
 								  BASES_PER_STORAGE_TYPE];
 	}
 
+	void load_from_text(const std::string &s) {
+		load_from_text(s.c_str(), s.size());
+	}
+
 	void load_from_text(const char text[], size_type len) {
 		resize(len);
 		for (size_type i = 0; i < len; i++) {
@@ -73,8 +80,13 @@ public:
 		_bases = NULL;
 	}
 
+	void leak() {
+		_size = 0;
+		_bases = NULL;
+	}
+
 	~BaseVec() {
 		_size = 0;
-		delete[] _bases;
+		//delete[] _bases;
 	}
 };
