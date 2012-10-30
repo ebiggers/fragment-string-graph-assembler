@@ -146,6 +146,8 @@ void BaseVecVec::write(const char *filename, file_type ft)
 			for (size_t j = 0; j < bv.size(); j++)
 				out << BaseUtils::bin_to_ascii(bv[j]);
 			out << '\n';
+			out << '+';
+			out << '\n';
 			for (size_t j = 0; j < bv.size(); j++)
 				out << '@';
 			out << '\n';
