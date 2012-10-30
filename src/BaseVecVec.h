@@ -21,7 +21,8 @@ public:
 		AUTODETECT,
 	};
 private:
-	static const char * const magic;
+	static const char magic[];
+	static const size_t MAGIC_LEN;
 
 	friend class boost::serialization::access;
 	template <class Archive>

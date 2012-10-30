@@ -1,12 +1,13 @@
 #include "BaseVecVec.h"
 
-const char * const BaseVecVec::magic = "BaseVecVec";
+const char BaseVecVec::magic[] = "BaseVecVec";
+const size_t BaseVecVec::MAGIC_LEN = sizeof(magic);
 
 const char *BaseVecVec::file_type_string(file_type ft)
 {
 	switch (ft) {
 	case NATIVE:
-		return "native (BaseVecVec binary format)";
+		return "native BaseVecVec binary format";
 	case FASTA:
 		return "FASTA";
 	case FASTQ:
@@ -18,22 +19,21 @@ const char *BaseVecVec::file_type_string(file_type ft)
 
 BaseVecVec::file_type BaseVecVec::detect_file_type(const char *filename)
 {
-	char buf[sizeof(magic)];
+	char buf[MAGIC_LEN];
 	std::ifstream in(filename);
-	in.read(buf, sizeof(buf));
-	if (memcmp(magic, buf, sizeof(buf)) == 0) {
+	in.read(buf, MAGIC_LEN);
+	if (memcmp(magic, buf, MAGIC_LEN) == 0) {
 		return NATIVE;
 	} else if (buf[0] == '@') {
 		return FASTQ;
 	} else if (buf[0] == '>') {
 		return FASTA;
 	}
-	fatal_error("`%s': Unknown file type", magic);
+	fatal_error("`%s': Unknown file type", filename);
 }
 
 void BaseVecVec::push_ascii_seq(const std::string &seq)
 {
-	info("Push back seq %s", seq.c_str());
 	BaseVec bv;
 	bv.load_from_text(seq);
 	this->push_back(bv);
@@ -53,7 +53,7 @@ void BaseVecVec::load_fasta(std::istream &in)
 				seq.clear();
 			}
 		} else {
-			seq.insert(seq.end(), s.begin(), s.end());
+			seq += s;
 		}
 	}
 	if (seq.size() != 0) {
@@ -74,7 +74,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 {
 	if (ft == AUTODETECT)
 		ft = detect_file_type(filename);
-	info("Loading `%s' [filetype: %s]", filename, file_type_string(ft));
+	info("Loading `%s' (filetype: %s)", filename, file_type_string(ft));
 	std::ifstream in(filename);
 	switch (ft) {
 	case NATIVE: {
@@ -100,9 +100,11 @@ void BaseVecVec::write(const char *filename, file_type ft)
 	switch (ft) {
 	case NATIVE: {
 			std::ofstream out(filename);
+			out.write(magic, MAGIC_LEN);
 			boost::archive::text_oarchive ar(out);
-			ar << *this;
+			ar << magic << *this;
 		}
+		break;
 	case FASTA:
 	case FASTQ:
 		unimplemented();
