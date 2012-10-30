@@ -15,8 +15,9 @@ private:
 	storage_type *_bases;
 	static const size_type BITS_PER_BASE = 2;
 	static const size_type BASES_PER_BYTE = 8 / BITS_PER_BASE;
-	static const size_type BASES_PER_STORAGE_TYPE = sizeof(storage_type) * 8 / BITS_PER_BASE;
-	static const size_type BASE_MASK = (1 << BITS_PER_BASE) - 1;
+	static const size_type BASES_PER_STORAGE_TYPE =
+				sizeof(storage_type) * 8 / BITS_PER_BASE;
+	static const storage_type BASE_MASK = (1 << BITS_PER_BASE) - 1;
 
 public:
 
@@ -25,20 +26,21 @@ public:
 		return _size;
 	}
 
-	unsigned char operator[](size_type idx) const
+	unsigned char operator[](unsigned idx) const
 	{
-		size_type slot = idx / BASES_PER_STORAGE_TYPE;
-		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
-		return (_bases[slot] >> offset) & BASE_MASK;
+		unsigned slot = idx / BASES_PER_STORAGE_TYPE;
+		unsigned offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
+		return static_cast<unsigned char>((_bases[slot] >> offset) & BASE_MASK);
 	}
 
-	void set(size_type idx, storage_type base)
+	void set(size_type idx, unsigned char base)
 	{
 		size_type slot = idx / BASES_PER_STORAGE_TYPE;
-		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
+		size_type offset = (idx % BASES_PER_STORAGE_TYPE) *
+				    BITS_PER_BASE;
 		storage_type v = _bases[slot];
 		v &= ~(BASE_MASK << offset);
-		v |= base << offset;
+		v |= static_cast<storage_type>(base) << offset;
 		_bases[slot] = v;
 	}
 
@@ -48,7 +50,8 @@ public:
 	void save(Archive & ar, unsigned version) const
 	{
 		ar << _size;
-		ar.save_binary(_bases, (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
+		ar.save_binary(_bases,
+			       (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
 	}
 
 	template <class Archive>
@@ -56,7 +59,8 @@ public:
 	{
 		ar >> _size;
 		resize(_size);
-		ar.load_binary(_bases, (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
+		ar.load_binary(_bases,
+			       (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
 	}
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -64,8 +68,7 @@ public:
 	{
 		_size = size;
 		delete[] _bases;
-		_bases = new storage_type[(_size + BASES_PER_STORAGE_TYPE - 1) /
-								  BASES_PER_STORAGE_TYPE];
+		_bases = new storage_type[DIV_ROUND_UP(_size, BASES_PER_STORAGE_TYPE)];
 	}
 
 	void load_from_text(const std::string &s)
@@ -76,9 +79,8 @@ public:
 	void load_from_text(const char text[], size_type len)
 	{
 		resize(len);
-		for (size_type i = 0; i < len; i++) {
+		for (size_type i = 0; i < len; i++)
 			set(i, BaseUtils::ascii_to_bin(text[i]));
-		}
 	}
 
 	BaseVec()

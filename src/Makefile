@@ -179,6 +179,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 LDADD = -lboost_serialization
+AM_CXXFLAGS = -std=c++11
 convert_reads_SOURCES = \
 	Base.h		\
 	BaseUtils.cc	\

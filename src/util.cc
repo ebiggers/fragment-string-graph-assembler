@@ -59,3 +59,16 @@ void info(const char *format, ...)
 	fflush(stdout);
 	va_end(va);
 }
+
+long parse_long(const char *optstr, const char *argument, long min, long max)
+{
+	char *tmp;
+	long n = strtol(optstr, &tmp, 10);
+	if (tmp == optstr || *tmp)
+		fatal_error("Error parsing \"%s\": not an integer", optstr);
+	if (n < min)
+		fatal_error("Expected number >= %ld for argument %s", argument);
+	if (n > max)
+		fatal_error("Expected number <= %ld for argument %s", argument);
+	return n;
+}

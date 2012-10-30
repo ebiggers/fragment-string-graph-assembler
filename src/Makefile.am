@@ -1,5 +1,6 @@
 
 LDADD = -lboost_serialization
+AM_CXXFLAGS = -std=c++11
 
 bin_PROGRAMS = convert-reads compute-overlaps
 
