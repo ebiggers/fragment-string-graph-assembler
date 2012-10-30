@@ -11,6 +11,9 @@ extern void info(const char *format, ...);
 #define unimplemented() \
 	fatal_error("Unimplemented at %s:%d", __FILE__, __LINE__)
 
+#define unreachable() \
+	fatal_error("unreachable() at %s:%d", __FILE__, __LINE__)
+
 #define END_LONGOPTS \
 	{"help",        no_argument,       NULL, 'h'}, \
 	{NULL,          0,                 NULL, 0}
@@ -31,10 +34,14 @@ static void usage() \
 #define for_opt(c) \
 	while ((c = getopt_long(argc, argv, optstring, longopts, NULL)) != -1)
 
-#define USAGE_IF(c) if (c) {usage(); exit(2);}
+#define USAGE_IF(cond) if (cond) {usage(); exit(2);}
 
-extern long parse_long(const char *optstr, const char *argument,
-		       long min = INT_MIN, long max = INT_MAX);
+extern long long parse_long(const char *optstr, const char *argument,
+			    long long min = INT_MIN, long long max = INT_MAX);
+
 
 #define DIV_ROUND_UP(numerator, denominator) \
 	(((numerator) + (denominator) + 1) / (denominator))
+
+#define MODULO_NONZERO(numerator, denominator) \
+	(((numerator) % (denominator)) ? ((numerator) % (denominator)) : (denominator))

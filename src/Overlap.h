@@ -2,36 +2,63 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/set.hpp>
 #include <fstream>
 #include <vector>
+#include <set>
 
 class Overlap {
-public:
-	unsigned long read_1_idx : 24;
-	unsigned long read_2_idx : 24;
-	unsigned long read_1_beg : 12;
-	unsigned long read_1_end : 12;
-	unsigned long read_2_beg : 12;
-	unsigned long read_2_end : 12;
+private:
+	unsigned long _read_1_idx : 24;
+	unsigned long _read_1_beg : 12;
+	unsigned long _read_1_end : 12;
+	unsigned long _read_2_idx : 24;
+	unsigned long _read_2_beg : 12;
+	unsigned long _read_2_end : 12;
 
 	friend class boost::serialization::access;
-
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
 		ar & boost::serialization::make_binary_object(this, sizeof(*this));
 	}
+
+public:
+	void set(unsigned long read_1_idx, unsigned long read_1_beg,
+		 unsigned long read_1_end,
+		 unsigned long read_2_idx, unsigned long read_2_beg,
+		 unsigned long read_2_end)
+	{
+		_read_1_idx = read_1_idx;
+		_read_1_beg = read_1_beg;
+		_read_1_end = read_1_end;
+		_read_2_idx = read_2_idx;
+		_read_2_beg = read_2_beg;
+		_read_2_end = read_2_end;
+	}
+
+
+	friend bool operator==(const Overlap &o1, const Overlap &o2)
+	{
+		return memcmp(&o1, &o2, sizeof(Overlap)) == 0;
+	}
+
+	friend bool operator<(const Overlap &o1, const Overlap &o2)
+	{
+		return memcmp(&o1, &o2, sizeof(Overlap)) < 0;
+	}
 };
 
-class OverlapVecVec : public std::vector<std::vector<Overlap> > {
-
+class OverlapVecVec : public std::vector<std::set<Overlap> > {
 private:
+	typedef std::vector<std::set<Overlap> > BaseT;
+
 	friend class boost::serialization::access;
 
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
-		ar & boost::serialization::base_object<std::vector<std::vector<Overlap> > >(*this);
+		ar & boost::serialization::base_object<BaseT>(*this);
 	}
 public:
 	OverlapVecVec() { }

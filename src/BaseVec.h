@@ -16,8 +16,9 @@ private:
 	static const size_type BITS_PER_BASE = 2;
 	static const size_type BASES_PER_BYTE = 8 / BITS_PER_BASE;
 	static const size_type BASES_PER_STORAGE_TYPE =
-				sizeof(storage_type) * 8 / BITS_PER_BASE;
-	static const storage_type BASE_MASK = (1 << BITS_PER_BASE) - 1;
+				sizeof(storage_type) * BASES_PER_BYTE;
+	static const storage_type BASE_MASK =
+			(static_cast<storage_type>(1) << BITS_PER_BASE) - 1;
 
 public:
 
@@ -28,9 +29,9 @@ public:
 
 	unsigned char operator[](unsigned idx) const
 	{
-		unsigned slot = idx / BASES_PER_STORAGE_TYPE;
-		unsigned offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
-		return static_cast<unsigned char>((_bases[slot] >> offset) & BASE_MASK);
+		size_type slot = idx / BASES_PER_STORAGE_TYPE;
+		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
+		return (_bases[slot] >> offset) & BASE_MASK;
 	}
 
 	void set(size_type idx, unsigned char base)
@@ -50,8 +51,7 @@ public:
 	void save(Archive & ar, unsigned version) const
 	{
 		ar << _size;
-		ar.save_binary(_bases,
-			       (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
+		ar.save_binary(_bases, DIV_ROUND_UP(_size, BASES_PER_BYTE));
 	}
 
 	template <class Archive>
@@ -59,8 +59,7 @@ public:
 	{
 		ar >> _size;
 		resize(_size);
-		ar.load_binary(_bases,
-			       (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
+		ar.load_binary(_bases, DIV_ROUND_UP(_size, BASES_PER_BYTE));
 	}
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
 

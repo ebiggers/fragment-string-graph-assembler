@@ -60,10 +60,11 @@ void info(const char *format, ...)
 	va_end(va);
 }
 
-long parse_long(const char *optstr, const char *argument, long min, long max)
+long long parse_long(const char *optstr, const char *argument,
+		     long long min, long long max)
 {
 	char *tmp;
-	long n = strtol(optstr, &tmp, 10);
+	long long n = strtoll(optstr, &tmp, 10);
 	if (tmp == optstr || *tmp)
 		fatal_error("Error parsing \"%s\": not an integer", optstr);
 	if (n < min)
