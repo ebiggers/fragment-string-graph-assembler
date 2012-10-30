@@ -48,7 +48,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = convert-reads$(EXEEXT)
+bin_PROGRAMS = convert-reads$(EXEEXT) compute-overlaps$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp
@@ -62,6 +62,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am_compute_overlaps_OBJECTS = BaseUtils.$(OBJEXT) BaseVecVec.$(OBJEXT) \
+	compute-overlaps.$(OBJEXT) util.$(OBJEXT)
+compute_overlaps_OBJECTS = $(am_compute_overlaps_OBJECTS)
+compute_overlaps_LDADD = $(LDADD)
+compute_overlaps_DEPENDENCIES =
 am_convert_reads_OBJECTS = BaseUtils.$(OBJEXT) BaseVecVec.$(OBJEXT) \
 	convert-reads.$(OBJEXT) util.$(OBJEXT)
 convert_reads_OBJECTS = $(am_convert_reads_OBJECTS)
@@ -80,8 +85,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(convert_reads_SOURCES)
-DIST_SOURCES = $(convert_reads_SOURCES)
+SOURCES = $(compute_overlaps_SOURCES) $(convert_reads_SOURCES)
+DIST_SOURCES = $(compute_overlaps_SOURCES) $(convert_reads_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -186,6 +191,19 @@ convert_reads_SOURCES = \
 	util.cc		\
 	util.h
 
+compute_overlaps_SOURCES = \
+	Base.h		\
+	BaseUtils.cc	\
+	BaseUtils.h	\
+	BaseVec.h	\
+	BaseVecVec.cc	\
+	BaseVecVec.h	\
+	compiler.h	\
+	compute-overlaps.cc \
+	Overlap.h \
+	util.cc		\
+	util.h
+
 all: all-am
 
 .SUFFIXES:
@@ -260,6 +278,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+compute-overlaps$(EXEEXT): $(compute_overlaps_OBJECTS) $(compute_overlaps_DEPENDENCIES) $(EXTRA_compute_overlaps_DEPENDENCIES) 
+	@rm -f compute-overlaps$(EXEEXT)
+	$(CXXLINK) $(compute_overlaps_OBJECTS) $(compute_overlaps_LDADD) $(LIBS)
 convert-reads$(EXEEXT): $(convert_reads_OBJECTS) $(convert_reads_DEPENDENCIES) $(EXTRA_convert_reads_DEPENDENCIES) 
 	@rm -f convert-reads$(EXEEXT)
 	$(CXXLINK) $(convert_reads_OBJECTS) $(convert_reads_LDADD) $(LIBS)
@@ -272,6 +293,7 @@ distclean-compile:
 
 include ./$(DEPDIR)/BaseUtils.Po
 include ./$(DEPDIR)/BaseVecVec.Po
+include ./$(DEPDIR)/compute-overlaps.Po
 include ./$(DEPDIR)/convert-reads.Po
 include ./$(DEPDIR)/util.Po
 

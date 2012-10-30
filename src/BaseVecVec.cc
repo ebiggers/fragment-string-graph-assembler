@@ -156,8 +156,8 @@ void BaseVecVec::write(const char *filename, file_type ft)
 	default:
 		assert(0);
 	}
+	out.close();
 	if (out.bad())
 		fatal_error_with_errno("Error writing to \"%s\"", filename);
-	out.close();
 	info("Wrote %zu reads to \"%s\"", this->size(), filename);
 }

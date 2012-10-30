@@ -3,7 +3,6 @@
 #include "BaseUtils.h"
 #include "util.h"
 
-#include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <string>
 
