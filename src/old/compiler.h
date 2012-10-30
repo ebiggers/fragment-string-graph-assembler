@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _COMPILER_H
+#define _COMPILER_H
 
 #ifdef __GNUC__
 #	if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
@@ -47,3 +48,5 @@ static inline T atomic_set(volatile T *ptr, T nval) {
 	/* gcc builtin */
 	return __sync_lock_test_and_set(ptr, nval);
 }
+
+#endif // _COMPILER_H

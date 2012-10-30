@@ -1,8 +1,12 @@
-OBJ := OutputStream.o InputStream.o util.o parse-reads.o
-CXXFLAGS := -O2 -Wall -fopenmp
-LDLIBS := -lz
+CXX := clang++
+LDLIBS := -lboost_serialization
 
-assemble:$(OBJ)
+EXE := import_reads
+
+all:$(EXE)
+
+import_reads:import_reads.o BaseVecVec.o util.o 
+	$(CXX) -o$@ $(LDFLAGS) $+ $(LDLIBS)
 
 clean:
-	rm -f $(OBJ) assemble tags
+	rm -f *.o $(EXE)

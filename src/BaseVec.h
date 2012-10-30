@@ -3,6 +3,7 @@
 //#include <boost/archive/text_oarchive.hpp>
 //#include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/binary_object.hpp>
+#include <boost/serialization/split_member.hpp>
 #include "BaseUtils.h"
 
 class BaseVec {
@@ -13,8 +14,10 @@ private:
 	size_type _size;
 	storage_type *_bases;
 	static const size_type BITS_PER_BASE = 2;
+	static const size_type BASES_PER_BYTE = 8 / BITS_PER_BASE;
 	static const size_type BASES_PER_STORAGE_TYPE = sizeof(storage_type) * 8 / BITS_PER_BASE;
 	static const size_type BASE_MASK = (1 << BITS_PER_BASE) - 1;
+
 public:
 
 	size_type size() const {
@@ -36,18 +39,20 @@ public:
 		_bases[slot] = v;
 	}
 
+	friend class boost::serialization::access;
 	template <class Archive>
-	void save(Archive & ar, unsigned version) {
+	void save(Archive & ar, unsigned version) const {
 		ar << _size;
-		ar << boost::serialization::binary_object(_bases, _size);
+		ar.save_binary(_bases, (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
 	}
 
 	template <class Archive>
 	void load(Archive & ar, unsigned version) {
 		ar >> _size;
 		resize(_size);
-		ar >> boost::serialization::binary_object(_bases, _size);
+		ar.load_binary(_bases, (_size + BASES_PER_BYTE - 1) / BASES_PER_BYTE);
 	}
+	BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 	void resize(size_type size) {
 		_size = size;

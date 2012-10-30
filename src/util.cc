@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
+#include <string.h>
 
 #include "util.h"
 
@@ -27,7 +28,7 @@ void fatal_error_with_errno(const char *msg, ...)
 	fflush(stdout);
 	fputs("ERROR: ", stderr);
 	vfprintf(stderr, msg, va);
-	fprintf(stderr, ": %s\n", errno_save);
+	fprintf(stderr, ": %s\n", strerror(errno_save));
 	va_end(va);
 	exit(1);
 }
