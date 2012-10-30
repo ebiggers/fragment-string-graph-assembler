@@ -15,24 +15,25 @@ private:
 	static const storage_type BASE_MASK =
 			(static_cast<storage_type>(1) << BITS_PER_BASE) - 1;
 
-	static const size_type BASES_PER_STORAGE_TYPE =
+	static const size_type BASES_PER_STORAGE =
 				sizeof(storage_type) * BASES_PER_BYTE;
 
 	static const size_type NUM_STORAGES =
-				DIV_ROUND_UP(_K, BASES_PER_STORAGE_TYPE);
+				DIV_ROUND_UP(_K, BASES_PER_STORAGE);
 
-	static const size_type BASES_IN_LAST_STORAGE =
-				MODULO_NONZERO(_K, BASES_PER_STORAGE_TYPE);
+	static const size_type BASES_IN_PARTIAL_STORAGE =
+				MODULO_NONZERO(_K, BASES_PER_STORAGE);
 
-	static const size_type STORAGE_LAST_BASE_SHIFT =
-				sizeof(storage_type) * BITS_PER_BYTE - BITS_PER_BASE;
-
-	static const size_type LAST_BASE_SHIFT =
-				(BASES_IN_LAST_STORAGE - 1) * BITS_PER_BASE;
-
-	static const storage_type LAST_STORAGE_MASK =
+	static const storage_type PARTIAL_STORAGE_MASK =
 		(static_cast<storage_type>(1) <<
-		 	(BASES_IN_LAST_STORAGE * BITS_PER_BASE)) - 1;
+		 	(BASES_IN_PARTIAL_STORAGE * BITS_PER_BASE)) - 1;
+
+	static const size_type FIRST_BASE_SHIFT =
+				(BASES_PER_STORAGE - 1) * BITS_PER_BASE;
+
+	static const size_type PARTIAL_STORAGE_FIRST_BASE_SHIFT =
+				(BASES_IN_PARTIAL_STORAGE - 1) * BITS_PER_BASE;
+
 
 	storage_type _bases[NUM_STORAGES];
 public:
@@ -46,30 +47,28 @@ public:
 
 	void push_back(unsigned char base)
 	{
+		_bases[0] = (_bases[0] << BITS_PER_BASE) & PARTIAL_STORAGE_MASK;
 		if (NUM_STORAGES >= 2) {
 			size_type i = 0;
 			do {
-				_bases[i] = (_bases[i] >> BITS_PER_BASE)
-					    | _bases[i + 1] << STORAGE_LAST_BASE_SHIFT;
-			} while (i++ != NUM_STORAGES - 2);
+				_bases[i] = _bases[i] | (_bases[i + 1] >> FIRST_BASE_SHIFT);
+				_bases[i + 1] <<= BITS_PER_BASE;
+			} while (++i != NUM_STORAGES - 1);
 		}
-		_bases[NUM_STORAGES - 1] = (_bases[NUM_STORAGES - 1] >> BITS_PER_BASE) |
-					   (static_cast<storage_type>(base) << LAST_BASE_SHIFT);
+		_bases[NUM_STORAGES - 1] |= base;
 	}
 
 	void push_front(unsigned char base)
 	{
-		_bases[NUM_STORAGES - 1] <<= BITS_PER_BASE;
 		if (NUM_STORAGES >= 2) {
-			size_type i = NUM_STORAGES - 2;
+			size_type i = NUM_STORAGES - 1;
 			do {
-				storage_type last_base = _bases[i] >> STORAGE_LAST_BASE_SHIFT;
-				_bases[i + 1] |= last_base;
-				_bases[i] <<= BITS_PER_BASE;
-			}  while (i-- != 0);
+				_bases[i] = (_bases[i] >> BITS_PER_BASE)
+						| _bases[i - 1] << FIRST_BASE_SHIFT;
+			}  while (--i != 0);
 		}
-		_bases[0] |= base;
-		_bases[NUM_STORAGES - 1] &= LAST_STORAGE_MASK;
+		_bases[0] = (_bases[0] >> BITS_PER_BASE) |
+			    (static_cast<storage_type>(base) << PARTIAL_STORAGE_FIRST_BASE_SHIFT);
 	}
 
 	void complement()
@@ -91,9 +90,10 @@ public:
 
 	unsigned char operator[](unsigned idx) const
 	{
-		unsigned slot = idx / BASES_PER_STORAGE_TYPE;
-		unsigned offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
-		return static_cast<unsigned char>((_bases[slot] >> offset) & BASE_MASK);
+		unsigned slot = NUM_STORAGES - 1 - (idx / BASES_PER_STORAGE);
+		unsigned shift = ((BASES_PER_STORAGE - 1) - (idx % BASES_PER_STORAGE)) *
+				   BITS_PER_BASE;
+		return static_cast<unsigned char>((_bases[slot] >> shift) & BASE_MASK);
 	}
 
 	friend bool operator==(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
@@ -107,7 +107,7 @@ public:
 	friend bool operator<(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
 		for (size_type i = 0; i < _K; i++)
-			if (kmer_1[i] < kmer_2[i])
+			if (kmer_1._bases[i] < kmer_2._bases[i])
 				return true;
 		return false;
 	}
