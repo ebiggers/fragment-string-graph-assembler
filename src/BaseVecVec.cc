@@ -78,7 +78,7 @@ void BaseVecVec::load_fastq(std::istream &in)
 	}
 }
 
-BaseVecVec::BaseVecVec(const char *filename, file_type ft)
+void BaseVecVec::read(const char *filename, BaseVecVec::file_type ft)
 {
 	if (ft == AUTODETECT)
 		ft = detect_file_type(filename);
@@ -104,7 +104,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 	//info("Loaded %zu reads from \"%s\")", this->size(), filename);
 }
 
-void BaseVecVec::write(const char *filename, file_type ft)
+void BaseVecVec::write(const char *filename, file_type ft) const
 {
 	if (ft == AUTODETECT) {
 		const char *dot = strrchr(filename, '.');

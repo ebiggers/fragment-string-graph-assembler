@@ -30,12 +30,18 @@ private:
 	void load_fastq(std::istream &in);
 
 public:
-	BaseVecVec(const char *filename, file_type ft = AUTODETECT);
+	BaseVecVec() { }
+
+	BaseVecVec(const char *filename, file_type ft = AUTODETECT)
+	{
+		this->read(filename, ft);
+	}
 
 	~BaseVecVec()
 	{
 		for (size_t i = 0; i < this->size(); i++)
 			(*this)[i].destroy();
 	}
-	void write(const char *filename, file_type ft = AUTODETECT);
+	void read(const char *filename, file_type ft = AUTODETECT);
+	void write(const char *filename, file_type ft = AUTODETECT) const;
 };
