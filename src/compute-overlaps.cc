@@ -306,8 +306,10 @@ static void compute_overlaps(const BaseVecVec &bvv,
 
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
+	unsigned long num_pairs = 0;
 	typename KmerOccurrenceMap::const_iterator it;
 	for (it = occ_map.begin(); it != occ_map.end(); it++) {
+		num_pairs += (it->second.size() * it->second.size() - 1) / 2;
 		num_overlaps += overlaps_from_kmer_seed<K>(it->second,
 							   bvv,
 							   min_overlap_len,
@@ -315,6 +317,7 @@ static void compute_overlaps(const BaseVecVec &bvv,
 							   ovv);
 	}
 	info("Found %lu overlaps", num_overlaps);
+	info("Considered %lu read pairs", num_pairs);
 }
 
 static const char *optstring = "l:e:h";
