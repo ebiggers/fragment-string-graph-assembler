@@ -37,13 +37,20 @@ public:
 		_read_2_end = read_2_end;
 	}
 
+	friend std::ostream & operator<<(std::ostream & os, const Overlap & o)
+	{
+		os << "Overlap : Read " << o._read_1_idx << " [" << o._read_1_beg
+		   << ", " << o._read_1_end << "], Read " << o._read_2_idx
+		   << " [" << o._read_1_beg << ", " << o._read_2_end << "]";
+		return os;
+	}
 
-	friend bool operator==(const Overlap &o1, const Overlap &o2)
+	friend bool operator==(const Overlap & o1, const Overlap & o2)
 	{
 		return memcmp(&o1, &o2, sizeof(Overlap)) == 0;
 	}
 
-	friend bool operator<(const Overlap &o1, const Overlap &o2)
+	friend bool operator<(const Overlap & o1, const Overlap & o2)
 	{
 		return memcmp(&o1, &o2, sizeof(Overlap)) < 0;
 	}

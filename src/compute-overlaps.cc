@@ -42,6 +42,8 @@ static void assert_seed_valid(const BaseVec & bv1, const BaseVec & bv2,
 			      const bool is_rc1, const bool is_rc2)
 {
 	unsigned i;
+	assert(pos1 + len <= bv1.size());
+	assert(pos2 + len <= bv2.size());
 	if (is_rc1 == is_rc2) {
 		for (i = 0; i < len; i++)
 			if (bv1[pos1 + i] != bv2[pos2 + i])
@@ -66,15 +68,37 @@ seed_invalid:
 		    pos1, pos2, len, is_rc1, is_rc2);
 }
 
-static void extend_match(const BaseVec & bv1,
-			 const BaseVec & bv2,
-			 unsigned & pos1,
-			 unsigned & pos2,
-			 unsigned & len,
-			 const bool is_rc1,
-			 const bool is_rc2)
+static void extend_seed(const BaseVec & bv1,
+			const BaseVec & bv2,
+			unsigned & pos1,
+			unsigned & pos2,
+			unsigned & len,
+			const bool is_rc1,
+			const bool is_rc2)
 {
-	if (!is_rc1 && !is_rc2) {
+	if (is_rc1 == is_rc2) {
+		unsigned max_left_extend = std::min(pos1, pos2);
+		unsigned left_extend = 0;
+		while (left_extend < max_left_extend) {
+			if (bv1[pos1 - left_extend + 1] == bv2[pos2 - left_extend + 1])
+				left_extend++;
+			else
+				break;
+		}
+		unsigned max_right_extend = std::min((bv1.size() - 1) - pos1,
+						     (bv2.size() - 1) - pos2);
+		unsigned right_extend = 0;
+		while (right_extend < max_right_extend) {
+			if (bv1[pos1 + len + right_extend] == bv2[pos2 + len + right_extend])
+				right_extend++;
+			else
+				break;
+		}
+		len += left_extend + max_right_extend;
+		pos1 -= left_extend;
+		pos2 -= left_extend;
+	} else {
+		unimplemented();
 	}
 }
 
@@ -101,8 +125,6 @@ static bool find_overlap(const BaseVecVec & bvv,
 	 *          --------------->
 	 *  <-------------
 	 */
-	cout << occ1 << endl;
-	cout << occ2 << endl;
 	const BaseVec & bv1 = bvv[occ1.get_read_id()];
 	const BaseVec & bv2 = bvv[occ2.get_read_id()];
 	unsigned pos1 = occ1.get_read_pos();
@@ -110,8 +132,8 @@ static bool find_overlap(const BaseVecVec & bvv,
 	unsigned len = K;
 	const bool is_rc1 = occ1.is_rc();
 	const bool is_rc2 = occ2.is_rc();
-	assert_seed_valid(bv1, bv1, pos1, pos2, len, is_rc1, is_rc2);
-	extend_match(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
+	assert_seed_valid(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
+	extend_seed(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
 	if (len >= min_overlap_len) {
 		unsigned long read_1_beg = pos1;
 		unsigned long read_1_end = pos1 + len - 1;

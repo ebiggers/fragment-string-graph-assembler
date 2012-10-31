@@ -85,9 +85,10 @@ public:
 
 	friend std::ostream & operator<<(std::ostream & os, const BaseVec & bv)
 	{
+		os << "BaseVec {_bases = \"";
 		for (size_t i = 0; i < bv.size(); i++)
 			os << BaseUtils::bin_to_ascii(bv[i]);
-		return os;
+		return os << "\"}";
 	}
 
 	BaseVec()
