@@ -225,10 +225,13 @@ static bool find_overlap(const BaseVecVec & bvv,
 			num_extremes++;
 
 		if (num_extremes >= 2) {
-			if (is_rc1)
-				std::swap(read_1_beg, read_1_end);
-			if (is_rc2)
-				std::swap(read_2_beg, read_2_end);
+			if (is_rc1) {
+				if (!is_rc2)
+					std::swap(read_1_beg, read_1_end);
+			} else {
+				if (is_rc2)
+					std::swap(read_2_beg, read_2_end);
+			}
 
 			o.set(occ1.get_read_id(), read_1_beg, read_1_end,
 			      occ2.get_read_id(), read_2_beg, read_2_end);
