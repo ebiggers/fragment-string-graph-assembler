@@ -82,7 +82,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 {
 	if (ft == AUTODETECT)
 		ft = detect_file_type(filename);
-	info("Loading \"%s\" (filetype: %s)", filename, file_type_string(ft));
+	//info("Loading \"%s\" (filetype: %s)", filename, file_type_string(ft));
 	std::ifstream in(filename);
 	switch (ft) {
 	case NATIVE: {
@@ -101,7 +101,7 @@ BaseVecVec::BaseVecVec(const char *filename, file_type ft)
 	default:
 		assert(0);
 	}
-	info("Loaded %zu reads from \"%s\")", this->size(), filename);
+	//info("Loaded %zu reads from \"%s\")", this->size(), filename);
 }
 
 void BaseVecVec::write(const char *filename, file_type ft)
@@ -116,7 +116,7 @@ void BaseVecVec::write(const char *filename, file_type ft)
 				ft = FASTA;
 		}
 	}
-	info("Writing \"%s\" [filetype: %s]", filename, file_type_string(ft));
+	//info("Writing \"%s\" [filetype: %s]", filename, file_type_string(ft));
 	std::ofstream out(filename);
 	switch (ft) {
 	case NATIVE: {
@@ -159,5 +159,5 @@ void BaseVecVec::write(const char *filename, file_type ft)
 	out.close();
 	if (out.bad())
 		fatal_error_with_errno("Error writing to \"%s\"", filename);
-	info("Wrote %zu reads to \"%s\"", this->size(), filename);
+	//info("Wrote %zu reads to \"%s\"", this->size(), filename);
 }

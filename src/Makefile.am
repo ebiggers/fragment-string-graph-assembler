@@ -1,10 +1,15 @@
 
-LDADD = -lboost_serialization
+LDADD = libassemble.a -lboost_serialization
 AM_CXXFLAGS = -std=c++11
 
-bin_PROGRAMS = convert-reads compute-overlaps
+bin_PROGRAMS =			\
+	convert-reads		\
+	compute-overlaps	\
+	print-overlaps	
 
-convert_reads_SOURCES =	\
+noinst_LIBRARIES = libassemble.a
+
+libassemble_a_SOURCES =  \
 	Base.h		\
 	BaseUtils.cc	\
 	BaseUtils.h	\
@@ -12,20 +17,9 @@ convert_reads_SOURCES =	\
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
 	compiler.h	\
-	convert-reads.cc\
 	util.cc		\
 	util.h
 
-compute_overlaps_SOURCES = \
-	Base.h		\
-	BaseUtils.cc	\
-	BaseUtils.h	\
-	BaseVec.h	\
-	BaseVecVec.cc	\
-	BaseVecVec.h	\
-	compiler.h	\
-	compute-overlaps.cc \
-	Overlap.h \
-	util.cc		\
-	util.h
-
+convert_reads_SOURCES =	convert-reads.cc
+compute_overlaps_SOURCES = compute-overlaps.cc
+print_overlaps_SOURCES = print-overlaps.cc

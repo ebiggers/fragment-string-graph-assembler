@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include "util.h"
 
 class Overlap {
 private:
@@ -90,21 +91,17 @@ public:
 	OverlapVecVec() { }
 
 	OverlapVecVec(const char *filename) {
-		info("Loading overlaps from \"%s\"", filename);
 		std::ifstream in(filename);
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
-		info("Done loading overlaps from \"%s\"", filename);
 	}
 
 	void write(const char *filename) {
-		info("Writing overlaps to \"%s\"", filename);
 		std::ofstream out(filename);
 		boost::archive::binary_oarchive ar(out);
 		ar << *this;
 		out.close();
 		if (out.bad())
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
-		info("Done writing overlaps to \"%s\"", filename);
 	}
 };

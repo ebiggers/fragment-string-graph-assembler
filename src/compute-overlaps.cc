@@ -308,10 +308,10 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
 	unsigned long num_pairs_considered = 0;
-	typename KmerOccurrenceMap::const_iterator it;
-	for (it = occ_map.begin(); it != occ_map.end(); it++) {
-		overlaps_from_kmer_seed<K>(it->second, bvv, min_overlap_len,
-					   max_edits, ovv, num_overlaps,
+	for (auto kmer_occ_pair : occ_map) {
+		overlaps_from_kmer_seed<K>(kmer_occ_pair.second, bvv,
+					   min_overlap_len, max_edits,
+					   ovv, num_overlaps,
 					   num_pairs_considered);
 	}
 	info("Found %lu overlaps", num_overlaps);
@@ -358,7 +358,9 @@ int main(int argc, char *argv[])
 	if (max_edits != 0)
 		unimplemented();
 
+	info("Loading reads from \"%s\"", argv[0]);
 	BaseVecVec bvv(argv[0]);
+	info("Loaded %zu reads from \"%s\"", bvv.size(), argv[0]);
 	OverlapVecVec ovv;
 
 	if (min_overlap_len < 24)
@@ -372,5 +374,7 @@ int main(int argc, char *argv[])
 	else
 		compute_overlaps<48>(bvv, min_overlap_len, max_edits, ovv);
 
+	info("Writing overlaps to \"%s\"", argv[1]);
 	ovv.write(argv[1]);
+	info("Done writing \"%s\"", argv[1]);
 }
