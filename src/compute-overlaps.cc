@@ -212,17 +212,19 @@ static bool find_overlap(const BaseVecVec & bvv,
 }
 
 template <unsigned K>
-static unsigned long
+static void
 overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			const BaseVecVec &bvv,
 			const unsigned min_overlap_len,
 			const unsigned max_edits,
-			OverlapVecVec &ovv)
+			OverlapVecVec &ovv,
+			unsigned long & num_overlaps,
+			unsigned long & num_pairs_considered)
 {
-	unsigned long num_overlaps = 0;
 	Overlap o;
 	for (size_t i = 0; i < occs.size(); i++) {
 		for (size_t j = i + 1; j < occs.size(); j++) {
+			num_pairs_considered++;
 			KmerOccurrence occ1 = occs[i];
 			KmerOccurrence occ2 = occs[j];
 			if (occ1.is_rc() && !occ2.is_rc())
@@ -241,7 +243,6 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			num_overlaps++;
 		}
 	}
-	return num_overlaps;
 }
 
 template <unsigned K>
@@ -306,18 +307,15 @@ static void compute_overlaps(const BaseVecVec &bvv,
 
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
-	unsigned long num_pairs = 0;
+	unsigned long num_pairs_considered = 0;
 	typename KmerOccurrenceMap::const_iterator it;
 	for (it = occ_map.begin(); it != occ_map.end(); it++) {
-		num_pairs += (it->second.size() * it->second.size() - 1) / 2;
-		num_overlaps += overlaps_from_kmer_seed<K>(it->second,
-							   bvv,
-							   min_overlap_len,
-							   max_edits,
-							   ovv);
+		overlaps_from_kmer_seed<K>(it->second, bvv, min_overlap_len,
+					   max_edits, ovv, num_overlaps,
+					   num_pairs_considered);
 	}
 	info("Found %lu overlaps", num_overlaps);
-	info("Considered %lu read pairs", num_pairs);
+	info("Considered %lu read pairs", num_pairs_considered);
 }
 
 static const char *optstring = "l:e:h";
