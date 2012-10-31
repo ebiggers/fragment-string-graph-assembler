@@ -25,8 +25,10 @@ private:
 				MODULO_NONZERO(_K, BASES_PER_STORAGE);
 
 	static const storage_type PARTIAL_STORAGE_MASK =
-		(static_cast<storage_type>(1) <<
-		 	(BASES_IN_PARTIAL_STORAGE * BITS_PER_BASE)) - 1;
+		(BASES_IN_PARTIAL_STORAGE == BASES_PER_STORAGE) ?
+			std::numeric_limits<storage_type>::max() :
+			(static_cast<storage_type>(1) <<
+				(BASES_IN_PARTIAL_STORAGE * BITS_PER_BASE)) - 1;
 
 	static const size_type FIRST_BASE_SHIFT =
 				(BASES_PER_STORAGE - 1) * BITS_PER_BASE;
