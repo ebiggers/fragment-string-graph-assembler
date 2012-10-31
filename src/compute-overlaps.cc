@@ -6,10 +6,17 @@
 #include <unordered_map>
 #include <ostream>
 
+//
+// Stores the location of a k-mer in the read set.
 class KmerOccurrence {
 private:
+	// Index of the read containing the k-mer sequence
 	unsigned long _read_id	: 32;
+
+	// Position of the k-mer within the read (0-indexed)
 	unsigned long _read_pos	: 31;
+
+	// Whether the canonical k-mer is reverse-complement
 	unsigned long _rc	: 1;
 public:
 
@@ -36,6 +43,12 @@ public:
 	}
 };
 
+//
+// Assert that the bases of the read @bv1 beginning at index @pos1 exactly match
+// the bases of the read @bv2 beginning at index @pos2, for @len bases, where
+// the sequence of read 1 is reverse-complemented iff @is_rc1 is %true and the
+// sequence of read 2 is reverse-complemented iff @is_rc2 is %true.
+//
 static void assert_seed_valid(const BaseVec & bv1,
 			      const BaseVec & bv2,
 			      const unsigned pos1,
@@ -72,6 +85,9 @@ seed_invalid:
 		    pos1, pos2, len, is_rc1, is_rc2);
 }
 
+//
+// Checks to make sure an overlap was correctly computed.
+//
 static void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 				 const unsigned min_overlap_len,
 				 const unsigned max_edits)
@@ -108,6 +124,11 @@ static void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 			  is_rc_1, is_rc_2, "OVERLAP");
 }
 
+//
+// Given a seed (an exactly matching sequence of bases of length @len, allowing
+// for either forward or reverse-complement sequence) in the reads @bv1 and
+// @bv2, extend it as far as possible on the left and right.
+//
 static void extend_seed(const BaseVec & bv1,
 			const BaseVec & bv2,
 			unsigned & pos1,
@@ -116,6 +137,7 @@ static void extend_seed(const BaseVec & bv1,
 			const bool is_rc1,
 			const bool is_rc2)
 {
+	assert_seed_valid(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
 	if (is_rc1 == is_rc2) {
 		unsigned max_left_extend = std::min(pos1, pos2);
 		unsigned left_extend = 0;
@@ -164,6 +186,11 @@ static void extend_seed(const BaseVec & bv1,
 	}
 }
 
+//
+// Looks for an overlap seeded at the k-mers at @occ1 and @occ2.
+//
+// Returns %true and fills in the Overlap @o if a valid overlap is found.
+//
 static bool find_overlap(const BaseVecVec & bvv,
 			 const KmerOccurrence occ1,
 			 const KmerOccurrence occ2,
@@ -174,12 +201,12 @@ static bool find_overlap(const BaseVecVec & bvv,
 {
 	const BaseVec & bv1 = bvv[occ1.get_read_id()];
 	const BaseVec & bv2 = bvv[occ2.get_read_id()];
+	assert(&bv1 != &bv2);
 	unsigned pos1 = occ1.get_read_pos();
 	unsigned pos2 = occ2.get_read_pos();
 	unsigned len = K;
 	const bool is_rc1 = occ1.is_rc();
 	const bool is_rc2 = occ2.is_rc();
-	assert_seed_valid(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
 	extend_seed(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
 	if (len >= min_overlap_len) {
 		unsigned long read_1_beg = pos1;
@@ -211,6 +238,11 @@ static bool find_overlap(const BaseVecVec & bvv,
 	return false;
 }
 
+//
+// Finds all the overlaps that can be seeded at the occurrences of the canonical
+// k-mer that has occurrences in the vector @occs.  Non-duplicate overlaps are
+// added to the vector @ovv.
+//
 template <unsigned K>
 static void
 overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
@@ -245,6 +277,10 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 	}
 }
 
+//
+// Fills in the hash table @occ_map with a list of occurrences of each k-mer
+// that appears in the reads @bvv.
+//
 template <unsigned K>
 static void load_kmer_occurrences(const BaseVecVec &bvv,
 				  std::unordered_map<Kmer<K>,
@@ -289,6 +325,23 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 	     num_kmer_occurrences, K);
 }
 
+//
+// Compute overlaps.
+//
+// @bvv:
+// 	Vector of reads.
+//
+// @min_overlap_len:
+// 	Minimum length for each overlap.
+//
+// @max_edits:
+// 	(Unimplemented)
+//
+// @ovv:
+// 	Vector, indexed by read-id, into which a set of Overlaps for each read
+// 	will be stored.
+//
+// Templatized by K, the length of the k-mer seed used to find overlaps.
 template <unsigned K>
 static void compute_overlaps(const BaseVecVec &bvv, 
 			     const unsigned min_overlap_len,
@@ -297,6 +350,9 @@ static void compute_overlaps(const BaseVecVec &bvv,
 {
 	typedef std::unordered_map<Kmer<K>, std::vector<KmerOccurrence> >
 		KmerOccurrenceMap;
+
+	if (max_edits > 0)
+		unimplemented();
 
 	ovv.clear();
 	ovv.resize(bvv.size());

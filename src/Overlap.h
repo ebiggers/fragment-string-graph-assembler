@@ -59,7 +59,7 @@ public:
 	{
 		os << "Overlap { Read " << o._read_1_idx << ": [" << o._read_1_beg
 		   << ", " << o._read_1_end << "], Read " << o._read_2_idx
-		   << ": [" << o._read_1_beg << ", " << o._read_2_end << "] }";
+		   << ": [" << o._read_2_beg << ", " << o._read_2_end << "] }";
 		return os;
 	}
 
