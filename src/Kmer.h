@@ -88,11 +88,13 @@ public:
 		complement();
 	}
 
-	unsigned char operator[](unsigned idx) const
+	unsigned char operator[](const unsigned idx) const
 	{
-		unsigned slot = NUM_STORAGES - 1 - (idx / BASES_PER_STORAGE);
-		unsigned shift = ((BASES_PER_STORAGE - 1) - (idx % BASES_PER_STORAGE)) *
-				   BITS_PER_BASE;
+		unsigned slot = (idx + BASES_PER_STORAGE - BASES_IN_PARTIAL_STORAGE) /
+				       BASES_PER_STORAGE;
+		unsigned shift = ((BASES_PER_STORAGE - 1) -
+				 ((idx + BASES_PER_STORAGE - BASES_IN_PARTIAL_STORAGE) %
+				 BASES_PER_STORAGE)) * BITS_PER_BASE;
 		return static_cast<unsigned char>((_bases[slot] >> shift) & BASE_MASK);
 	}
 
@@ -106,7 +108,7 @@ public:
 
 	friend bool operator<(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
-		for (size_type i = 0; i < _K; i++)
+		for (size_type i = 0; i < NUM_STORAGES; i++)
 			if (kmer_1._bases[i] < kmer_2._bases[i])
 				return true;
 		return false;

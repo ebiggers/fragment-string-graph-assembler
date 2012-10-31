@@ -68,8 +68,8 @@ long long parse_long(const char *optstr, const char *argument,
 	if (tmp == optstr || *tmp)
 		fatal_error("Error parsing \"%s\": not an integer", optstr);
 	if (n < min)
-		fatal_error("Expected number >= %ld for argument %s", argument);
+		fatal_error("Expected number >= %ld for argument %s", min, argument);
 	if (n > max)
-		fatal_error("Expected number <= %ld for argument %s", argument);
+		fatal_error("Expected number <= %ld for argument %s", max, argument);
 	return n;
 }

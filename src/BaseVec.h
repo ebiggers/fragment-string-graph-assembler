@@ -5,6 +5,7 @@
 
 #include <boost/serialization/split_member.hpp>
 #include <string>
+#include <ostream>
 
 class BaseVec {
 public:
@@ -80,6 +81,13 @@ public:
 		resize(len);
 		for (size_type i = 0; i < len; i++)
 			set(i, BaseUtils::ascii_to_bin(text[i]));
+	}
+
+	friend std::ostream & operator<<(std::ostream & os, const BaseVec & bv)
+	{
+		for (size_t i = 0; i < bv.size(); i++)
+			os << BaseUtils::bin_to_ascii(bv[i]);
+		return os;
 	}
 
 	BaseVec()

@@ -4,6 +4,7 @@
 #include "Kmer.h"
 
 #include <unordered_map>
+#include <ostream>
 
 class KmerOccurrence {
 private:
@@ -26,6 +27,12 @@ public:
 
 	bool is_rc() const {
 		return _rc;
+	}
+	friend std::ostream & operator<<(std::ostream & os, const KmerOccurrence & occ)
+	{
+		return os << "KmerOccurrence { _read_id: " << occ._read_id << 
+			", _read_pos: " << occ._read_pos <<
+			", _rc: " <<occ._rc << "}";
 	}
 };
 
@@ -52,6 +59,8 @@ static void assert_seed_valid(const BaseVec & bv1, const BaseVec & bv2,
 	}
 	return;
 seed_invalid:
+	std::cerr << bv1 << std::endl;
+	std::cerr << bv2 << std::endl;
 	fatal_error("SEED INVALID (pos1 = %u, pos2 = %u, len = %u, "
 		    "is_rc1 = %d, is_rc2 = %d)",
 		    pos1, pos2, len, is_rc1, is_rc2);
@@ -153,6 +162,12 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 		for (size_t j = K - 1; j < bv.size(); j++) {
 			fwd_kmer.push_back(bv[j]);
 			rev_kmer.push_front(bv[j] ^ 3);
+
+			for (size_t k = 0; k < K - 1; k++)
+				assert(fwd_kmer[k] == bv[k + j - (K - 1)]);
+			for (size_t k = 0; k < K - 1; k++)
+				assert(rev_kmer[K - 1 - k] == (3 ^ bv[k + j - (K - 1)]));
+
 			if (fwd_kmer < rev_kmer) {
 				kmer = &fwd_kmer;
 				is_rc = false;
@@ -164,10 +179,34 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 			num_kmer_occurrences++;
 		}
 	}
-	info("Loaded %lu %lu-mer occurrences into hash map",
+	info("Loaded %lu %u-mer occurrences into hash map",
 	     num_kmer_occurrences, K);
 }
 
+template <unsigned K>
+static unsigned long
+overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
+			const BaseVecVec &bvv,
+			const unsigned min_overlap_len,
+			const unsigned max_edits,
+			OverlapVecVec &ovv)
+{
+	unsigned long num_overlaps = 0;
+	Overlap o;
+	for (size_t i = 0; i < occs.size(); i++) {
+		for (size_t j = i + 1; j < occs.size(); j++) {
+			if (find_overlap(bvv, occs[i], occs[j],
+				         min_overlap_len, max_edits, K, o)
+			    //&& ovv[i].find(o) == ovv[i].end())
+			)
+			{
+				num_overlaps++;
+				//ovv[i].insert(o);
+			}
+		}
+	}
+	return num_overlaps;
+}
 
 template <unsigned K>
 static void compute_overlaps(const BaseVecVec &bvv, 
@@ -175,8 +214,8 @@ static void compute_overlaps(const BaseVecVec &bvv,
 			     const unsigned max_edits,
 			     OverlapVecVec &ovv)
 {
-	typedef std::vector<KmerOccurrence> KmerOccurrenceVec;
-	typedef std::unordered_map<Kmer<K>, KmerOccurrenceVec > KmerOccurrenceMap;
+	typedef std::unordered_map<Kmer<K>, std::vector<KmerOccurrence> >
+		KmerOccurrenceMap;
 
 	ovv.clear();
 	ovv.resize(bvv.size());
@@ -185,31 +224,21 @@ static void compute_overlaps(const BaseVecVec &bvv,
 
 	load_kmer_occurrences(bvv, occ_map);
 
-	Overlap o;
 	unsigned long num_overlaps = 0;
-	for (typename KmerOccurrenceMap::const_iterator it = occ_map.begin();
-	     it != occ_map.end(); it++)
-	{
-		const KmerOccurrenceVec & occs = it->second;
-		for (size_t i = 0; i < occs.size(); i++) {
-			for (size_t j = i + 1; j < occs.size(); j++) {
-				if (find_overlap(bvv, occs[i], occs[j],
-						 min_overlap_len, max_edits, K, o)
-				    && std::find(ovv[i].begin(), ovv[i].end(), o)
-				      == ovv[i].end())
-				{
-					num_overlaps++;
-					ovv[i].insert(o);
-				}
-			}
-		}
+	typename KmerOccurrenceMap::const_iterator it;
+	for (it = occ_map.begin(); it != occ_map.end(); it++) {
+		num_overlaps += overlaps_from_kmer_seed<K>(it->second,
+							   bvv,
+							   min_overlap_len,
+							   max_edits,
+							   ovv);
 	}
 	info("Found %lu overlaps", num_overlaps);
 }
 
 static const char *optstring = "l:e:h";
 static const struct option longopts[] = {
-	{"overlap-len", required_argument, NULL, 'l'},
+	{"min-overlap-len", required_argument, NULL, 'l'},
 	{"max-edits",   required_argument, NULL, 'e'},
 	END_LONGOPTS
 };
@@ -217,7 +246,7 @@ static const struct option longopts[] = {
 DEFINE_USAGE(
 "Usage: compute-overlaps BVV_FILE OVERLAPS_FILE\n"
 "\n"
-"  -l, --overlap-len=LEN\n"
+"  -l, --min-overlap-len=LEN\n"
 "  -e, --max-edits=MAX_EDITS\n"
 "  -h, --help\n"
 );
@@ -225,13 +254,13 @@ DEFINE_USAGE(
 int main(int argc, char *argv[])
 {
 	int c;
-	unsigned overlap_len = 25;
+	unsigned min_overlap_len = 25;
 	unsigned max_edits = 0;
 	for_opt(c) {
 		switch (c) {
 		case 'l':
-			overlap_len = parse_long(optarg, "--overlap-len",
-						 1, UINT_MAX);
+			min_overlap_len = parse_long(optarg, "--min-overlap-len",
+						     16, UINT_MAX);
 			break;
 		case 'e':
 			max_edits = parse_long(optarg, "--max-edits",
@@ -249,6 +278,17 @@ int main(int argc, char *argv[])
 
 	BaseVecVec bvv(argv[0]);
 	OverlapVecVec ovv;
-	compute_overlaps<24>(bvv, overlap_len, max_edits, ovv);
+
+	if (min_overlap_len < 24)
+		compute_overlaps<16>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 32)
+		compute_overlaps<24>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 40)
+		compute_overlaps<32>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 48)
+		compute_overlaps<40>(bvv, min_overlap_len, max_edits, ovv);
+	else
+		compute_overlaps<48>(bvv, min_overlap_len, max_edits, ovv);
+
 	ovv.write(argv[1]);
 }

@@ -41,7 +41,7 @@ extern long long parse_long(const char *optstr, const char *argument,
 
 
 #define DIV_ROUND_UP(numerator, denominator) \
-	(((numerator) + (denominator) + 1) / (denominator))
+	(((numerator) + (denominator) - 1) / (denominator))
 
 #define MODULO_NONZERO(numerator, denominator) \
 	(((numerator) % (denominator)) ? ((numerator) % (denominator)) : (denominator))
