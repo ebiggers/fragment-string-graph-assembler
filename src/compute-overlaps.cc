@@ -101,6 +101,8 @@ static bool find_overlap(const BaseVecVec & bvv,
 	 *          --------------->
 	 *  <-------------
 	 */
+	cout << occ1 << endl;
+	cout << occ2 << endl;
 	const BaseVec & bv1 = bvv[occ1.get_read_id()];
 	const BaseVec & bv2 = bvv[occ2.get_read_id()];
 	unsigned pos1 = occ1.get_read_pos();
