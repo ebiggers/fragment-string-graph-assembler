@@ -56,9 +56,9 @@ public:
 
 	friend std::ostream & operator<<(std::ostream & os, const Overlap & o)
 	{
-		os << "Overlap : Read " << o._read_1_idx << " [" << o._read_1_beg
+		os << "Overlap { Read " << o._read_1_idx << ": [" << o._read_1_beg
 		   << ", " << o._read_1_end << "], Read " << o._read_2_idx
-		   << " [" << o._read_1_beg << ", " << o._read_2_end << "]";
+		   << ": [" << o._read_1_beg << ", " << o._read_2_end << "] }";
 		return os;
 	}
 
@@ -74,8 +74,10 @@ public:
 };
 
 class OverlapVecVec : public std::vector<std::set<Overlap> > {
+public:
+	typedef std::set<Overlap> OverlapSet;
 private:
-	typedef std::vector<std::set<Overlap> > BaseT;
+	typedef std::vector<OverlapSet > BaseT;
 
 	friend class boost::serialization::access;
 

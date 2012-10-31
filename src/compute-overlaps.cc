@@ -125,8 +125,8 @@ static void extend_seed(const BaseVec & bv1,
 			else
 				break;
 		}
-		unsigned max_right_extend = std::min((bv1.size() - 1) - pos1,
-						     (bv2.size() - 1) - pos2);
+		unsigned max_right_extend = std::min(bv1.size() - (pos1 + len),
+						     bv2.size() - (pos2 + len));
 		unsigned right_extend = 0;
 		while (right_extend < max_right_extend) {
 			if (bv1[pos1 + len + right_extend] == bv2[pos2 + len + right_extend])
@@ -140,7 +140,7 @@ static void extend_seed(const BaseVec & bv1,
 	} else {
 		assert(!is_rc1 && is_rc2);
 
-		unsigned max_left_extend = std::min(pos1, (bv2.size() - 1) - pos2);
+		unsigned max_left_extend = std::min(pos1, bv2.size() - (pos2 + len));
 		unsigned left_extend = 0;
 		while (left_extend < max_left_extend) {
 			if (bv1[pos1 - (left_extend + 1)] ==
@@ -149,7 +149,7 @@ static void extend_seed(const BaseVec & bv1,
 			else
 				break;
 		}
-		unsigned max_right_extend = std::min((bv1.size() - 1) - pos1, pos2);
+		unsigned max_right_extend = std::min(bv1.size() - (pos1 + len), pos2);
 		unsigned right_extend = 0;
 		while (right_extend < max_right_extend) {
 			if (bv1[pos1 + len + right_extend] ==
@@ -227,18 +227,18 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			KmerOccurrence occ2 = occs[j];
 			if (occ1.is_rc() && !occ2.is_rc())
 				std::swap(occ1, occ2);
-			if (find_overlap(bvv, occ1, occ2,
-				         min_overlap_len, max_edits, K, o)
-			    //&& ovv[i].find(o) == ovv[i].end())
-			)
-			{
-				std::cout << o << std::endl;
-				info("Validating overlap");
-				assert_overlap_valid(o, bvv,
-						     min_overlap_len, max_edits);
-				num_overlaps++;
-				//ovv[i].insert(o);
-			}
+			if (!find_overlap(bvv, occ1, occ2,
+				          min_overlap_len, max_edits, K, o))
+				continue;
+
+			OverlapVecVec::OverlapSet & os = ovv[occ1.get_read_id()];
+			if (os.find(o) != os.end())
+				continue;
+
+			assert_overlap_valid(o, bvv,
+					     min_overlap_len, max_edits);
+			os.insert(o);
+			num_overlaps++;
 		}
 	}
 	return num_overlaps;
