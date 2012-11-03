@@ -1,11 +1,6 @@
 #include "BaseVec.h"
-#include "util.h"
-
-#include <iostream>
-#include <fstream>
 #include <vector>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 
 class GraphEdge {
@@ -113,12 +108,7 @@ public:
 		_vertices.resize(num_reads * 2);
 	}
 
-	Graph(const char *filename)
-	{
-		std::ifstream in(filename);
-		boost::archive::binary_iarchive ar(in);
-		ar >> *this;
-	}
+	Graph(const char *filename);
 
 	enum {
 		READ_BEGIN = 0,
@@ -135,31 +125,9 @@ public:
 		return _vertices;
 	}
 
-	void write(const char *filename) const
-	{
-		std::ofstream out(filename);
-		boost::archive::binary_oarchive ar(out);
-		ar << *this;
-		out.close();
-		if (out.bad())
-			fatal_error_with_errno("Error writing to \"%s\"", filename);
-	}
-
-	void print()
-	{
-		for (size_t i = 0; i < _vertices.size(); i++) {
-			std::cout << "[Vertex " << i << "]" << '\n';
-			const GraphVertex & v = _vertices[i];
-			const std::vector<unsigned long> & edge_indices = v.edge_indices();
-			for (size_t j = 0; j < edge_indices.size(); j++) {
-				const GraphEdge & e = _edges[edge_indices[j]];
-				std::cout << "Vertex " << e.get_v1_idx() << " => "
-					  << "Vertex " << e.get_v2_idx()
-					  << " labeled by " << e.get_seq() << '\n';
-			}
-		}
-		std::cout << std::flush;
-	}
+	void write(const char *filename) const;
+	void print(std::ostream & os) const;
+	void print_dot(std::ostream & os) const;
 
 	void add_edge(const unsigned long start_read_id, const int start_read_end,
 		      const unsigned long end_read_id, const int end_read_end,

@@ -18,6 +18,7 @@ libassemble_a_SOURCES =  \
 	BaseVec.h	\
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
+	Graph.cc	\
 	compiler.h	\
 	util.cc		\
 	util.h
