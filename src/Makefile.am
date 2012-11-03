@@ -8,7 +8,8 @@ bin_PROGRAMS =			\
 	print-overlaps		\
 	remove-contained-reads	\
 	build-graph		\
-	print-graph
+	print-graph		\
+	transitive-reduction
 
 noinst_LIBRARIES = libassemble.a
 
@@ -31,3 +32,4 @@ print_overlaps_SOURCES         = print-overlaps.cc
 remove_contained_reads_SOURCES = remove-contained-reads.cc
 build_graph_SOURCES            = build-graph.cc
 print_graph_SOURCES            = print-graph.cc
+transitive_reduction_SOURCES   = transitive-reduction.cc

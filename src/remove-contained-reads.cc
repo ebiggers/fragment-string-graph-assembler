@@ -22,6 +22,8 @@ int main(int argc, char **argv)
 	info("Loading overlaps from \"%s\"", overlaps_file);
 	OverlapVecVec ovv(overlaps_file);
 
+	assert(bvv.size() == ovv.size());
+
 	std::vector<bool> read_contained(bvv.size(), false);
 
 	info("Searching for overlaps indicating contained reads");
@@ -98,6 +100,9 @@ int main(int argc, char **argv)
 	info("Deleted %lu of %lu overlaps",
 	     num_overlaps_deleted, num_overlaps);
 	ovv.resize(j);
+
+	assert(ovv.size() == uncontained_bvv.size());
+
 	info("Writing uncontained reads to \"%s\"", uncontaired_reads_file);
 	uncontained_bvv.write(uncontaired_reads_file);
 	info("Writing uncontained overlaps to \"%s\"", uncontained_overlaps_file);

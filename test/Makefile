@@ -1,4 +1,4 @@
-all:out.graph
+all:out.reduced.graph
 
 SAMPLE_SIZE = 5000
 
@@ -35,6 +35,9 @@ out.dot:out.graph
 
 out.graph:reads.uncontained.bvv out.uncontained.overlaps
 	build-graph $+ $@
+
+out.reduced.graph:out.graph
+	transitive-reduction $+ $@
 
 clean:
 	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads

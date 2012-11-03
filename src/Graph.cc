@@ -37,7 +37,7 @@ void Graph::print(std::ostream & os) const
 			char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
 			os << read_1_idx << '.' << read_1_dir << " -> "
 			   << read_2_idx << '.' << read_2_dir
-			   << " [" << e.get_seq() << "]\n";
+			   << '\t' << e.get_seq() << '\n';
 		}
 	}
 	os << std::flush;

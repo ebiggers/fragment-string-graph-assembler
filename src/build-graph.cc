@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
 	OverlapVecVec ovv(overlaps_file);
 	info("Done loading overlaps");
 
+	assert(ovv.size() == bvv.size());
+
 	Graph graph(bvv.size());
 
 	info("Building string graph from overlaps");
