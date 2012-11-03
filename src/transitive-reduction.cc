@@ -35,62 +35,122 @@ static void transitive_reduction(Graph & graph)
 	static const unsigned char INPLAY = 1;
 	static const unsigned char ELIMINATED = 2;
 
+	// Per-vertex mark.  Initially set to VACANT.
 	std::vector<unsigned char> vertex_marks(graph.num_vertices(), VACANT);
+
+	// Per-edge boolean indicating whether each edge is to be deleted as
+	// part of the transitive reduction or not.
 	std::vector<bool> reduce_edge(graph.num_edges(), false);
 
+	// Iterate through every vertex @v in the graph that has outgoing edges.
 	for (size_t i = 0; i < vertices.size(); i++) {
 		GraphVertex & v = vertices[i];
 		const std::vector<unsigned long> & edge_indices = v.edge_indices();
 		if (edge_indices.size() == 0)
 			continue;
+
+		// Mark each vertex adjacent to @v as INPLAY.
 		for (size_t j = 0; j < edge_indices.size(); j++) {
 			GraphEdge & e = edges[edge_indices[j]];
 			assert(e.get_v1_idx() == i);
 			assert(e.get_v2_idx() != i);
 			vertex_marks[e.get_v2_idx()] = INPLAY;
 		}
+
+		// Length of the longest sequence label on the edges leaving
+		// vertex @v.
 		size_t longest = edges[edge_indices.back()].get_seq().size();
+
+		// For each outgoing edge from v => w in order of labeled
+		// sequence length, consider each vertex w that is still marked
+		// INPLAY.
 		for (size_t j = 0; j < edge_indices.size(); j++) {
 			GraphEdge & e = edges[edge_indices[j]];
-			unsigned long v2_idx = e.get_v2_idx();
-			if (vertex_marks[v2_idx] == INPLAY) {
-				GraphVertex & v2 = vertices[v2_idx];
-				const std::vector<unsigned long> & v2_edge_indices = v2.edge_indices();
-				for (size_t k = 0; k < v2_edge_indices.size(); k++) {
-					GraphEdge & e = edges[v2_edge_indices[k]];
-					if (e.get_seq().size() <= longest) {
-						if (vertex_marks[v2_idx] == INPLAY) {
-							vertex_marks[v2_idx] = ELIMINATED;
+			unsigned long w_idx = e.get_v2_idx();
+			if (vertex_marks[w_idx] == INPLAY) {
+				// e must be an irreducible edge if w is still
+				// marked INPLAY at this point, since all
+				// shorter edges were already considered.
+				//
+				// Now, consider the edges leaving vertex w.
+				// Each such edge that goes to a vertex marked
+				// INPLAY must be directly reachable from v, and
+				// therefore the edge must be removed.
+				GraphVertex & w = vertices[w_idx];
+				const std::vector<unsigned long> & w_edge_indices = w.edge_indices();
+				for (size_t k = 0; k < w_edge_indices.size(); k++) {
+					GraphEdge & e2 = edges[w_edge_indices[k]];
+					if (e2.get_seq().size() <= longest) {
+						if (vertex_marks[w_idx] == INPLAY) {
+							vertex_marks[w_idx] = ELIMINATED;
 						}
 					}
 				}
 			}
 		}
 
+		#if 0
 		for (size_t j = 0; j < edge_indices.size(); j++) {
 			GraphEdge & e = edges[edge_indices[j]];
-			unsigned long v2_idx = e.get_v2_idx();
-			GraphVertex & v2 = vertices[v2_idx];
-			const std::vector<unsigned long> & v2_edge_indices = v2.edge_indices();
-			for (size_t k = 0; k < v2_edge_indices.size(); k++) {
+			unsigned long w_idx = e.get_v2_idx();
+			GraphVertex & w = vertices[w_idx];
+			const std::vector<unsigned long> & w_edge_indices = w.edge_indices();
+			for (size_t k = 0; k < w_edge_indices.size(); k++) {
 				if (k == 0) { // TODO: fuzz parameter
-					if (vertex_marks[v2_idx] == INPLAY) {
-						vertex_marks[v2_idx] = ELIMINATED;
+					if (vertex_marks[w_idx] == INPLAY) {
+						vertex_marks[w_idx] = ELIMINATED;
 					}
 				}
 			}
 		}
+		#endif
 
+		// Once again, go through the outgoing edges from v.  For each
+		// vertex marked ELIMINATED, mark the corresponding edge for
+		// reduction.  Return both INPLAY and ELIMINATED vertices to
+		// VACANT status.
 		for (size_t j = 0; j < edge_indices.size(); j++) {
 			GraphEdge & e = edges[edge_indices[j]];
-			unsigned long v2_idx = e.get_v2_idx();
-			if (vertex_marks[v2_idx] == ELIMINATED) {
+			unsigned long w_idx = e.get_v2_idx();
+			if (vertex_marks[w_idx] == ELIMINATED) {
 				reduce_edge[edge_indices[j]] = true;
 			}
-			vertex_marks[v2_idx] = VACANT;
+			vertex_marks[w_idx] = VACANT;
 		}
 	}
-	info("Done performing transitive reduction");
+
+	info("Transitive reduction algorithm complete.  Now updating the strign graph");
+
+	// Modify the graph.
+	std::vector<unsigned long> new_edge_indices(edges.size());
+	size_t i, j;
+	for (i = 0, j = 0; i < edges.size(); i++) {
+		if (!reduce_edge[i]) {
+			new_edge_indices[i] = j;
+			edges[j] = edges[i];
+			j++;
+		} else {
+			new_edge_indices[i] = std::numeric_limits<unsigned long>::max();
+		}
+	}
+	size_t num_removed_edges = edges.size() - j;
+	edges.resize(j);
+	info("Removing %zu of %zu edges (%.2f%%)",
+	     num_removed_edges, edges.size(),
+	     edges.size() ? 100 * double(num_removed_edges) / edges.size() : 0.0);
+	for (GraphVertex & v : vertices) {
+		std::vector<unsigned long> & edge_indices = v.edge_indices();
+		for (i = 0, j = 0; i < edge_indices.size(); i++) {
+			unsigned long new_edge_idx = new_edge_indices[edge_indices[i]];
+			if (new_edge_idx != std::numeric_limits<unsigned long>::max()) {
+				edge_indices[j] = edge_indices[i];
+				j++;
+			}
+		}
+		edge_indices.resize(j);
+	}
+
+	info("Done removing transitive edges");
 }
 
 int main(int argc, char **argv)
