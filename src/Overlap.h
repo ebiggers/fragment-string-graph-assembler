@@ -44,6 +44,13 @@ public:
 		_read_2_end = read_2_end;
 	}
 
+	void set_indices(unsigned long read_1_idx,
+			 unsigned long read_2_idx)
+	{
+		_read_1_idx = read_1_idx;
+		_read_2_idx = read_2_idx;
+	}
+
 	void get(unsigned long & read_1_idx,
 		 unsigned long & read_1_beg,
 		 unsigned long & read_1_end,
@@ -57,6 +64,13 @@ public:
 		read_2_idx = _read_2_idx;
 		read_2_beg = _read_2_beg;
 		read_2_end = _read_2_end;
+	}
+
+	void get_indices(unsigned long & read_1_idx,
+			 unsigned long & read_2_idx) const
+	{
+		read_1_idx = _read_1_idx;
+		read_2_idx = _read_2_idx;
 	}
 
 	friend std::ostream & operator<<(std::ostream & os, const Overlap & o)

@@ -15,6 +15,14 @@ reads.bvv:pirs_reads_100_180_1.fq
 out.overlaps:reads.bvv
 	compute-overlaps $+ $@
 
+.remove-contained-reads:reads.bvv out.overlaps
+	remove-contained-reads reads.bvv reads.uncontained.bvv\
+			       out.overlaps out.uncontained.overlaps
+
+reads.uncontained.bvv:.remove-contained-reads
+
+out.uncontained.overlaps:.remove-contained-reads
+
 out.dot:out.graph
 	print-graph --dot $+ > $@
 
@@ -24,8 +32,8 @@ out.dot:out.graph
 #out.pdf:out.dot
 	#dot -Tpdf $+ -o$@
 
-out.graph:reads.bvv out.overlaps
+out.graph:reads.uncontained.bvv out.uncontained.overlaps
 	build-graph $+ $@
 
 clean:
-	rm -f reads.* out.* genome.fa.* pirs_reads*
+	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads
