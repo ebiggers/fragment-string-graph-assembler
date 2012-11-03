@@ -1,9 +1,12 @@
-#include <vector>
+#include "BaseVec.h"
+#include "util.h"
 
+#include <iostream>
+#include <fstream>
+#include <vector>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#include "util.h"
 
 class GraphEdge {
 private:
@@ -28,6 +31,16 @@ public:
 	const BaseVec & get_seq() const
 	{
 		return _seq;
+	}
+
+	unsigned get_v1_idx() const
+	{
+		return _v1_idx;
+	}
+
+	unsigned get_v2_idx() const
+	{
+		return _v2_idx;
 	}
 
 	void set_v1_idx(const unsigned long v1_idx)
@@ -64,8 +77,19 @@ public:
 		_edge_indices.push_back(edge_idx);
 	}
 
-	size_t out_degree() const {
+	size_t out_degree() const
+	{
 		return _edge_indices.size();
+	}
+
+	const std::vector<unsigned long> & edge_indices() const
+	{
+		return _edge_indices;
+	}
+
+	std::vector<unsigned long> & edge_indices()
+	{
+		return _edge_indices;
 	}
 };
 
@@ -101,6 +125,15 @@ public:
 		READ_END = 1
 	};
 
+	std::vector<GraphEdge> & edges()
+	{
+		return _edges;
+	}
+
+	std::vector<GraphVertex> & vertices()
+	{
+		return _vertices;
+	}
 
 	void write(const char *filename) const
 	{
@@ -110,6 +143,22 @@ public:
 		out.close();
 		if (out.bad())
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
+	}
+
+	void print()
+	{
+		for (size_t i = 0; i < _vertices.size(); i++) {
+			std::cout << "[Vertex " << i << "]" << '\n';
+			const GraphVertex & v = _vertices[i];
+			const std::vector<unsigned long> & edge_indices = v.edge_indices();
+			for (size_t j = 0; j < edge_indices.size(); j++) {
+				const GraphEdge & e = _edges[edge_indices[j]];
+				std::cout << "Vertex " << e.get_v1_idx() << " => "
+					  << "Vertex " << e.get_v2_idx()
+					  << " labeled by " << e.get_seq() << '\n';
+			}
+		}
+		std::cout << std::flush;
 	}
 
 	void add_edge(const unsigned long start_read_id, const int start_read_end,

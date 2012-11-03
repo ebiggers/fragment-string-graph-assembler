@@ -6,7 +6,8 @@ bin_PROGRAMS =			\
 	convert-reads		\
 	compute-overlaps	\
 	print-overlaps		\
-	build-graph
+	build-graph		\
+	print-graph
 
 noinst_LIBRARIES = libassemble.a
 
@@ -25,3 +26,4 @@ convert_reads_SOURCES =	convert-reads.cc
 compute_overlaps_SOURCES = compute-overlaps.cc
 print_overlaps_SOURCES = print-overlaps.cc
 build_graph_SOURCES = build-graph.cc
+print_graph_SOURCES = print-graph.cc
