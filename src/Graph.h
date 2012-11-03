@@ -2,6 +2,8 @@
 #include <vector>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
+#include <ostream>
+
 
 class GraphEdge {
 private:
@@ -85,6 +87,14 @@ public:
 	std::vector<unsigned long> & edge_indices()
 	{
 		return _edge_indices;
+	}
+
+	friend std::ostream & operator<<(std::ostream & os, const GraphVertex & v)
+	{
+		os << "GraphVertex {_edge_indices = [";
+		for (unsigned long idx : v.edge_indices())
+			os << idx << ", ";
+		return os << "] }";
 	}
 };
 
