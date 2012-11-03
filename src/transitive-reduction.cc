@@ -133,18 +133,19 @@ static void transitive_reduction(Graph & graph)
 			new_edge_indices[i] = std::numeric_limits<unsigned long>::max();
 		}
 	}
-	size_t num_removed_edges = edges.size() - j;
+	size_t num_original_edges = edges.size();
+	size_t num_removed_edges = num_original_edges - j;
 	edges.resize(j);
+
 	info("Removing %zu of %zu edges (%.2f%%)",
-	     num_removed_edges, edges.size(),
-	     edges.size() ? 100 * double(num_removed_edges) / edges.size() : 0.0);
+	     num_removed_edges, num_original_edges,
+	     edges.size() ? 100 * double(num_removed_edges) / num_original_edges : 0.0);
 	for (GraphVertex & v : vertices) {
 		std::vector<unsigned long> & edge_indices = v.edge_indices();
 		for (i = 0, j = 0; i < edge_indices.size(); i++) {
 			unsigned long new_edge_idx = new_edge_indices[edge_indices[i]];
 			if (new_edge_idx != std::numeric_limits<unsigned long>::max()) {
-				edge_indices[j] = edge_indices[i];
-				j++;
+				edge_indices[j++] = new_edge_idx;
 			}
 		}
 		edge_indices.resize(j);
