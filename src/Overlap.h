@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include "util.h"
+#include <assert.h>
 
 class Overlap {
 private:
@@ -32,6 +33,9 @@ public:
 		 unsigned long read_2_beg,
 		 unsigned long read_2_end)
 	{
+		assert(read_1_end > read_1_beg ||
+		       read_2_end > read_2_beg);
+
 		_read_1_idx = read_1_idx;
 		_read_1_beg = read_1_beg;
 		_read_1_end = read_1_end;
@@ -90,13 +94,15 @@ private:
 public:
 	OverlapVecVec() { }
 
-	OverlapVecVec(const char *filename) {
+	OverlapVecVec(const char *filename)
+	{
 		std::ifstream in(filename);
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
 	}
 
-	void write(const char *filename) {
+	void write(const char *filename)
+	{
 		std::ofstream out(filename);
 		boost::archive::binary_oarchive ar(out);
 		ar << *this;

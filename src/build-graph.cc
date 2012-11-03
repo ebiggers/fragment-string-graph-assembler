@@ -1,49 +1,10 @@
 #include "Overlap.h"
 #include "BaseVecVec.h"
-#include "util.h"
+#include "Graph.h"
 
 DEFINE_USAGE(
 "Usage: build-graph READS_FILE OVERLAPS_FILE Graph_FILE\n"
 );
-
-class GraphEdge {
-private:
-	unsigned long vertex_1_id : 32;
-	unsigned long vertex_2_id : 32;
-	BaseVec sequence;
-public:
-};
-
-class GraphVertex {
-private:
-	std::vector<GraphEdge> edges;
-public:
-};
-
-class Graph {
-private:
-	std::vector<GraphVertex> vertices;
-public:
-	enum {
-		READ_BEGIN,
-		READ_END
-	};
-
-	void write(const char *filename) const
-	{
-		unimplemented();
-	}
-
-	void add_edge(const unsigned long start_read_id, const int start_read_end,
-		      const unsigned long end_read_id, const int end_read_end,
-		      const BaseVec & bv,
-		      const unsigned long beg, const unsigned long end)
-	{
-		unimplemented();
-	}
-};
-
-typedef std::vector<GraphVertex> graph;
 
 static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 				  Graph & graph)
@@ -54,58 +15,97 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 	unsigned long g_idx;
 	unsigned long g_beg;
 	unsigned long g_end;
+
+	//std::cout << o << std::endl;
+
 	o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end);
 
 	const BaseVec & f = bvv[f_idx];
 	const BaseVec & g = bvv[g_idx];
+
+	// Check if this is a contained overlap
+	if ((f_beg == 0 && f_end == f.size() - 1)
+	    || (f_beg == f.size() - 1 && f_end == 0)
+	    || (g_beg == 0 && g_end == g.size() - 1)
+	    || (g_beg == g.size() - 1 && g_end == 0))
+		return;
 
 	if (f_beg > f_end) {
 		std::swap(f_idx, g_idx);
 		std::swap(f_beg, g_beg);
 		std::swap(f_end, g_end);
 	}
-	std::cout << o << std::endl;
 	if (f_beg > 0) {
 		if (g_beg < g_end) {
+			/*
+			 *  f.B --------------> f.E
+			 *         g.B ----------------> g.E
+			 *
+			 *  Add g.B => f.B, f.E => g.E
+			 *
+			 */
 
 			graph.add_edge(g_idx, Graph::READ_BEGIN,
 				       f_idx, Graph::READ_BEGIN,
-				       f, f_beg, 0);
+				       f, f_beg - 1, 0);
 
 			graph.add_edge(f_idx, Graph::READ_END,
 			               g_idx, Graph::READ_END,
-				       g, g_end, g.size() - 1);
+				       g, g_end + 1, g.size() - 1);
 		} else {
+
+			/*
+			 *  f.B --------------> f.E
+			 *         g.E <---------------  g.B
+			 *
+			 *  Add g.E => f.B, f.E => g.B
+			 *
+			 */
 
 			graph.add_edge(g_idx, Graph::READ_END,
 				       f_idx, Graph::READ_BEGIN,
-				       f, f_beg, 0);
+				       f, f_beg - 1, 0);
 
 			graph.add_edge(f_idx, Graph::READ_END,
 			               g_idx, Graph::READ_BEGIN,
-				       g, g_end, 0);
+				       g, g_end - 1, 0);
 		}
 	} else {
 		if (g_beg < g_end) {
 
+			/*
+			 *        f.B ---------------> f.E
+			 * g.B --------------> g.E
+			 *
+			 *  Add f.B => g.B, g.E => f.E
+			 *
+			 */
+
+
 			graph.add_edge(f_idx, Graph::READ_BEGIN,
 				       g_idx, Graph::READ_BEGIN,
-				       g, g_beg, 0);
+				       g, g_beg - 1, 0);
 
 			graph.add_edge(g_idx, Graph::READ_END,
 			               f_idx, Graph::READ_END,
-				       f, f_end, f.size() - 1);
-
+				       f, f_end + 1, f.size() - 1);
 		} else {
+
+			/*
+			 *        f.B ---------------> f.E
+			 * g.E <-------------- g.B
+			 *
+			 *  Add f.B => g.E, g.B => f.E
+			 *
+			 */
 
 			graph.add_edge(f_idx, Graph::READ_BEGIN,
 				       g_idx, Graph::READ_END,
-				       g, g.size() - 1, g_beg);
+				       g, g_beg + 1, g.size() - 1);
 
 			graph.add_edge(g_idx, Graph::READ_BEGIN,
 			               f_idx, Graph::READ_END,
-				       f, f_end, f.size() - 1);
-
+				       f, f_end + 1, f.size() - 1);
 		}
 	}
 }
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 	OverlapVecVec ovv(overlaps_file);
 	info("Done loading overlaps");
 
-	Graph graph;
+	Graph graph(bvv.size());
 
 	info("Building graph");
 	build_graph(bvv, ovv, graph);

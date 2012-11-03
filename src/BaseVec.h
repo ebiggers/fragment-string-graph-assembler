@@ -6,6 +6,7 @@
 #include <boost/serialization/split_member.hpp>
 #include <string>
 #include <ostream>
+#include <assert.h>
 
 class BaseVec {
 public:
@@ -30,6 +31,7 @@ public:
 
 	unsigned char operator[](unsigned idx) const
 	{
+		assert2(idx < _size);
 		size_type slot = idx / BASES_PER_STORAGE_TYPE;
 		size_type offset = (idx % BASES_PER_STORAGE_TYPE) * BITS_PER_BASE;
 		return (_bases[slot] >> offset) & BASE_MASK;
@@ -37,6 +39,8 @@ public:
 
 	void set(size_type idx, unsigned char base)
 	{
+		assert2(base < 4);
+		assert2(idx < _size);
 		size_type slot = idx / BASES_PER_STORAGE_TYPE;
 		size_type offset = (idx % BASES_PER_STORAGE_TYPE) *
 				    BITS_PER_BASE;
@@ -44,6 +48,7 @@ public:
 		v &= ~(BASE_MASK << offset);
 		v |= static_cast<storage_type>(base) << offset;
 		_bases[slot] = v;
+		assert2((*this)[idx] == base);
 	}
 
 	friend class boost::serialization::access;

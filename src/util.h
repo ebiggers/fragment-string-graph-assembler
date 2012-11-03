@@ -39,6 +39,8 @@ static void usage() \
 extern long long parse_long(const char *optstr, const char *argument,
 			    long long min = INT_MIN, long long max = INT_MAX);
 
+#define assert2 assert
+
 
 #define DIV_ROUND_UP(numerator, denominator) \
 	(((numerator) + (denominator) - 1) / (denominator))
