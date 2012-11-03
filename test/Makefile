@@ -18,6 +18,7 @@ out.overlaps:reads.bvv
 .remove-contained-reads:reads.bvv out.overlaps
 	remove-contained-reads reads.bvv reads.uncontained.bvv\
 			       out.overlaps out.uncontained.overlaps
+	touch .remove-contained-reads
 
 reads.uncontained.bvv:.remove-contained-reads
 

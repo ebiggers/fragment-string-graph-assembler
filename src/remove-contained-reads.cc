@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	std::vector<bool> read_contained(bvv.size(), false);
 
 	info("Searching for overlaps indicating contained reads");
-	for (auto overlap_set : ovv) {
+	for (const std::set<Overlap> & overlap_set : ovv) {
 		for (const Overlap & o : overlap_set) {
 			unsigned long f_idx;
 			unsigned long f_beg;
@@ -33,6 +33,9 @@ int main(int argc, char **argv)
 			unsigned long g_idx;
 			unsigned long g_beg;
 			unsigned long g_end;
+
+			assert_overlap_valid(o, bvv, 0, 0);
+
 			o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end);
 			const BaseVec & f = bvv[f_idx];
 			const BaseVec & g = bvv[g_idx];
@@ -40,6 +43,7 @@ int main(int argc, char **argv)
 				std::swap(f_beg, f_end);
 			if (g_beg > g_end)
 				std::swap(g_beg, g_end);
+
 
 			if ((f_beg == 0 && f_end == f.size() - 1)) {
 				if (g_beg == 0 && g_end == g.size() - 1) {

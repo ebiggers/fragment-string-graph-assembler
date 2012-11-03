@@ -9,6 +9,9 @@
 #include "util.h"
 #include <assert.h>
 
+class BaseVecVec;
+class BaseVec;
+
 class Overlap {
 private:
 	unsigned long _read_1_idx : 24;
@@ -125,3 +128,15 @@ public:
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 };
+
+extern void assert_seed_valid(const BaseVec & bv1,
+			      const BaseVec & bv2,
+			      const unsigned pos1,
+			      const unsigned pos2,
+			      const unsigned len,
+			      const bool is_rc1, const bool is_rc2,
+			      const char *description = "SEED");
+
+extern void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
+				 const unsigned min_overlap_len,
+				 const unsigned max_edits);

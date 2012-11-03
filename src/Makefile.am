@@ -20,6 +20,7 @@ libassemble_a_SOURCES =  \
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
 	Graph.cc	\
+	Overlap.cc	\
 	compiler.h	\
 	util.cc		\
 	util.h

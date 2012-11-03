@@ -125,6 +125,16 @@ public:
 		return _vertices;
 	}
 
+	size_t num_edges() const
+	{
+		return _edges.size();
+	}
+
+	size_t num_vertices() const
+	{
+		return _vertices.size();
+	}
+
 	void write(const char *filename) const;
 	void print(std::ostream & os) const;
 	void print_dot(std::ostream & os) const;
