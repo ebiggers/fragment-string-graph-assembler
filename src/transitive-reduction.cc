@@ -31,9 +31,65 @@ static void transitive_reduction(Graph & graph)
 	for (GraphVertex & v : vertices)
 		std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
 
-	std::vector<bool> vertex_vacant(graph.num_vertices(), true);
+	static const unsigned char VACANT = 0;
+	static const unsigned char INPLAY = 1;
+	static const unsigned char ELIMINATED = 2;
+
+	std::vector<unsigned char> vertex_marks(graph.num_vertices(), VACANT);
 	std::vector<bool> reduce_edge(graph.num_edges(), false);
 
+	for (size_t i = 0; i < vertices.size(); i++) {
+		GraphVertex & v = vertices[i];
+		const std::vector<unsigned long> & edge_indices = v.edge_indices();
+		if (edge_indices.size() == 0)
+			continue;
+		for (size_t j = 0; j < edge_indices.size(); j++) {
+			GraphEdge & e = edges[edge_indices[j]];
+			assert(e.get_v1_idx() == i);
+			assert(e.get_v2_idx() != i);
+			vertex_marks[e.get_v2_idx()] = INPLAY;
+		}
+		size_t longest = edges[edge_indices.back()].get_seq().size();
+		for (size_t j = 0; j < edge_indices.size(); j++) {
+			GraphEdge & e = edges[edge_indices[j]];
+			unsigned long v2_idx = e.get_v2_idx();
+			if (vertex_marks[v2_idx] == INPLAY) {
+				GraphVertex & v2 = vertices[v2_idx];
+				const std::vector<unsigned long> & v2_edge_indices = v2.edge_indices();
+				for (size_t k = 0; k < v2_edge_indices.size(); k++) {
+					GraphEdge & e = edges[v2_edge_indices[k]];
+					if (e.get_seq().size() <= longest) {
+						if (vertex_marks[v2_idx] == INPLAY) {
+							vertex_marks[v2_idx] = ELIMINATED;
+						}
+					}
+				}
+			}
+		}
+
+		for (size_t j = 0; j < edge_indices.size(); j++) {
+			GraphEdge & e = edges[edge_indices[j]];
+			unsigned long v2_idx = e.get_v2_idx();
+			GraphVertex & v2 = vertices[v2_idx];
+			const std::vector<unsigned long> & v2_edge_indices = v2.edge_indices();
+			for (size_t k = 0; k < v2_edge_indices.size(); k++) {
+				if (k == 0) { // TODO: fuzz parameter
+					if (vertex_marks[v2_idx] == INPLAY) {
+						vertex_marks[v2_idx] = ELIMINATED;
+					}
+				}
+			}
+		}
+
+		for (size_t j = 0; j < edge_indices.size(); j++) {
+			GraphEdge & e = edges[edge_indices[j]];
+			unsigned long v2_idx = e.get_v2_idx();
+			if (vertex_marks[v2_idx] == ELIMINATED) {
+				reduce_edge[edge_indices[j]] = true;
+			}
+			vertex_marks[v2_idx] = VACANT;
+		}
+	}
 	info("Done performing transitive reduction");
 }
 
