@@ -1,12 +1,12 @@
 all:out.reduced.graph
 
-SAMPLE_SIZE = 5000
+SAMPLE_SIZE = 300
 
 genome.fa.$(SAMPLE_SIZE): NC_000913.fna
 	fasta-head -c $(SAMPLE_SIZE) $+ > $@
 
 pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
-	pirs simulate -x 20 --no-gc-bias --no-subst-errors --no-indels --no-log-files \
+	pirs simulate -x 10 --no-gc-bias --no-subst-errors --no-indels \
 			--random-seed=1 --threads=1 $+
 
 reads.bvv:pirs_reads_100_180_1.fq
@@ -24,14 +24,17 @@ reads.uncontained.bvv:.remove-contained-reads
 
 out.uncontained.overlaps:.remove-contained-reads
 
-out.dot:out.graph
+%.dot:%.graph
 	print-graph --dot $+ > $@
 
-#out.ps:out.dot
-	#dot -Tps $+ -o$@
+%.ps:%.dot
+	dot -Tps $+ -o$@ -v
 
-#out.pdf:out.dot
-	#dot -Tpdf $+ -o$@
+%.pdf:%.dot
+	dot -Tpdf $+ -o$@ -v
+
+%.png:%.dot
+	dot -Tpng $+ -o$@ -v
 
 out.graph:reads.uncontained.bvv out.uncontained.overlaps
 	build-graph $+ $@
