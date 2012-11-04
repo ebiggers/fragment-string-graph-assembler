@@ -23,12 +23,9 @@ void Graph::write(const char *filename) const
 
 void Graph::print(std::ostream & os) const
 {
-	for (size_t i = 0; i < _vertices.size(); i++) {
-		//os << "[Vertex " << i << "]" << '\n';
-		const GraphVertex & v = _vertices[i];
-		const std::vector<unsigned long> & edge_indices = v.edge_indices();
-		for (size_t j = 0; j < edge_indices.size(); j++) {
-			const GraphEdge & e = _edges[edge_indices[j]];
+	for (const GraphVertex & v : _vertices) {
+		for (const unsigned long edge_idx : v.edge_indices()) {
+			const GraphEdge & e = _edges[edge_idx];
 			unsigned v1_idx = e.get_v1_idx();
 			size_t read_1_idx = v1_idx / 2 + 1;
 			char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
@@ -50,10 +47,10 @@ void Graph::print_dot(std::ostream & os) const
 	for (size_t i = 0; i < _vertices.size(); i++) {
 		size_t read_idx = i / 2;
 		char read_dir = (i & 1) ? 'E' : 'B';
-		os << "\tv" << i << " [label = \"" << (read_idx + 1) << '.' << read_dir << "\"];\n";
+		os << "\tv" << i << " [label = \"" << (read_idx + 1)
+		   << '.' << read_dir << "\"];\n";
 	}
-	for (size_t i = 0; i < _edges.size(); i++) {
-		const GraphEdge & e = _edges[i];
+	for (const GraphEdge & e : _edges) {
 		os << "\tv" << e.get_v1_idx() << " -> " << "v" << e.get_v2_idx()
 		   << " [ label = \"" << e.get_seq().size() << "\" ];\n";
 	}
