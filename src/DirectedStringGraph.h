@@ -5,6 +5,22 @@
 #include <ostream>
 #include <inttypes.h>
 
+class DirectedStringGraphVertex : public StringGraphVertex {
+public:
+	size_t out_degree() const
+	{
+		return _edge_indices.size();
+	}
+
+	void print_dot(std::ostream & os, size_t v_idx) const
+	{
+		size_t read_idx = v_idx / 2;
+		char read_dir = (v_idx & 1) ? 'E' : 'B';
+		os << "v" << v_idx << " [label = \"" << (read_idx + 1)
+		   << '.' << read_dir << "\"]";
+	}
+};
+
 class DirectedStringGraphEdge {
 private:
 	unsigned _v1_idx;
@@ -58,16 +74,25 @@ public:
 	friend std::ostream & operator<<(std::ostream & os,
 					 const DirectedStringGraphEdge & e)
 	{
-		return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
-			  << e._v2_idx << ", _seq = \"" << e._seq << "\"}";
+		//return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
+			  //<< e._v2_idx << ", _seq = \"" << e._seq << "\"}";
+		unsigned v1_idx = e.get_v1_idx();
+		size_t read_1_idx = v1_idx / 2 + 1;
+		char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
+		unsigned v2_idx = e.get_v2_idx();
+		size_t read_2_idx = v2_idx / 2 + 1;
+		char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
+		return os << read_1_idx << '.' << read_1_dir << " -> "
+			  << read_2_idx << '.' << read_2_dir
+			  << '\t' << e.get_seq();
 	}
-};
 
-class DirectedStringGraphVertex : public StringGraphVertex {
-public:
-	size_t out_degree() const
+
+	void print_dot(std::ostream & os, size_t e_idx) const
 	{
-		return _edge_indices.size();
+		os << "v" << get_v1_idx() << " -> "
+		   << "v" << get_v2_idx()
+		   << " [ label = \"" << length() << "\" ]";
 	}
 };
 
@@ -120,8 +145,7 @@ public:
 	DirectedStringGraph(const char *filename);
 
 	void write(const char *filename) const;
-	void print(std::ostream & os) const;
-	void print_dot(std::ostream & os) const;
+	void transitive_reduction();
 
 	void add_edge_pair(const unsigned long read_1_idx,
 			   const unsigned long read_2_idx,

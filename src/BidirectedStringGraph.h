@@ -99,7 +99,7 @@ public:
 
 class BidirectedStringGraphVertex : public StringGraphVertex {
 public:
-	size_t out_degree() const
+	size_t out_degree() const 
 	{
 		unimplemented();
 	}

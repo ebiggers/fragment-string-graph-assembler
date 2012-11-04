@@ -105,12 +105,30 @@ public:
 
 	void print(std::ostream & os) const
 	{
-		unimplemented();
+		for (const VERTEX_t & v : _vertices) {
+			for (const unsigned long edge_idx : v.edge_indices()) {
+				os << _edges[edge_idx] << '\n';
+			}
+		}
+		os << std::flush;
 	}
 
 	void print_dot(std::ostream & os) const
 	{
-		unimplemented();
+		os << "digraph {\n";
+		os << "\tnode [shape = oval];\n";
+		for (size_t i = 0; i < _vertices.size(); i++) {
+			os << "\t";
+			_vertices[i].print_dot(os, i);
+			os << ";\n";
+		}
+
+		for (size_t i = 0; i < _edges.size(); i++) {
+			os << "\t";
+			_edges[i].print_dot(os, i);
+			os << ";\n";
+		}
+		os << "}" << std::endl;
 	}
 
 	void add_edge_pair(const unsigned long read_1_idx,
@@ -120,6 +138,11 @@ public:
 			   const unsigned long beg_1, const unsigned long end_1,
 			   const BaseVec & bv2,
 			   const unsigned long beg_2, const unsigned long end_2)
+	{
+		unimplemented();
+	}
+
+	void transitive_reduction()
 	{
 		unimplemented();
 	}
