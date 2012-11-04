@@ -95,3 +95,78 @@ public:
 	//}
 };
 
+
+class BidirectedStringGraph {
+private:
+	std::vector<BidirectedStringGraphVertex> _vertices;
+	std::vector<BidirectedStringGraphEdge> _edges;
+
+	friend class boost::serialization::access;
+
+	template <class Archive>
+	void serialize(Archive & ar, unsigned version)
+	{
+		ar & _vertices;
+		ar & _edges;
+	}
+
+public:
+	BidirectedStringGraph(size_t num_reads)
+	{
+		_vertices.resize(num_reads);
+	}
+
+	std::vector<BidirectedStringGraphEdge> & edges()
+	{
+		return _edges;
+	}
+
+	std::vector<BidirectedStringGraphVertex> & vertices()
+	{
+		return _vertices;
+	}
+
+	size_t num_edges() const
+	{
+		return _edges.size();
+	}
+
+	size_t num_vertices() const
+	{
+		return _vertices.size();
+	}
+
+	void write(const char *filename) const;
+	void print(std::ostream & os) const;
+	void print_dot(std::ostream & os) const;
+
+	void add_edge(const unsigned long read_1_idx, const int read_1_end,
+		      const unsigned long read_2_idx, const int read_2_end,
+		      const BaseVec & bv,
+		      const unsigned long beg, const unsigned long end)
+	{
+		BidirectedStringGraphEdge e;
+		unsigned long len;
+		unsigned long i;
+		const unsigned long v1_idx = read_1_idx;
+		const unsigned long v2_idx = read_2_idx;
+		e.set_v1_idx(v1_idx);
+		e.set_v2_idx(v2_idx);
+		BaseVec &edge_seq = e.get_seq();
+		if (end > beg) {
+			len = end - beg + 1;
+			edge_seq.resize(len);
+			for (i = 0; i < len; i++)
+				edge_seq.set(i, bv[beg + i]);
+		} else {
+			len = beg - end + 1;
+			edge_seq.resize(len);
+			for (i = 0; i < len; i++)
+				edge_seq.set(i, (3 ^ bv[beg - i]));
+		}
+		//std::cout << edge_seq << std::endl;
+		unsigned long edge_idx = _edges.size();
+		_edges.push_back(e);
+		_vertices[v1_idx].add_edge_idx(edge_idx);
+	}
+}
