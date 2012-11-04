@@ -25,6 +25,11 @@ public:
 		return _seq;
 	}
 
+	size_t length() const
+	{
+		return _seq.size();
+	}
+
 	const BaseVec & get_seq() const
 	{
 		return _seq;
