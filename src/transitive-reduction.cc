@@ -5,16 +5,16 @@ DEFINE_USAGE(
 "Usage: transitive-reduction GRAPH_FILE OUT_GRAPH_FILE"
 );
 
-class sort_by_edge_length {
+class cmp_by_edge_length {
 private:
 	const std::vector<GraphEdge> & _edges;
 public:
-	sort_by_edge_length(const std::vector<GraphEdge> & edges)
+	cmp_by_edge_length(const std::vector<GraphEdge> & edges)
 		: _edges(edges) { }
-	bool operator()(unsigned long edge_idx_1, unsigned long edge_idx_2) {
-		size_t edge_1_len = _edges[edge_idx_1].get_seq().size();
-		size_t edge_2_len = _edges[edge_idx_2].get_seq().size();
-		return (edge_1_len < edge_2_len);
+
+	bool operator()(unsigned long edge_idx_1, unsigned long edge_idx_2) const
+	{
+		return _edges[edge_idx_1].length() < _edges[edge_idx_2].length();
 	}
 };
 
@@ -26,7 +26,7 @@ static void transitive_reduction(Graph & graph)
 	std::vector<GraphVertex> & vertices = graph.vertices();
 	std::vector<GraphEdge> & edges = graph.edges();
 
-	sort_by_edge_length cmp(edges);
+	cmp_by_edge_length cmp(edges);
 	info("Sorting adjacency lists of vertices by edge length");
 	for (GraphVertex & v : vertices)
 		std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
@@ -81,8 +81,9 @@ static void transitive_reduction(Graph & graph)
 					const GraphEdge & e2 = edges[w_edge_idx];
 					if (e2.length() > longest)
 						break;
-					if (vertex_marks[e2.get_v2_idx()] == INPLAY)
+					if (vertex_marks[e2.get_v2_idx()] == INPLAY) {
 						vertex_marks[e2.get_v2_idx()] = ELIMINATED;
+					}
 				}
 			}
 		}
@@ -109,13 +110,17 @@ static void transitive_reduction(Graph & graph)
 		// VACANT status.
 		for (const unsigned long edge_idx : v.edge_indices()) {
 			const unsigned long w_idx = edges[edge_idx].get_v2_idx();
-			if (vertex_marks[w_idx] == ELIMINATED)
+			if (vertex_marks[w_idx] == ELIMINATED) {
 				reduce_edge[edge_idx] = true;
+			}
+		}
+		for (const unsigned long edge_idx : v.edge_indices()) {
+			const unsigned long w_idx = edges[edge_idx].get_v2_idx();
 			vertex_marks[w_idx] = VACANT;
 		}
 	}
 
-	info("Transitive reduction algorithm complete.  Now updating the strign graph");
+	info("Transitive reduction algorithm complete.  Now updating the string graph");
 
 	// Modify the graph.
 	std::vector<unsigned long> new_edge_indices(edges.size());

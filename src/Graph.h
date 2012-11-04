@@ -61,6 +61,12 @@ public:
 		  //_vertex_2_id(vertex_2_id),
 		  //_seq(seq)
 	//{ }
+	//
+	friend std::ostream & operator<<(std::ostream & os, const GraphEdge & e)
+	{
+		return os << "GraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
+			  << e._v2_idx << ", _seq = \"" << e._seq << "\"}";
+	}
 };
 
 class GraphVertex {
