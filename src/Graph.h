@@ -172,7 +172,7 @@ public:
 			len = end - beg + 1;
 			edge_seq.resize(len);
 			for (i = 0; i < len; i++)
-				edge_seq.set(i, bv[i + beg]);
+				edge_seq.set(i, bv[beg + i]);
 		} else {
 			len = beg - end + 1;
 			edge_seq.resize(len);

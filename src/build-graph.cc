@@ -23,7 +23,7 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 	const BaseVec & f = bvv[f_idx];
 	const BaseVec & g = bvv[g_idx];
 
-	// Check if this is a contained overlap
+	// Must not be a contained overlap
 	assert(!((f_beg == 0 && f_end == f.size() - 1)
 	    || (f_beg == f.size() - 1 && f_end == 0)
 	    || (g_beg == 0 && g_end == g.size() - 1)

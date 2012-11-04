@@ -4,8 +4,9 @@ SAMPLE_SIZE ?= 300
 READ_LEN ?= 100
 READ_SEP ?= 30
 USE_PIRS ?= true
+GENOME ?= random_genome.fa
 
-genome.fa.$(SAMPLE_SIZE): NC_000913.fna
+genome.fa.$(SAMPLE_SIZE): $(GENOME)
 	fasta-head -c $(SAMPLE_SIZE) $+ > $@
 
 ifeq ($(USE_PIRS),true)

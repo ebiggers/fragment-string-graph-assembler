@@ -122,12 +122,13 @@ static bool find_overlap(const BaseVecVec & bvv,
 {
 	const BaseVec & bv1 = bvv[occ1.get_read_id()];
 	const BaseVec & bv2 = bvv[occ2.get_read_id()];
-	assert(&bv1 != &bv2);
 	unsigned pos1 = occ1.get_read_pos();
 	unsigned pos2 = occ2.get_read_pos();
 	unsigned len = K;
 	const bool is_rc1 = occ1.is_rc();
 	const bool is_rc2 = occ2.is_rc();
+	assert(&bv1 != &bv2);
+	assert(!(is_rc1 && !is_rc2));
 	extend_seed(bv1, bv2, pos1, pos2, len, is_rc1, is_rc2);
 	if (len >= min_overlap_len) {
 		unsigned long read_1_beg = pos1;
@@ -185,6 +186,9 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			KmerOccurrence occ2 = occs[j];
 			if (occ1.is_rc() && !occ2.is_rc())
 				std::swap(occ1, occ2);
+			if (occ1.get_read_id() == occ2.get_read_id())
+				continue;
+
 			if (!find_overlap(bvv, occ1, occ2,
 				          min_overlap_len, max_edits, K, o))
 				continue;
