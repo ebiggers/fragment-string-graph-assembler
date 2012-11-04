@@ -17,8 +17,6 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 	unsigned long g_beg;
 	unsigned long g_end;
 
-	//std::cout << o << std::endl;
-
 	o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end);
 
 	const BaseVec & f = bvv[f_idx];
@@ -51,13 +49,10 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *     g.B -> f.B label: f[0 ... f_beg - 1]
 			 */
 
-			graph.add_edge(f_idx, DirectedStringGraph::READ_END,
-			               g_idx, DirectedStringGraph::READ_END,
-				       g, g_end + 1, g.size() - 1);
-
-			graph.add_edge(g_idx, DirectedStringGraph::READ_BEGIN,
-				       f_idx, DirectedStringGraph::READ_BEGIN,
-				       f, f_beg - 1, 0);
+			graph.add_edge_pair(f_idx, g_idx,
+					    graph.TAG_F_E | graph.TAG_G_E,
+					    g, g_end + 1, g.size() - 1,
+					    f, f_beg - 1, 0);
 		} else {
 
 			/*
@@ -71,16 +66,13 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *  f <----------> g
 			 *    
 			 *     f.E -> g.B label: g[g_end - 1 ... 0]
-			 *     g.E -> f.B label: f[f_beg - 1 ... ]
+			 *     g.E -> f.B label: f[f_beg - 1 ... 0]
 			 */
 
-			graph.add_edge(f_idx, DirectedStringGraph::READ_END,
-			               g_idx, DirectedStringGraph::READ_BEGIN,
-				       g, g_end - 1, 0);
-
-			graph.add_edge(g_idx, DirectedStringGraph::READ_END,
-				       f_idx, DirectedStringGraph::READ_BEGIN,
-				       f, f_beg - 1, 0);
+			graph.add_edge_pair(f_idx, g_idx,
+					    graph.TAG_F_E | graph.TAG_G_B,
+					    g, g_end - 1, 0,
+					    f, f_beg - 1, 0);
 		}
 	} else {
 		if (g_beg < g_end) {
@@ -95,17 +87,14 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *  
 			 *  f <----------< g
 			 *    
-			 *     f.B -> g.B label: g[g_beg - 1 ... ]
+			 *     f.B -> g.B label: g[g_beg - 1 ... 0]
 			 *     g.E -> f.E label: f[f_end + 1 ... f.size() - 1]
 			 */
 
-			graph.add_edge(f_idx, DirectedStringGraph::READ_BEGIN,
-				       g_idx, DirectedStringGraph::READ_BEGIN,
-				       g, g_beg - 1, 0);
-
-			graph.add_edge(g_idx, DirectedStringGraph::READ_END,
-			               f_idx, DirectedStringGraph::READ_END,
-				       f, f_end + 1, f.size() - 1);
+			graph.add_edge_pair(f_idx, g_idx,
+					    graph.TAG_F_B | graph.TAG_G_B,
+					    g, g_beg - 1, 0,
+					    f, f_beg + 1, f.size() - 1);
 		} else {
 
 			/*
@@ -121,14 +110,10 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *     f.B -> g.E label: g[g_beg + 1 ... g.size() - 1]
 			 *     g.B -> f.E label: f[f_end + 1 ... f.size() - 1]
 			 */
-
-			graph.add_edge(f_idx, DirectedStringGraph::READ_BEGIN,
-				       g_idx, DirectedStringGraph::READ_END,
-				       g, g_beg + 1, g.size() - 1);
-
-			graph.add_edge(g_idx, DirectedStringGraph::READ_BEGIN,
-			               f_idx, DirectedStringGraph::READ_END,
-				       f, f_end + 1, f.size() - 1);
+			graph.add_edge_pair(f_idx, g_idx,
+					    graph.TAG_F_B | graph.TAG_G_E,
+					    g, g_beg + 1, g.size() - 1,
+					    f, f_end + 1, f.size() - 1);
 		}
 	}
 }

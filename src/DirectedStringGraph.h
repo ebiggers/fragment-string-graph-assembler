@@ -1,9 +1,7 @@
 #pragma once
 
+#include "StringGraph.h"
 #include "BaseVec.h"
-#include <vector>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/vector.hpp>
 #include <ostream>
 #include <inttypes.h>
 
@@ -56,114 +54,30 @@ public:
 	{
 		_v2_idx = v2_idx;
 	}
-	//DirectedStringGraphEdge(unsigned long vertex_1_id,
-		  //unsigned long vertex_2_id,
-		  //BaseVec seq)
-		//: _vertex_1_id(vertex_1_id),
-		  //_vertex_2_id(vertex_2_id),
-		  //_seq(seq)
-	//{ }
-	//
-	friend std::ostream & operator<<(std::ostream & os, const DirectedStringGraphEdge & e)
+
+	friend std::ostream & operator<<(std::ostream & os,
+					 const DirectedStringGraphEdge & e)
 	{
 		return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
 			  << e._v2_idx << ", _seq = \"" << e._seq << "\"}";
 	}
 };
 
-class DirectedStringGraphVertex {
-private:
-	std::vector<unsigned long> _edge_indices;
-
-	friend class boost::serialization::access;
-	template <class Archive>
-	void serialize(Archive & ar, unsigned version)
-	{
-		ar & _edge_indices;
-	}
+class DirectedStringGraphVertex : public StringGraphVertex {
 public:
-	void add_edge_idx(const unsigned long edge_idx)
-	{
-		_edge_indices.push_back(edge_idx);
-	}
-
 	size_t out_degree() const
 	{
 		return _edge_indices.size();
 	}
-
-	const std::vector<unsigned long> & edge_indices() const
-	{
-		return _edge_indices;
-	}
-
-	std::vector<unsigned long> & edge_indices()
-	{
-		return _edge_indices;
-	}
-
-	friend std::ostream & operator<<(std::ostream & os, const DirectedStringGraphVertex & v)
-	{
-		os << "DirectedStringGraphVertex {_edge_indices = [";
-		for (unsigned long idx : v.edge_indices())
-			os << idx << ", ";
-		return os << "] }";
-	}
 };
 
-class DirectedStringGraph {
+class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
+					       DirectedStringGraphEdge>
+{
 private:
-	std::vector<DirectedStringGraphVertex> _vertices;
-	std::vector<DirectedStringGraphEdge> _edges;
-
-	friend class boost::serialization::access;
-
-	template <class Archive>
-	void serialize(Archive & ar, unsigned version)
-	{
-		ar & _vertices;
-		ar & _edges;
-	}
-
-public:
-	DirectedStringGraph(size_t num_reads)
-	{
-		_vertices.resize(num_reads * 2);
-	}
-
-	DirectedStringGraph(const char *filename);
-
-	enum {
-		READ_BEGIN = 0,
-		READ_END = 1
-	};
-
-	std::vector<DirectedStringGraphEdge> & edges()
-	{
-		return _edges;
-	}
-
-	std::vector<DirectedStringGraphVertex> & vertices()
-	{
-		return _vertices;
-	}
-
-	size_t num_edges() const
-	{
-		return _edges.size();
-	}
-
-	size_t num_vertices() const
-	{
-		return _vertices.size();
-	}
-
-	void write(const char *filename) const;
-	void print(std::ostream & os) const;
-	void print_dot(std::ostream & os) const;
-
-	void add_edge(const unsigned long start_read_id, const int start_read_end,
-		      const unsigned long end_read_id, const int end_read_end,
+	void add_edge(const unsigned long read_1_idx,
+		      const unsigned long read_2_idx, 
+		      const unsigned long dirs,
 		      const BaseVec & bv,
 		      const unsigned long beg, const unsigned long end)
 	{
@@ -176,8 +90,8 @@ public:
 		     //end_read_id, (end_read_id == READ_BEGIN) ? 'B' : 'E',
 		     //beg, end);
 
-		unsigned long v1_idx = start_read_id * 2 + start_read_end;
-		unsigned long v2_idx = end_read_id * 2 + end_read_end;
+		unsigned long v1_idx = read_1_idx * 2 + (dirs >> 1);
+		unsigned long v2_idx = read_2_idx * 2 + (dirs & 1);
 		e.set_v1_idx(v1_idx);
 		e.set_v2_idx(v2_idx);
 		BaseVec &edge_seq = e.get_seq();
@@ -196,5 +110,28 @@ public:
 		unsigned long edge_idx = _edges.size();
 		_edges.push_back(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
+	}
+public:
+	DirectedStringGraph(size_t num_reads)
+	{
+		_vertices.resize(num_reads * 2);
+	}
+
+	DirectedStringGraph(const char *filename);
+
+	void write(const char *filename) const;
+	void print(std::ostream & os) const;
+	void print_dot(std::ostream & os) const;
+
+	void add_edge_pair(const unsigned long read_1_idx,
+			   const unsigned long read_2_idx,
+			   const unsigned long dirs,
+			   const BaseVec & bv1,
+			   const unsigned long beg_1, const unsigned long end_1,
+			   const BaseVec & bv2,
+			   const unsigned long beg_2, const unsigned long end_2)
+	{
+		add_edge(read_1_idx, read_2_idx, dirs, bv1, beg_1, end_1);
+		add_edge(read_2_idx, read_1_idx, (dirs ^ 3), bv2, beg_2, end_2);
 	}
 };

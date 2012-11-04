@@ -1,5 +1,6 @@
 #pragma once
 
+#include "StringGraph.h"
 #include "BaseVec.h"
 #include <vector>
 #include <boost/serialization/access.hpp>
@@ -96,44 +97,21 @@ public:
 };
 
 
-class BidirectedStringGraph {
-private:
-	std::vector<BidirectedStringGraphVertex> _vertices;
-	std::vector<BidirectedStringGraphEdge> _edges;
-
-	friend class boost::serialization::access;
-
-	template <class Archive>
-	void serialize(Archive & ar, unsigned version)
+class BidirectedStringGraphVertex : public StringGraphVertex {
+public:
+	size_t out_degree() const
 	{
-		ar & _vertices;
-		ar & _edges;
+		unimplemented();
 	}
+};
 
+class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
+						 BidirectedStringGraphEdge>
+{
 public:
 	BidirectedStringGraph(size_t num_reads)
 	{
 		_vertices.resize(num_reads);
-	}
-
-	std::vector<BidirectedStringGraphEdge> & edges()
-	{
-		return _edges;
-	}
-
-	std::vector<BidirectedStringGraphVertex> & vertices()
-	{
-		return _vertices;
-	}
-
-	size_t num_edges() const
-	{
-		return _edges.size();
-	}
-
-	size_t num_vertices() const
-	{
-		return _vertices.size();
 	}
 
 	void write(const char *filename) const;
@@ -145,6 +123,8 @@ public:
 		      const BaseVec & bv,
 		      const unsigned long beg, const unsigned long end)
 	{
+		unimplemented();
+#if 0
 		BidirectedStringGraphEdge e;
 		unsigned long len;
 		unsigned long i;
@@ -168,5 +148,6 @@ public:
 		unsigned long edge_idx = _edges.size();
 		_edges.push_back(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
+#endif
 	}
-}
+};
