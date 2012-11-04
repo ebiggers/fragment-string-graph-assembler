@@ -2,7 +2,7 @@
 #include <algorithm>
 
 DEFINE_USAGE(
-"Usage: transitive-reduction GRAPH_FILE OUT_GRAPH_FILE"
+"Usage: transitive-reduction GRAPH_FILE OUT_GRAPH_FILE\n"
 );
 
 class cmp_by_edge_length {
@@ -105,19 +105,15 @@ static void transitive_reduction(Graph & graph)
 		#endif
 
 		// Once again, go through the outgoing edges from v.  For each
-		// vertex marked ELIMINATED, mark the corresponding edge for
-		// reduction.  Return both INPLAY and ELIMINATED vertices to
-		// VACANT status.
-		for (const unsigned long edge_idx : v.edge_indices()) {
-			const unsigned long w_idx = edges[edge_idx].get_v2_idx();
-			if (vertex_marks[w_idx] == ELIMINATED) {
+		// neighboring vertex marked ELIMINATED, mark the corresponding
+		// edge(s) for reduction.  Return both INPLAY and ELIMINATED
+		// vertices to VACANT status.
+		for (const unsigned long edge_idx : v.edge_indices())
+			if (vertex_marks[edges[edge_idx].get_v2_idx()] == ELIMINATED)
 				reduce_edge[edge_idx] = true;
-			}
-		}
-		for (const unsigned long edge_idx : v.edge_indices()) {
-			const unsigned long w_idx = edges[edge_idx].get_v2_idx();
-			vertex_marks[w_idx] = VACANT;
-		}
+
+		for (const unsigned long edge_idx : v.edge_indices())
+			vertex_marks[edges[edge_idx].get_v2_idx()] = VACANT;
 	}
 
 	info("Transitive reduction algorithm complete.  Now updating the string graph");
