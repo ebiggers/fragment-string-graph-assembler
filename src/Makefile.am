@@ -20,7 +20,10 @@ libassemble_a_SOURCES =  \
 	BaseVec.h	\
 	BaseVecVec.cc	\
 	BaseVecVec.h	\
-	Graph.cc	\
+	DirectedStringGraph.h \
+	DirectedStringGraph.cc \
+	BidirectedStringGraph.h \
+	BidirectedStringGraph.cc \
 	Overlap.cc	\
 	compiler.h	\
 	util.cc		\

@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include "DirectedStringGraph.h"
 #include <fstream>
 #include <ostream>
 #include <boost/archive/binary_iarchive.hpp>

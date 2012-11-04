@@ -1,13 +1,14 @@
 #include "Overlap.h"
 #include "BaseVecVec.h"
-#include "Graph.h"
+#include "DirectedStringGraph.h"
 
 DEFINE_USAGE(
 "Usage: build-graph READS_FILE OVERLAPS_FILE GRAPH_FILE\n"
 );
 
+template <typename GRAPH_t>
 static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
-				  DirectedStringGraph & graph)
+				  GRAPH_t & graph)
 {
 	unsigned long f_idx;
 	unsigned long f_beg;
@@ -132,8 +133,9 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 	}
 }
 
+template <typename GRAPH_t>
 static void build_graph(const BaseVecVec & bvv, const OverlapVecVec & ovv,
-			DirectedStringGraph & graph)
+			GRAPH_t & graph)
 {
 	for (auto overlap_set : ovv) {
 		for (const Overlap & o : overlap_set) {

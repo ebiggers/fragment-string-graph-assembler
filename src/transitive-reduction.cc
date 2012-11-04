@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include "DirectedStringGraph.h"
 #include <algorithm>
 
 DEFINE_USAGE(

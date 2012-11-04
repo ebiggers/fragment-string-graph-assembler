@@ -1,9 +1,11 @@
+#pragma once
+
 #include "BaseVec.h"
 #include <vector>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <ostream>
-
+#include <inttypes.h>
 
 class DirectedStringGraphEdge {
 private:
