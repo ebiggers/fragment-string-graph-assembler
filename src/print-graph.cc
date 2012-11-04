@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 	USAGE_IF(argc != 1);
-	Graph graph(argv[0]);
+	DirectedStringGraph graph(argv[0]);
 	if (dot)
 		graph.print_dot(std::cout);
 	else

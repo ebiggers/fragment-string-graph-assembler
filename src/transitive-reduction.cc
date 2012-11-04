@@ -7,9 +7,9 @@ DEFINE_USAGE(
 
 class cmp_by_edge_length {
 private:
-	const std::vector<GraphEdge> & _edges;
+	const std::vector<DirectedStringGraphEdge> & _edges;
 public:
-	cmp_by_edge_length(const std::vector<GraphEdge> & edges)
+	cmp_by_edge_length(const std::vector<DirectedStringGraphEdge> & edges)
 		: _edges(edges) { }
 
 	bool operator()(unsigned long edge_idx_1, unsigned long edge_idx_2) const
@@ -18,17 +18,17 @@ public:
 	}
 };
 
-static void transitive_reduction(Graph & graph)
+static void transitive_reduction(DirectedStringGraph & graph)
 {
 	info("Performing transitive reduction on string graph with "
 	     "%zu vertices and %zu edges", graph.num_vertices(), graph.num_edges());
 
-	std::vector<GraphVertex> & vertices = graph.vertices();
-	std::vector<GraphEdge> & edges = graph.edges();
+	std::vector<DirectedStringGraphVertex> & vertices = graph.vertices();
+	std::vector<DirectedStringGraphEdge> & edges = graph.edges();
 
 	cmp_by_edge_length cmp(edges);
 	info("Sorting adjacency lists of vertices by edge length");
-	for (GraphVertex & v : vertices)
+	for (DirectedStringGraphVertex & v : vertices)
 		std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
 
 	static const unsigned char VACANT = 0;
@@ -44,14 +44,14 @@ static void transitive_reduction(Graph & graph)
 
 	// Iterate through every vertex @v in the graph that has outgoing edges.
 	for (size_t v_idx = 0; v_idx < vertices.size(); v_idx++) {
-		const GraphVertex & v = vertices[v_idx];
+		const DirectedStringGraphVertex & v = vertices[v_idx];
 
 		if (v.out_degree() == 0)
 			continue;
 
 		// Mark each vertex adjacent to @v as INPLAY.
 		for (const unsigned long edge_idx : v.edge_indices()) {
-			const GraphEdge & e = edges[edge_idx];
+			const DirectedStringGraphEdge & e = edges[edge_idx];
 			assert(e.get_v1_idx() == v_idx);
 			assert(e.get_v2_idx() != v_idx);
 			vertex_marks[e.get_v2_idx()] = INPLAY;
@@ -76,9 +76,9 @@ static void transitive_reduction(Graph & graph)
 				// Each such edge that goes to a vertex marked
 				// INPLAY must be directly reachable from v, and
 				// therefore the edge must be removed.
-				const GraphVertex & w = vertices[w_idx];
+				const DirectedStringGraphVertex & w = vertices[w_idx];
 				for (const unsigned long w_edge_idx : w.edge_indices()) {
-					const GraphEdge & e2 = edges[w_edge_idx];
+					const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
 					if (e2.length() > longest)
 						break;
 					if (vertex_marks[e2.get_v2_idx()] == INPLAY) {
@@ -90,9 +90,9 @@ static void transitive_reduction(Graph & graph)
 
 		#if 0
 		for (size_t j = 0; j < edge_indices.size(); j++) {
-			GraphEdge & e = edges[edge_indices[j]];
+			DirectedStringGraphEdge & e = edges[edge_indices[j]];
 			unsigned long w_idx = e.get_v2_idx();
-			GraphVertex & w = vertices[w_idx];
+			DirectedStringGraphVertex & w = vertices[w_idx];
 			const std::vector<unsigned long> & w_edge_indices = w.edge_indices();
 			for (size_t k = 0; k < w_edge_indices.size(); k++) {
 				if (k == 0) { // TODO: fuzz parameter
@@ -138,7 +138,7 @@ static void transitive_reduction(Graph & graph)
 	     (num_original_edges ?
 		100 * double(num_removed_edges) / num_original_edges : 0.0));
 
-	for (GraphVertex & v : vertices) {
+	for (DirectedStringGraphVertex & v : vertices) {
 		std::vector<unsigned long> & edge_indices = v.edge_indices();
 		size_t j = 0;
 		for (const unsigned long edge_idx : edge_indices) {
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 {
 	USAGE_IF(argc != 3);
 	info("Loading string graph from \"%s\"", argv[1]);
-	Graph graph(argv[1]);
+	DirectedStringGraph graph(argv[1]);
 	transitive_reduction(graph);
 	info("Writing string graph to \"%s\"", argv[2]);
 	graph.write(argv[2]);

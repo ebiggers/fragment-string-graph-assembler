@@ -4,14 +4,14 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-Graph::Graph(const char *filename)
+DirectedStringGraph::DirectedStringGraph(const char *filename)
 {
 	std::ifstream in(filename);
 	boost::archive::binary_iarchive ar(in);
 	ar >> *this;
 }
 
-void Graph::write(const char *filename) const
+void DirectedStringGraph::write(const char *filename) const
 {
 	std::ofstream out(filename);
 	boost::archive::binary_oarchive ar(out);
@@ -21,11 +21,11 @@ void Graph::write(const char *filename) const
 		fatal_error_with_errno("Error writing to \"%s\"", filename);
 }
 
-void Graph::print(std::ostream & os) const
+void DirectedStringGraph::print(std::ostream & os) const
 {
-	for (const GraphVertex & v : _vertices) {
+	for (const DirectedStringGraphVertex & v : _vertices) {
 		for (const unsigned long edge_idx : v.edge_indices()) {
-			const GraphEdge & e = _edges[edge_idx];
+			const DirectedStringGraphEdge & e = _edges[edge_idx];
 			unsigned v1_idx = e.get_v1_idx();
 			size_t read_1_idx = v1_idx / 2 + 1;
 			char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
@@ -40,7 +40,7 @@ void Graph::print(std::ostream & os) const
 	os << std::flush;
 }
 
-void Graph::print_dot(std::ostream & os) const
+void DirectedStringGraph::print_dot(std::ostream & os) const
 {
 	os << "digraph {\n";
 	os << "\tnode [shape = oval];\n";
@@ -50,7 +50,7 @@ void Graph::print_dot(std::ostream & os) const
 		os << "\tv" << i << " [label = \"" << (read_idx + 1)
 		   << '.' << read_dir << "\"];\n";
 	}
-	for (const GraphEdge & e : _edges) {
+	for (const DirectedStringGraphEdge & e : _edges) {
 		os << "\tv" << e.get_v1_idx() << " -> " << "v" << e.get_v2_idx()
 		   << " [ label = \"" << e.get_seq().size() << "\" ];\n";
 	}

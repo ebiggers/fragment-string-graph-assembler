@@ -3,11 +3,11 @@
 #include "Graph.h"
 
 DEFINE_USAGE(
-"Usage: build-graph READS_FILE OVERLAPS_FILE Graph_FILE\n"
+"Usage: build-graph READS_FILE OVERLAPS_FILE GRAPH_FILE\n"
 );
 
 static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
-				  Graph & graph)
+				  DirectedStringGraph & graph)
 {
 	unsigned long f_idx;
 	unsigned long f_beg;
@@ -40,34 +40,46 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *  f.B --------------> f.E
 			 *         g.B ----------------> g.E
 			 *
-			 *  Add g.B => f.B, f.E => g.E
+			 *  Add f.E => g.E, g.B => f.B
 			 *
+			 *  Or bidirected edge:
+			 *  
+			 *  f >----------> g
+			 *    
+			 *     f.E -> g.E label: g[g_end + 1 ... g.size() - 1]
+			 *     g.B -> f.B label: f[0 ... f_beg - 1]
 			 */
 
-			graph.add_edge(g_idx, Graph::READ_BEGIN,
-				       f_idx, Graph::READ_BEGIN,
-				       f, f_beg - 1, 0);
-
-			graph.add_edge(f_idx, Graph::READ_END,
-			               g_idx, Graph::READ_END,
+			graph.add_edge(f_idx, DirectedStringGraph::READ_END,
+			               g_idx, DirectedStringGraph::READ_END,
 				       g, g_end + 1, g.size() - 1);
+
+			graph.add_edge(g_idx, DirectedStringGraph::READ_BEGIN,
+				       f_idx, DirectedStringGraph::READ_BEGIN,
+				       f, f_beg - 1, 0);
 		} else {
 
 			/*
 			 *  f.B --------------> f.E
 			 *         g.E <---------------  g.B
 			 *
-			 *  Add g.E => f.B, f.E => g.B
+			 *  Add f.E => g.B, g.E => f.B
 			 *
+			 *  Or bidirected edge:
+			 *  
+			 *  f <----------> g
+			 *    
+			 *     f.E -> g.B label: g[g_end - 1 ... 0]
+			 *     g.E -> f.B label: f[f_beg - 1 ... ]
 			 */
 
-			graph.add_edge(g_idx, Graph::READ_END,
-				       f_idx, Graph::READ_BEGIN,
-				       f, f_beg - 1, 0);
-
-			graph.add_edge(f_idx, Graph::READ_END,
-			               g_idx, Graph::READ_BEGIN,
+			graph.add_edge(f_idx, DirectedStringGraph::READ_END,
+			               g_idx, DirectedStringGraph::READ_BEGIN,
 				       g, g_end - 1, 0);
+
+			graph.add_edge(g_idx, DirectedStringGraph::READ_END,
+				       f_idx, DirectedStringGraph::READ_BEGIN,
+				       f, f_beg - 1, 0);
 		}
 	} else {
 		if (g_beg < g_end) {
@@ -78,15 +90,20 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *
 			 *  Add f.B => g.B, g.E => f.E
 			 *
+			 *  Or bidirected edge:
+			 *  
+			 *  f <----------< g
+			 *    
+			 *     f.B -> g.B label: g[g_beg - 1 ... ]
+			 *     g.E -> f.E label: f[f_end + 1 ... f.size() - 1]
 			 */
 
-
-			graph.add_edge(f_idx, Graph::READ_BEGIN,
-				       g_idx, Graph::READ_BEGIN,
+			graph.add_edge(f_idx, DirectedStringGraph::READ_BEGIN,
+				       g_idx, DirectedStringGraph::READ_BEGIN,
 				       g, g_beg - 1, 0);
 
-			graph.add_edge(g_idx, Graph::READ_END,
-			               f_idx, Graph::READ_END,
+			graph.add_edge(g_idx, DirectedStringGraph::READ_END,
+			               f_idx, DirectedStringGraph::READ_END,
 				       f, f_end + 1, f.size() - 1);
 		} else {
 
@@ -96,21 +113,27 @@ static void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o,
 			 *
 			 *  Add f.B => g.E, g.B => f.E
 			 *
+			 *  Or bidirected edge:
+			 *  
+			 *  f <----------> g
+			 *    
+			 *     f.B -> g.E label: g[g_beg + 1 ... g.size() - 1]
+			 *     g.B -> f.E label: f[f_end + 1 ... f.size() - 1]
 			 */
 
-			graph.add_edge(f_idx, Graph::READ_BEGIN,
-				       g_idx, Graph::READ_END,
+			graph.add_edge(f_idx, DirectedStringGraph::READ_BEGIN,
+				       g_idx, DirectedStringGraph::READ_END,
 				       g, g_beg + 1, g.size() - 1);
 
-			graph.add_edge(g_idx, Graph::READ_BEGIN,
-			               f_idx, Graph::READ_END,
+			graph.add_edge(g_idx, DirectedStringGraph::READ_BEGIN,
+			               f_idx, DirectedStringGraph::READ_END,
 				       f, f_end + 1, f.size() - 1);
 		}
 	}
 }
 
 static void build_graph(const BaseVecVec & bvv, const OverlapVecVec & ovv,
-			Graph & graph)
+			DirectedStringGraph & graph)
 {
 	for (auto overlap_set : ovv) {
 		for (const Overlap & o : overlap_set) {
@@ -142,7 +165,7 @@ int main(int argc, char *argv[])
 
 	assert(ovv.size() == bvv.size());
 
-	Graph graph(bvv.size());
+	DirectedStringGraph graph(bvv.size());
 
 	info("Building string graph from overlaps");
 	build_graph(bvv, ovv, graph);

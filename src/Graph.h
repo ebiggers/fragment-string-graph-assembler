@@ -5,7 +5,7 @@
 #include <ostream>
 
 
-class GraphEdge {
+class DirectedStringGraphEdge {
 private:
 	unsigned _v1_idx;
 	unsigned _v2_idx;
@@ -54,7 +54,7 @@ public:
 	{
 		_v2_idx = v2_idx;
 	}
-	//GraphEdge(unsigned long vertex_1_id,
+	//DirectedStringGraphEdge(unsigned long vertex_1_id,
 		  //unsigned long vertex_2_id,
 		  //BaseVec seq)
 		//: _vertex_1_id(vertex_1_id),
@@ -62,14 +62,14 @@ public:
 		  //_seq(seq)
 	//{ }
 	//
-	friend std::ostream & operator<<(std::ostream & os, const GraphEdge & e)
+	friend std::ostream & operator<<(std::ostream & os, const DirectedStringGraphEdge & e)
 	{
-		return os << "GraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
+		return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
 			  << e._v2_idx << ", _seq = \"" << e._seq << "\"}";
 	}
 };
 
-class GraphVertex {
+class DirectedStringGraphVertex {
 private:
 	std::vector<unsigned long> _edge_indices;
 
@@ -100,19 +100,19 @@ public:
 		return _edge_indices;
 	}
 
-	friend std::ostream & operator<<(std::ostream & os, const GraphVertex & v)
+	friend std::ostream & operator<<(std::ostream & os, const DirectedStringGraphVertex & v)
 	{
-		os << "GraphVertex {_edge_indices = [";
+		os << "DirectedStringGraphVertex {_edge_indices = [";
 		for (unsigned long idx : v.edge_indices())
 			os << idx << ", ";
 		return os << "] }";
 	}
 };
 
-class Graph {
+class DirectedStringGraph {
 private:
-	std::vector<GraphVertex> _vertices;
-	std::vector<GraphEdge> _edges;
+	std::vector<DirectedStringGraphVertex> _vertices;
+	std::vector<DirectedStringGraphEdge> _edges;
 
 	friend class boost::serialization::access;
 
@@ -124,24 +124,24 @@ private:
 	}
 
 public:
-	Graph(size_t num_reads)
+	DirectedStringGraph(size_t num_reads)
 	{
 		_vertices.resize(num_reads * 2);
 	}
 
-	Graph(const char *filename);
+	DirectedStringGraph(const char *filename);
 
 	enum {
 		READ_BEGIN = 0,
 		READ_END = 1
 	};
 
-	std::vector<GraphEdge> & edges()
+	std::vector<DirectedStringGraphEdge> & edges()
 	{
 		return _edges;
 	}
 
-	std::vector<GraphVertex> & vertices()
+	std::vector<DirectedStringGraphVertex> & vertices()
 	{
 		return _vertices;
 	}
@@ -165,7 +165,7 @@ public:
 		      const BaseVec & bv,
 		      const unsigned long beg, const unsigned long end)
 	{
-		GraphEdge e;
+		DirectedStringGraphEdge e;
 		unsigned long len;
 		unsigned long i;
 
