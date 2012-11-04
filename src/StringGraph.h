@@ -3,7 +3,10 @@
 #include <vector>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include "util.h"
+#include <fstream>
 
 class BaseVec;
 
@@ -68,16 +71,6 @@ public:
 	static const unsigned long TAG_G_B = 0x0;
 	static const unsigned long TAG_G_E = 0x1;
 
-	StringGraph(const char *filename)
-	{
-		unimplemented();
-	}
-
-	enum {
-		READ_BEGIN = 0,
-		READ_END = 1
-	};
-
 	std::vector<EDGE_t> & edges()
 	{
 		return _edges;
@@ -98,9 +91,21 @@ public:
 		return _vertices.size();
 	}
 
+	void read(const char *filename)
+	{
+		std::ifstream in(filename);
+		boost::archive::binary_iarchive ar(in);
+		ar >> *this;
+	}
+
 	void write(const char *filename) const
 	{
-		unimplemented();
+		std::ofstream out(filename);
+		boost::archive::binary_oarchive ar(out);
+		ar << *this;
+		out.close();
+		if (out.bad())
+			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 
 	void print(std::ostream & os) const
@@ -129,21 +134,5 @@ public:
 			os << ";\n";
 		}
 		os << "}" << std::endl;
-	}
-
-	void add_edge_pair(const unsigned long read_1_idx,
-			   const unsigned long read_2_idx,
-			   const unsigned long dirs,
-			   const BaseVec & bv1,
-			   const unsigned long beg_1, const unsigned long end_1,
-			   const BaseVec & bv2,
-			   const unsigned long beg_2, const unsigned long end_2)
-	{
-		unimplemented();
-	}
-
-	void transitive_reduction()
-	{
-		unimplemented();
 	}
 };

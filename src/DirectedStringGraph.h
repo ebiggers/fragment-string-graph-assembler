@@ -87,7 +87,6 @@ public:
 			  << '\t' << e.get_seq();
 	}
 
-
 	void print_dot(std::ostream & os, size_t e_idx) const
 	{
 		os << "v" << get_v1_idx() << " -> "
@@ -109,12 +108,6 @@ private:
 		DirectedStringGraphEdge e;
 		unsigned long len;
 		unsigned long i;
-
-		//info("Add edge %lu:%c => %lu:%c (%lu, %lu)",
-		     //start_read_id, (start_read_id == READ_BEGIN) ? 'B' : 'E',
-		     //end_read_id, (end_read_id == READ_BEGIN) ? 'B' : 'E',
-		     //beg, end);
-
 		unsigned long v1_idx = read_1_idx * 2 + (dirs >> 1);
 		unsigned long v2_idx = read_2_idx * 2 + (dirs & 1);
 		e.set_v1_idx(v1_idx);
@@ -131,7 +124,6 @@ private:
 			for (i = 0; i < len; i++)
 				edge_seq.set(i, (3 ^ bv[beg - i]));
 		}
-		//std::cout << edge_seq << std::endl;
 		unsigned long edge_idx = _edges.size();
 		_edges.push_back(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
@@ -142,9 +134,11 @@ public:
 		_vertices.resize(num_reads * 2);
 	}
 
-	DirectedStringGraph(const char *filename);
+	DirectedStringGraph(const char *filename)
+	{
+		this->read(filename);
+	}
 
-	void write(const char *filename) const;
 	void transitive_reduction();
 
 	void add_edge_pair(const unsigned long read_1_idx,

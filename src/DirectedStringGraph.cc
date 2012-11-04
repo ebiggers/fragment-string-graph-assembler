@@ -4,23 +4,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-DirectedStringGraph::DirectedStringGraph(const char *filename)
-{
-	std::ifstream in(filename);
-	boost::archive::binary_iarchive ar(in);
-	ar >> *this;
-}
-
-void DirectedStringGraph::write(const char *filename) const
-{
-	std::ofstream out(filename);
-	boost::archive::binary_oarchive ar(out);
-	ar << *this;
-	out.close();
-	if (out.bad())
-		fatal_error_with_errno("Error writing to \"%s\"", filename);
-}
-
 class cmp_by_edge_length {
 private:
 	const std::vector<DirectedStringGraphEdge> & _edges;
