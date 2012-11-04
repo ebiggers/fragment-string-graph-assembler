@@ -8,7 +8,8 @@
 #include "util.h"
 #include <fstream>
 
-class BaseVec;
+#include "Overlap.h"
+#include "BaseVecVec.h"
 
 class StringGraphVertex {
 protected:
@@ -48,8 +49,142 @@ public:
 	}
 };
 
-template<class VERTEX_t, class EDGE_t>
+template<class VERTEX_t, class EDGE_t, class IMPL_t>
 class StringGraph {
+protected:
+	typedef typename EDGE_t::v_idx_t v_idx_t;
+	void add_edge_pair(const v_idx_t read_1_idx,
+			   const v_idx_t read_2_idx,
+			   const v_idx_t dirs,
+			   const BaseVec & bv1,
+			   const BaseVec::size_type beg_1,
+			   const BaseVec::size_type end_1,
+			   const BaseVec & bv2,
+			   const BaseVec::size_type beg_2,
+			   const BaseVec::size_type end_2)
+	{
+		static_cast<IMPL_t*>(this)->add_edge_pair(read_1_idx,
+							  read_2_idx,
+							  dirs,
+							  bv1, beg_1, end_1,
+							  bv2, beg_2, end_2);
+	}
+private:
+
+	static const v_idx_t TAG_F_B = 0x0;
+	static const v_idx_t TAG_F_E = 0x2;
+	static const v_idx_t TAG_G_B = 0x0;
+	static const v_idx_t TAG_G_E = 0x1;
+
+	void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o)
+	{
+		Overlap::read_idx_t f_idx;
+		Overlap::read_pos_t f_beg;
+		Overlap::read_pos_t f_end;
+		Overlap::read_idx_t g_idx;
+		Overlap::read_pos_t g_beg;
+		Overlap::read_pos_t g_end;
+
+		o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end);
+
+		const BaseVec & f = bvv[f_idx];
+		const BaseVec & g = bvv[g_idx];
+
+		// Must not be a contained overlap
+		assert(!((f_beg == 0 && f_end == f.size() - 1)
+		    || (f_beg == f.size() - 1 && f_end == 0)
+		    || (g_beg == 0 && g_end == g.size() - 1)
+		    || (g_beg == g.size() - 1 && g_end == 0)));
+
+		if (f_beg > f_end) {
+			std::swap(f_idx, g_idx);
+			std::swap(f_beg, g_beg);
+			std::swap(f_end, g_end);
+		}
+		if (f_beg > 0) {
+			if (g_beg < g_end) {
+				/*
+				 *  f.B --------------> f.E
+				 *         g.B ----------------> g.E
+				 *
+				 *  Add f.E => g.E, g.B => f.B
+				 *
+				 *  Or bidirected edge:
+				 *  
+				 *  f >----------> g
+				 *    
+				 *     f.E -> g.E label: g[g_end + 1 ... g.size() - 1]
+				 *     g.B -> f.B label: f[0 ... f_beg - 1]
+				 */
+
+				add_edge_pair(f_idx, g_idx, TAG_F_E | TAG_G_E,
+					      g, g_end + 1, g.size() - 1,
+					      f, f_beg - 1, 0);
+			} else {
+
+				/*
+				 *  f.B --------------> f.E
+				 *         g.E <---------------  g.B
+				 *
+				 *  Add f.E => g.B, g.E => f.B
+				 *
+				 *  Or bidirected edge:
+				 *  
+				 *  f <----------> g
+				 *    
+				 *     f.E -> g.B label: g[g_end - 1 ... 0]
+				 *     g.E -> f.B label: f[f_beg - 1 ... 0]
+				 */
+
+				add_edge_pair(f_idx, g_idx,
+					      TAG_F_E | TAG_G_B,
+					      g, g_end - 1, 0,
+					      f, f_beg - 1, 0);
+			}
+		} else {
+			if (g_beg < g_end) {
+
+				/*
+				 *        f.B ---------------> f.E
+				 * g.B --------------> g.E
+				 *
+				 *  Add f.B => g.B, g.E => f.E
+				 *
+				 *  Or bidirected edge:
+				 *  
+				 *  f <----------< g
+				 *    
+				 *     f.B -> g.B label: g[g_beg - 1 ... 0]
+				 *     g.E -> f.E label: f[f_end + 1 ... f.size() - 1]
+				 */
+
+				add_edge_pair(f_idx, g_idx,
+					      TAG_F_B | TAG_G_B,
+					      g, g_beg - 1, 0,
+					      f, f_beg + 1, f.size() - 1);
+			} else {
+
+				/*
+				 *        f.B ---------------> f.E
+				 * g.E <-------------- g.B
+				 *
+				 *  Add f.B => g.E, g.B => f.E
+				 *
+				 *  Or bidirected edge:
+				 *  
+				 *  f <----------> g
+				 *    
+				 *     f.B -> g.E label: g[g_beg + 1 ... g.size() - 1]
+				 *     g.B -> f.E label: f[f_end + 1 ... f.size() - 1]
+				 */
+				add_edge_pair(f_idx, g_idx,
+					      TAG_F_B | TAG_G_E,
+					      g, g_beg + 1, g.size() - 1,
+					      f, f_end + 1, f.size() - 1);
+			}
+		}
+	}
+
 protected:
 	std::vector<VERTEX_t> _vertices;
 	std::vector<EDGE_t> _edges;
@@ -65,11 +200,6 @@ protected:
 
 	StringGraph() { }
 public:
-
-	static const unsigned long TAG_F_B = 0x0;
-	static const unsigned long TAG_F_E = 0x2;
-	static const unsigned long TAG_G_B = 0x0;
-	static const unsigned long TAG_G_E = 0x1;
 
 	std::vector<EDGE_t> & edges()
 	{
@@ -134,5 +264,20 @@ public:
 			os << ";\n";
 		}
 		os << "}" << std::endl;
+	}
+
+	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
+	{
+		for (auto overlap_set : ovv) {
+			for (const Overlap & o : overlap_set) {
+				assert_overlap_valid(o, bvv, 0, 0);
+				add_edge_from_overlap(bvv, o);
+			}
+		}
+		info("String graph has %zu vertices and %zu edges",
+		     num_vertices(), num_edges());
+		info("Average of %.2f edges per vertex",
+		     num_edges() ?
+			double(num_edges()) / double(num_vertices()) : 0);
 	}
 };

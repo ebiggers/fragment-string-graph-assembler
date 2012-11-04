@@ -1,6 +1,7 @@
+#pragma once
+
 #include "BaseVec.h"
 #include <vector>
-
 #include <boost/serialization/base_object.hpp>
 
 class BaseVecVec : public std::vector<BaseVec> {

@@ -22,9 +22,11 @@ public:
 };
 
 class DirectedStringGraphEdge {
+public:
+	typedef unsigned int v_idx_t;
 private:
-	unsigned _v1_idx;
-	unsigned _v2_idx;
+	v_idx_t _v1_idx;
+	v_idx_t _v2_idx;
 	BaseVec _seq;
 
 	friend class boost::serialization::access;
@@ -51,22 +53,22 @@ public:
 		return _seq;
 	}
 
-	unsigned get_v1_idx() const
+	v_idx_t get_v1_idx() const
 	{
 		return _v1_idx;
 	}
 
-	unsigned get_v2_idx() const
+	v_idx_t get_v2_idx() const
 	{
 		return _v2_idx;
 	}
 
-	void set_v1_idx(const unsigned long v1_idx)
+	void set_v1_idx(const v_idx_t v1_idx)
 	{
 		_v1_idx = v1_idx;
 	}
 
-	void set_v2_idx(const unsigned long v2_idx)
+	void set_v2_idx(const v_idx_t v2_idx)
 	{
 		_v2_idx = v2_idx;
 	}
@@ -76,11 +78,11 @@ public:
 	{
 		//return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
 			  //<< e._v2_idx << ", _seq = \"" << e._seq << "\"}";
-		unsigned v1_idx = e.get_v1_idx();
-		size_t read_1_idx = v1_idx / 2 + 1;
+		v_idx_t v1_idx = e.get_v1_idx();
+		v_idx_t read_1_idx = v1_idx / 2 + 1;
 		char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
-		unsigned v2_idx = e.get_v2_idx();
-		size_t read_2_idx = v2_idx / 2 + 1;
+		v_idx_t v2_idx = e.get_v2_idx();
+		v_idx_t read_2_idx = v2_idx / 2 + 1;
 		char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
 		return os << read_1_idx << '.' << read_1_dir << " -> "
 			  << read_2_idx << '.' << read_2_dir
@@ -96,20 +98,22 @@ public:
 };
 
 class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
-					       DirectedStringGraphEdge>
+					       DirectedStringGraphEdge,
+					       DirectedStringGraph>
 {
 private:
-	void add_edge(const unsigned long read_1_idx,
-		      const unsigned long read_2_idx, 
-		      const unsigned long dirs,
+	void add_edge(const v_idx_t read_1_idx,
+		      const v_idx_t read_2_idx, 
+		      const v_idx_t dirs,
 		      const BaseVec & bv,
-		      const unsigned long beg, const unsigned long end)
+		      const BaseVec::size_type beg,
+		      const BaseVec::size_type end)
 	{
 		DirectedStringGraphEdge e;
 		unsigned long len;
 		unsigned long i;
-		unsigned long v1_idx = read_1_idx * 2 + (dirs >> 1);
-		unsigned long v2_idx = read_2_idx * 2 + (dirs & 1);
+		v_idx_t v1_idx = read_1_idx * 2 + (dirs >> 1);
+		v_idx_t v2_idx = read_2_idx * 2 + (dirs & 1);
 		e.set_v1_idx(v1_idx);
 		e.set_v2_idx(v2_idx);
 		BaseVec &edge_seq = e.get_seq();
@@ -141,13 +145,15 @@ public:
 
 	void transitive_reduction();
 
-	void add_edge_pair(const unsigned long read_1_idx,
-			   const unsigned long read_2_idx,
-			   const unsigned long dirs,
+	void add_edge_pair(const v_idx_t read_1_idx,
+			   const v_idx_t read_2_idx,
+			   const v_idx_t dirs,
 			   const BaseVec & bv1,
-			   const unsigned long beg_1, const unsigned long end_1,
+			   const BaseVec::size_type beg_1,
+			   const BaseVec::size_type end_1,
 			   const BaseVec & bv2,
-			   const unsigned long beg_2, const unsigned long end_2)
+			   const BaseVec::size_type beg_2,
+			   const BaseVec::size_type end_2)
 	{
 		add_edge(read_1_idx, read_2_idx, dirs, bv1, beg_1, end_1);
 		add_edge(read_2_idx, read_1_idx, (dirs ^ 3), bv2, beg_2, end_2);

@@ -23,6 +23,8 @@ private:
 		ar & _seq_2_to_1;
 	}
 public:
+	typedef unsigned int v_idx_t;
+
 	BaseVec & get_seq_1_to_2()
 	{
 		return _seq_1_to_2;
@@ -47,34 +49,34 @@ public:
 		return _seq_1_to_2.size();
 	}
 
-	unsigned long get_v1_idx() const
+	v_idx_t get_v1_idx() const
 	{
 		return (_data & 0x7fffffffULL);
 	}
 
-	unsigned long get_v2_idx() const
+	v_idx_t get_v2_idx() const
 	{
 		return (_data >> 31) & 0x7fffffffULL;
 	}
 
-	void set_v1_idx(const unsigned long v1_idx)
+	void set_v1_idx(v_idx_t v1_idx)
 	{
 		_data &= ~0x7fffffffULL;
 		_data |= v1_idx;
 	}
 
-	void set_v2_idx(const unsigned long v2_idx)
+	void set_v2_idx(v_idx_t v2_idx)
 	{
 		_data &= ~(0x7fffffffULL << 31);
 		_data |= (uint64_t(v2_idx) << 31);
 	}
 
-	void set_v_indices(const unsigned long v1_idx, const unsigned long v2_idx)
+	void set_v_indices(v_idx_t v1_idx, v_idx_t v2_idx)
 	{
 		_data = (_data & (3ULL << 62)) | (uint64_t(v2_idx) << 31) | v1_idx;
 	}
 
-	void get_v_indices(unsigned long & v1_idx, unsigned long & v2_idx) const
+	void get_v_indices(v_idx_t & v1_idx, v_idx_t & v2_idx) const
 	{
 		v1_idx = get_v1_idx();
 		v2_idx = get_v2_idx();
@@ -106,7 +108,8 @@ public:
 };
 
 class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
-						 BidirectedStringGraphEdge>
+						 BidirectedStringGraphEdge,
+						 BidirectedStringGraph>
 {
 public:
 	BidirectedStringGraph(size_t num_reads)

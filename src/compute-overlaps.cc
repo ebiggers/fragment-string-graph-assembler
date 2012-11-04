@@ -282,6 +282,17 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	if (max_edits > 0)
 		unimplemented();
 
+	if (bvv.size() > Overlap::MAX_READ_IDX + 1) {
+		fatal_error("'class Overlap' only supports up to %zu reads",
+			    Overlap::MAX_READ_IDX + 1);
+	}
+	for (const BaseVec & bv : bvv) {
+		if (bv.size() > Overlap::MAX_READ_LEN + 1) {
+			fatal_error("'class Overlap' only supports reads up to "
+				    "%zu bp long", Overlap::MAX_READ_LEN + 1);
+		}
+	}
+
 	ovv.clear();
 	ovv.resize(bvv.size());
 

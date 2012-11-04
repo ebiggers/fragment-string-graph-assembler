@@ -1,3 +1,5 @@
+#pragma once
+
 #include <boost/serialization/binary_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -29,12 +31,18 @@ private:
 	}
 
 public:
-	void set(unsigned long read_1_idx,
-		 unsigned long read_1_beg,
-		 unsigned long read_1_end,
-		 unsigned long read_2_idx,
-		 unsigned long read_2_beg,
-		 unsigned long read_2_end)
+	static const size_t MAX_READ_IDX = (1 << 24) - 1;
+	static const size_t MAX_READ_LEN = (1 << 12) - 1;
+
+	typedef unsigned int read_idx_t;
+	typedef unsigned int read_pos_t;
+
+	void set(read_idx_t read_1_idx,
+		 read_pos_t read_1_beg,
+		 read_pos_t read_1_end,
+		 read_idx_t read_2_idx,
+		 read_pos_t read_2_beg,
+		 read_pos_t read_2_end)
 	{
 		assert(read_1_end > read_1_beg ||
 		       read_2_end > read_2_beg);
@@ -47,19 +55,19 @@ public:
 		_read_2_end = read_2_end;
 	}
 
-	void set_indices(unsigned long read_1_idx,
-			 unsigned long read_2_idx)
+	void set_indices(read_idx_t read_1_idx,
+			 read_idx_t read_2_idx)
 	{
 		_read_1_idx = read_1_idx;
 		_read_2_idx = read_2_idx;
 	}
 
-	void get(unsigned long & read_1_idx,
-		 unsigned long & read_1_beg,
-		 unsigned long & read_1_end,
-		 unsigned long & read_2_idx,
-		 unsigned long & read_2_beg,
-		 unsigned long & read_2_end) const
+	void get(read_idx_t & read_1_idx,
+		 read_pos_t & read_1_beg,
+		 read_pos_t & read_1_end,
+		 read_idx_t & read_2_idx,
+		 read_pos_t & read_2_beg,
+		 read_pos_t & read_2_end) const
 	{
 		read_1_idx = _read_1_idx;
 		read_1_beg = _read_1_beg;
@@ -69,8 +77,8 @@ public:
 		read_2_end = _read_2_end;
 	}
 
-	void get_indices(unsigned long & read_1_idx,
-			 unsigned long & read_2_idx) const
+	void get_indices(read_idx_t & read_1_idx,
+			 read_idx_t & read_2_idx) const
 	{
 		read_1_idx = _read_1_idx;
 		read_2_idx = _read_2_idx;
@@ -131,9 +139,9 @@ public:
 
 extern void assert_seed_valid(const BaseVec & bv1,
 			      const BaseVec & bv2,
-			      const unsigned pos1,
-			      const unsigned pos2,
-			      const unsigned len,
+			      const Overlap::read_pos_t pos1,
+			      const Overlap::read_pos_t pos2,
+			      const Overlap::read_pos_t len,
 			      const bool is_rc1, const bool is_rc2,
 			      const char *description = "SEED");
 

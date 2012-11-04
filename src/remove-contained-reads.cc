@@ -29,12 +29,12 @@ int main(int argc, char **argv)
 	info("Searching for overlaps indicating contained reads");
 	for (const std::set<Overlap> & overlap_set : ovv) {
 		for (const Overlap & o : overlap_set) {
-			unsigned long f_idx;
-			unsigned long f_beg;
-			unsigned long f_end;
-			unsigned long g_idx;
-			unsigned long g_beg;
-			unsigned long g_end;
+			Overlap::read_idx_t f_idx;
+			Overlap::read_pos_t f_beg;
+			Overlap::read_pos_t f_end;
+			Overlap::read_idx_t g_idx;
+			Overlap::read_pos_t g_beg;
+			Overlap::read_pos_t g_end;
 
 			assert_overlap_valid(o, bvv, 0, 0);
 
@@ -45,7 +45,6 @@ int main(int argc, char **argv)
 				std::swap(f_beg, f_end);
 			if (g_beg > g_end)
 				std::swap(g_beg, g_end);
-
 
 			if ((f_beg == 0 && f_end == f.size() - 1)) {
 				if (g_beg == 0 && g_end == g.size() - 1) {
@@ -80,8 +79,8 @@ int main(int argc, char **argv)
 		if (!read_contained[i]) {
 			std::set<Overlap> new_set;
 			for (const Overlap & o : ovv[i]) {
-				unsigned long f_idx;
-				unsigned long g_idx;
+				Overlap::read_idx_t f_idx;
+				Overlap::read_idx_t g_idx;
 				num_overlaps++;
 				o.get_indices(f_idx, g_idx);
 				if (!read_contained[f_idx] && !read_contained[g_idx]) {

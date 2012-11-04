@@ -10,9 +10,9 @@
 //
 void assert_seed_valid(const BaseVec & bv1,
 		       const BaseVec & bv2,
-		       const unsigned pos1,
-		       const unsigned pos2,
-		       const unsigned len,
+		       const Overlap::read_pos_t pos1,
+		       const Overlap::read_pos_t pos2,
+		       const Overlap::read_pos_t len,
 		       const bool is_rc1, const bool is_rc2,
 		       const char *description)
 {
@@ -53,8 +53,11 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 {
 	if (max_edits > 0)
 		unimplemented();
-	unsigned long read_1_idx, read_1_beg, read_1_end;
-	unsigned long read_2_idx, read_2_beg, read_2_end;
+	Overlap::read_idx_t read_1_idx;
+	Overlap::read_pos_t read_1_beg, read_1_end;
+	Overlap::read_idx_t read_2_idx;
+	Overlap::read_pos_t read_2_beg, read_2_end;
+
 	o.get(read_1_idx, read_1_beg, read_1_end,
 	      read_2_idx, read_2_beg, read_2_end);
 	const BaseVec & bv1 = bvv[read_1_idx];
@@ -74,7 +77,7 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	if (read_2_end < read_2_beg)
 		std::swap(read_2_beg, read_2_end);
 
-	unsigned long len_1, len_2;
+	Overlap::read_pos_t len_1, len_2;
 	len_1 = read_1_end - read_1_beg + 1;
 	len_2 = read_2_end - read_2_beg + 1;
 	assert(len_1 == len_2);
