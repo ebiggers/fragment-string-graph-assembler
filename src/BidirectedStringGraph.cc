@@ -46,7 +46,7 @@ void BidirectedStringGraph::transitive_reduction()
 				goto cont;
 
 			for (const edge_idx_t edge_idx : v.edge_indices()) {
-				const edge_idx_t w_idx = edges[edge_idx].get_other_v_idx(v_idx);
+				const v_idx_t w_idx = edges[edge_idx].get_other_v_idx(v_idx);
 				if (vertex_marks[w_idx] & INPLAY) {
 					const bool w_tail_outward =
 							edges[edge_idx].other_v_outward(v_idx);
@@ -55,7 +55,7 @@ void BidirectedStringGraph::transitive_reduction()
 						const BidirectedStringGraphEdge & e2 = edges[w_edge_idx];
 						if (e2.length() > longest)
 							break;
-						if (e2.this_v_outward(w_idx) != w_tail_outward)
+						if (e2.this_v_outward(w_idx) == w_tail_outward)
 							continue;
 						const unsigned char mark = 
 							vertex_marks[e2.get_other_v_idx(w_idx)];
@@ -71,9 +71,14 @@ void BidirectedStringGraph::transitive_reduction()
 				}
 			}
 
-			for (const edge_idx_t edge_idx : v.edge_indices())
-				if (vertex_marks[edges[edge_idx].get_other_v_idx(v_idx)] == ELIMINATED)
-					reduce_edge[edge_idx] = true;
+			for (const edge_idx_t edge_idx : v.edge_indices()) {
+				const BidirectedStringGraphEdge & e = edges[edge_idx];
+				if (e.this_v_outward(v_idx) == v_head_outward
+				    && vertex_marks[e.get_other_v_idx(v_idx)] == ELIMINATED)
+				{
+						reduce_edge[edge_idx] = true;
+				}
+			}
 
 			for (const edge_idx_t edge_idx : v.edge_indices())
 				vertex_marks[edges[edge_idx].get_other_v_idx(v_idx)] = VACANT;

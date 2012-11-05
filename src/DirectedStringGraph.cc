@@ -56,7 +56,7 @@ void DirectedStringGraph::transitive_reduction()
 		// sequence length, consider each vertex w that is still marked
 		// INPLAY.
 		for (const edge_idx_t edge_idx : v.edge_indices()) {
-			const edge_idx_t w_idx = edges[edge_idx].get_v2_idx();
+			const v_idx_t w_idx = edges[edge_idx].get_v2_idx();
 			if (vertex_marks[w_idx] == INPLAY) {
 				// The edge v -> w must be an irreducible edge
 				// if w is still marked INPLAY at this point,
