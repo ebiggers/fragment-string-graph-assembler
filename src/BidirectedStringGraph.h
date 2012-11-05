@@ -8,7 +8,7 @@
 #include <ostream>
 #include <inttypes.h>
 
-class BidirectedStringGraphEdge {
+class BidirectedStringGraphEdge : public StringGraphEdge {
 private:
 	uint64_t _data;
 	BaseVec _seq_1_to_2;
@@ -91,6 +91,19 @@ public:
 	{
 		_data = (_data & ~(3ULL << 62)) | (uint64_t(dirs) << 62);
 	}
+
+	//friend std::ostream & operator<<(std::ostream & os,
+					 //const BidirectedStringGraphEdge & e)
+	//{
+		//unimplemented();
+	//}
+	void print_dot(std::ostream & os, size_t e_idx) const
+	{
+		unimplemented();
+		//os << "v" << get_v1_idx() << " -> "
+		   //<< "v" << get_v2_idx()
+		   //<< " [ label = \"" << length() << "\" ]";
+	}
 };
 
 
@@ -99,6 +112,11 @@ public:
 	size_t out_degree() const 
 	{
 		unimplemented();
+	}
+
+	void print_dot(std::ostream & os, size_t v_idx) const
+	{
+		os << "v" << v_idx << " [label = \"" << (v_idx + 1) << "\"]";
 	}
 };
 
@@ -132,12 +150,12 @@ public:
 			   const BaseVec::size_type end_2)
 	{
 		BidirectedStringGraphEdge e;
-		const v_idx_t v_1_idx = read_1_idx;
-		const v_idx_t v_2_idx = read_2_idx;
+		const v_idx_t v1_idx = read_1_idx;
+		const v_idx_t v2_idx = read_2_idx;
 
 		bv1.extract_seq(beg_1, end_1, e.get_seq_1_to_2());
 		bv2.extract_seq(beg_2, end_2, e.get_seq_2_to_1());
-		e.set_v_indices(v_1_idx, v_2_idx);
+		e.set_v_indices(v1_idx, v2_idx);
 		e.set_dirs(dirs);
 
 		unsigned long edge_idx = _edges.size();

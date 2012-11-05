@@ -39,7 +39,7 @@ reads.uncontained.bvv:.remove-contained-reads
 
 out.uncontained.overlaps:.remove-contained-reads
 
-%.dot:%.graph
+%.dot:%.digraph
 	print-graph --dot $+ > $@
 
 %.ps:%.dot
@@ -51,10 +51,16 @@ out.uncontained.overlaps:.remove-contained-reads
 %.png:%.dot
 	dot -Tpng $+ -o$@ -v
 
-out.graph:reads.uncontained.bvv out.uncontained.overlaps
-	build-graph $+ $@
+out.digraph:reads.uncontained.bvv out.uncontained.overlaps
+	build-directed-string-graph $+ $@
 
-out.reduced.graph:out.graph
+out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
+	build-bidirected-string-graph $+ $@
+
+%.reduced.digraph:%.digraph
+	transitive-reduction $+ $@
+
+%.reduced.bidigraph:%.bidigraph
 	transitive-reduction $+ $@
 
 clean:

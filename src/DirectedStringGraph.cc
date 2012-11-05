@@ -19,7 +19,7 @@ public:
 
 void DirectedStringGraph::transitive_reduction()
 {
-	info("Performing transitive reduction on string graph with "
+	info("Performing transitive reduction on directed string graph with "
 	     "%zu vertices and %zu edges", this->num_vertices(), this->num_edges());
 
 	std::vector<DirectedStringGraphVertex> & vertices = this->vertices();

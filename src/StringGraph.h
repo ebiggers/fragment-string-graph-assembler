@@ -11,6 +11,15 @@
 #include "Overlap.h"
 #include "BaseVecVec.h"
 
+class StringGraphEdge {
+public:
+	friend std::ostream & operator<<(std::ostream & os,
+					 const StringGraphEdge & v)
+	{
+		return os << "StringGraphEdge at " << &v;
+	}
+};
+
 class StringGraphVertex {
 protected:
 	std::vector<unsigned long> _edge_indices;

@@ -21,7 +21,7 @@ public:
 	}
 };
 
-class DirectedStringGraphEdge {
+class DirectedStringGraphEdge : public StringGraphEdge {
 public:
 	typedef unsigned int v_idx_t;
 private:

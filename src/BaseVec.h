@@ -93,6 +93,7 @@ public:
 			 BaseVec & dest) const
 	{
 		size_type len;
+		size_type i;
 		if (end > beg) {
 			len = end - beg + 1;
 			dest.resize(len);
