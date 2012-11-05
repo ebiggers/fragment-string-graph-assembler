@@ -88,6 +88,24 @@ public:
 			set(i, BaseUtils::ascii_to_bin(text[i]));
 	}
 
+	void extract_seq(const size_type beg,
+			 const size_type end,
+			 BaseVec & dest) const
+	{
+		size_type len;
+		if (end > beg) {
+			len = end - beg + 1;
+			dest.resize(len);
+			for (i = 0; i < len; i++)
+				dest.set(i, (*this)[beg + i]);
+		} else {
+			len = beg - end + 1;
+			dest.resize(len);
+			for (i = 0; i < len; i++)
+				dest.set(i, (3 ^ (*this)[beg - i]));
+		}
+	}
+
 	friend std::ostream & operator<<(std::ostream & os, const BaseVec & bv)
 	{
 		//os << "BaseVec {_bases = \"";

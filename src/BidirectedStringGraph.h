@@ -82,20 +82,15 @@ public:
 		v2_idx = get_v2_idx();
 	}
 
-	//DirectedStringGraphEdge(unsigned long vertex_1_id,
-		  //unsigned long vertex_2_id,
-		  //BaseVec seq)
-		//: _vertex_1_id(vertex_1_id),
-		  //_vertex_2_id(vertex_2_id),
-		  //_seq(seq)
-	//{ }
-	//
-	//
-	//friend std::ostream & operator<<(std::ostream & os, const DirectedStringGraphEdge & e)
-	//{
-		//return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
-			  //<< e._v2_idx << ", _seq = \"" << e._seq << "\"}";
-	//}
+	v_idx_t get_dirs() const
+	{
+		return _data >> 62;
+	}
+
+	void set_dirs(unsigned dirs)
+	{
+		_data = (_data & ~(3ULL << 62)) | (uint64_t(dirs) << 62);
+	}
 };
 
 
@@ -114,43 +109,40 @@ class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
 public:
 	BidirectedStringGraph(size_t num_reads)
 	{
+		if (!enough_v_indices(num_reads * 2))
+			fatal_error("Too many reads (%zu)", num_reads);
 		_vertices.resize(num_reads);
 	}
 
-	void write(const char *filename) const;
-	void print(std::ostream & os) const;
-	void print_dot(std::ostream & os) const;
-
-	void add_edge(const unsigned long read_1_idx, const int read_1_end,
-		      const unsigned long read_2_idx, const int read_2_end,
-		      const BaseVec & bv,
-		      const unsigned long beg, const unsigned long end)
+	BidirectedStringGraph(const char *filename)
 	{
-		unimplemented();
-#if 0
+		this->read(filename);
+	}
+
+	void transitive_reduction();
+
+	void add_edge_pair(const v_idx_t read_1_idx,
+			   const v_idx_t read_2_idx,
+			   const v_idx_t dirs,
+			   const BaseVec & bv1,
+			   const BaseVec::size_type beg_1,
+			   const BaseVec::size_type end_1,
+			   const BaseVec & bv2,
+			   const BaseVec::size_type beg_2,
+			   const BaseVec::size_type end_2)
+	{
 		BidirectedStringGraphEdge e;
-		unsigned long len;
-		unsigned long i;
-		const unsigned long v1_idx = read_1_idx;
-		const unsigned long v2_idx = read_2_idx;
-		e.set_v1_idx(v1_idx);
-		e.set_v2_idx(v2_idx);
-		BaseVec &edge_seq = e.get_seq();
-		if (end > beg) {
-			len = end - beg + 1;
-			edge_seq.resize(len);
-			for (i = 0; i < len; i++)
-				edge_seq.set(i, bv[beg + i]);
-		} else {
-			len = beg - end + 1;
-			edge_seq.resize(len);
-			for (i = 0; i < len; i++)
-				edge_seq.set(i, (3 ^ bv[beg - i]));
-		}
-		//std::cout << edge_seq << std::endl;
+		const v_idx_t v_1_idx = read_1_idx;
+		const v_idx_t v_2_idx = read_2_idx;
+
+		bv1.extract_seq(beg_1, end_1, e.get_seq_1_to_2());
+		bv2.extract_seq(beg_2, end_2, e.get_seq_2_to_1());
+		e.set_v_indices(v_1_idx, v_2_idx);
+		e.set_dirs(dirs);
+
 		unsigned long edge_idx = _edges.size();
 		_edges.push_back(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
-#endif
+		_vertices[v2_idx].add_edge_idx(edge_idx);
 	}
 };

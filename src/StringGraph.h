@@ -199,6 +199,11 @@ protected:
 	}
 
 	StringGraph() { }
+
+	bool enough_v_indices(size_t num_vertices_needed) const
+	{
+		return num_vertices_needed <= std::numeric_limits<v_idx_t>::max();
+	}
 public:
 
 	std::vector<EDGE_t> & edges()

@@ -76,8 +76,6 @@ public:
 	friend std::ostream & operator<<(std::ostream & os,
 					 const DirectedStringGraphEdge & e)
 	{
-		//return os << "DirectedStringGraphEdge {_v1_idx = " << e._v1_idx << ", _v2_idx = "
-			  //<< e._v2_idx << ", _seq = \"" << e._seq << "\"}";
 		v_idx_t v1_idx = e.get_v1_idx();
 		v_idx_t read_1_idx = v1_idx / 2 + 1;
 		char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
@@ -110,24 +108,13 @@ private:
 		      const BaseVec::size_type end)
 	{
 		DirectedStringGraphEdge e;
-		unsigned long len;
-		unsigned long i;
 		v_idx_t v1_idx = read_1_idx * 2 + (dirs >> 1);
 		v_idx_t v2_idx = read_2_idx * 2 + (dirs & 1);
+
 		e.set_v1_idx(v1_idx);
 		e.set_v2_idx(v2_idx);
-		BaseVec &edge_seq = e.get_seq();
-		if (end > beg) {
-			len = end - beg + 1;
-			edge_seq.resize(len);
-			for (i = 0; i < len; i++)
-				edge_seq.set(i, bv[beg + i]);
-		} else {
-			len = beg - end + 1;
-			edge_seq.resize(len);
-			for (i = 0; i < len; i++)
-				edge_seq.set(i, (3 ^ bv[beg - i]));
-		}
+		bv.extract_seq(beg, end, e.get_seq());
+
 		unsigned long edge_idx = _edges.size();
 		_edges.push_back(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
@@ -135,6 +122,8 @@ private:
 public:
 	DirectedStringGraph(size_t num_reads)
 	{
+		if (!enough_v_indices(num_reads * 2))
+			fatal_error("Too many reads (%zu)", num_reads);
 		_vertices.resize(num_reads * 2);
 	}
 
