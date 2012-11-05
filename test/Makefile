@@ -11,7 +11,7 @@ genome.fa.$(SAMPLE_SIZE): $(GENOME)
 
 ifeq ($(USE_PIRS),true)
 pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
-	pirs simulate -x 10 --no-gc-bias --no-subst-errors --no-indels \
+	pirs simulate -x 20 --no-gc-bias --no-subst-errors --no-indels \
 			--random-seed=1 --threads=1 $+
 else
 reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl

@@ -23,17 +23,23 @@ public:
 		: _read_id(read_id), _read_pos(read_pos), _rc(rc)
 	{ }
 
-	unsigned long get_read_id() const {
-		return _read_id;
+	unsigned long get_read_id() const { return _read_id; }
+
+	void swap_reads(KmerOccurrence & other) {
+		unsigned long tmp;
+		tmp = _read_id;
+		_read_id = other._read_id;
+		other._read_id = tmp;
+		tmp = _read_pos;
+		_read_pos = other._read_pos;
+		other._read_pos = tmp;
 	}
 
-	unsigned long get_read_pos() const {
-		return _read_pos;
-	}
+	unsigned long get_read_pos() const { return _read_pos; }
 
-	bool is_rc() const {
-		return _rc;
-	}
+	bool is_rc() const { return _rc; }
+	void flip_rc() { _rc = !_rc; }
+
 	friend std::ostream & operator<<(std::ostream & os, const KmerOccurrence & occ)
 	{
 		return os << "KmerOccurrence { _read_id: " << occ._read_id <<
@@ -183,10 +189,15 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			num_pairs_considered++;
 			KmerOccurrence occ1 = occs[i];
 			KmerOccurrence occ2 = occs[j];
-			if (occ1.is_rc() && !occ2.is_rc())
-				std::swap(occ1, occ2);
-			if (occ1.get_read_id() == occ2.get_read_id())
-				continue;
+
+			if (occ1.get_read_id() > occ2.get_read_id())
+				occ1.swap_reads(occ2);
+			if (occ1.is_rc() && !occ2.is_rc()) {
+				occ1.flip_rc();
+				occ2.flip_rc();
+			}
+			//if (occ1.get_read_id() == occ2.get_read_id())
+				//continue;
 
 			if (!find_overlap(bvv, occ1, occ2,
 				          min_overlap_len, max_edits, K, o))
