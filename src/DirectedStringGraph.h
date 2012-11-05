@@ -63,13 +63,9 @@ public:
 		return _v2_idx;
 	}
 
-	void set_v1_idx(const v_idx_t v1_idx)
+	void set_v_indices(const v_idx_t v1_idx, const v_idx_t v2_idx)
 	{
 		_v1_idx = v1_idx;
-	}
-
-	void set_v2_idx(const v_idx_t v2_idx)
-	{
 		_v2_idx = v2_idx;
 	}
 
@@ -111,12 +107,10 @@ private:
 		v_idx_t v1_idx = read_1_idx * 2 + (dirs >> 1);
 		v_idx_t v2_idx = read_2_idx * 2 + (dirs & 1);
 
-		e.set_v1_idx(v1_idx);
-		e.set_v2_idx(v2_idx);
+		e.set_v_indices(v1_idx, v2_idx);
 		bv.extract_seq(beg, end, e.get_seq());
 
-		unsigned long edge_idx = _edges.size();
-		_edges.push_back(e);
+		edge_idx_t edge_idx = this->push_back_edge(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
 	}
 public:

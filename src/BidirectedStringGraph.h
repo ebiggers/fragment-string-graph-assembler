@@ -158,8 +158,7 @@ public:
 		e.set_v_indices(v1_idx, v2_idx);
 		e.set_dirs(dirs);
 
-		unsigned long edge_idx = _edges.size();
-		_edges.push_back(e);
+		edge_idx_t edge_idx = this->push_back_edge(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
 		_vertices[v2_idx].add_edge_idx(edge_idx);
 	}

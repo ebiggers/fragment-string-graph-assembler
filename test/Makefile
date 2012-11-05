@@ -1,4 +1,4 @@
-all:out.reduced.graph
+all:out.reduced.digraph out.reduced.bidigraph
 
 SAMPLE_SIZE ?= 300
 READ_LEN ?= 100
@@ -39,8 +39,11 @@ reads.uncontained.bvv:.remove-contained-reads
 
 out.uncontained.overlaps:.remove-contained-reads
 
-%.dot:%.digraph
-	print-graph --dot $+ > $@
+%.bidigraph.dot:%.bidigraph
+	print-string-graph --dot $+ > $@
+
+%.digraph.dot:%.digraph
+	print-string-graph --dot $+ > $@
 
 %.ps:%.dot
 	dot -Tps $+ -o$@ -v

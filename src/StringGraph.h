@@ -21,8 +21,10 @@ public:
 };
 
 class StringGraphVertex {
+public:
+	typedef unsigned long edge_idx_t;
 protected:
-	std::vector<unsigned long> _edge_indices;
+	std::vector<edge_idx_t> _edge_indices;
 
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -33,17 +35,17 @@ protected:
 
 	StringGraphVertex() { }
 public:
-	void add_edge_idx(const unsigned long edge_idx)
+	void add_edge_idx(const edge_idx_t edge_idx)
 	{
 		_edge_indices.push_back(edge_idx);
 	}
 
-	const std::vector<unsigned long> & edge_indices() const
+	const std::vector<edge_idx_t> & edge_indices() const
 	{
 		return _edge_indices;
 	}
 
-	std::vector<unsigned long> & edge_indices()
+	std::vector<edge_idx_t> & edge_indices()
 	{
 		return _edge_indices;
 	}
@@ -52,7 +54,7 @@ public:
 					 const StringGraphVertex & v)
 	{
 		os << "StringGraphVertex {_edge_indices = [";
-		for (unsigned long idx : v.edge_indices())
+		for (edge_idx_t idx : v.edge_indices())
 			os << idx << ", ";
 		return os << "] }";
 	}
@@ -62,6 +64,8 @@ template<class VERTEX_t, class EDGE_t, class IMPL_t>
 class StringGraph {
 protected:
 	typedef typename EDGE_t::v_idx_t v_idx_t;
+	typedef typename VERTEX_t::edge_idx_t edge_idx_t;
+
 	void add_edge_pair(const v_idx_t read_1_idx,
 			   const v_idx_t read_2_idx,
 			   const v_idx_t dirs,
@@ -116,7 +120,7 @@ private:
 				 *  f.B --------------> f.E
 				 *         g.B ----------------> g.E
 				 *
-				 *  Add f.E => g.E, g.B => f.B
+				 *  Add f.E -> g.E, g.B -> f.B
 				 *
 				 *  Or bidirected edge:
 				 *  
@@ -135,11 +139,11 @@ private:
 				 *  f.B --------------> f.E
 				 *         g.E <---------------  g.B
 				 *
-				 *  Add f.E => g.B, g.E => f.B
+				 *  Add f.E -> g.B, g.E -> f.B
 				 *
 				 *  Or bidirected edge:
 				 *  
-				 *  f <----------> g
+				 *  f >----------< g
 				 *    
 				 *     f.E -> g.B label: g[g_end - 1 ... 0]
 				 *     g.E -> f.B label: f[f_beg - 1 ... 0]
@@ -157,7 +161,7 @@ private:
 				 *        f.B ---------------> f.E
 				 * g.B --------------> g.E
 				 *
-				 *  Add f.B => g.B, g.E => f.E
+				 *  Add f.B -> g.B, g.E -> f.E
 				 *
 				 *  Or bidirected edge:
 				 *  
@@ -177,7 +181,7 @@ private:
 				 *        f.B ---------------> f.E
 				 * g.E <-------------- g.B
 				 *
-				 *  Add f.B => g.E, g.B => f.E
+				 *  Add f.B -> g.E, g.B -> f.E
 				 *
 				 *  Or bidirected edge:
 				 *  
@@ -213,6 +217,15 @@ protected:
 	{
 		return num_vertices_needed <= std::numeric_limits<v_idx_t>::max();
 	}
+
+	edge_idx_t push_back_edge(const EDGE_t & e)
+	{
+		if (_edges.size() >= std::numeric_limits<edge_idx_t>::max())
+			fatal_error("Too many edges");
+		edge_idx_t edge_idx = _edges.size();
+		_edges.push_back(e);
+		return edge_idx;
+	}
 public:
 
 	std::vector<EDGE_t> & edges()
@@ -238,6 +251,8 @@ public:
 	void read(const char *filename)
 	{
 		std::ifstream in(filename);
+		if (!in)
+			fatal_error_with_errno("Error opening \"%s\"", filename);
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
 	}
