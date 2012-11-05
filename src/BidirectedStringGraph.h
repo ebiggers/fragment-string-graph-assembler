@@ -7,12 +7,40 @@
 #include <inttypes.h>
 
 // An edge of a bidirected string graph.
+//
+// An edge in a bidirected graph has a head at each edge of the edge.  As a
+// result, there are three different orientations:
+//
+//    1 >----------> 2    (kind of like a normal directed edge)
+//    1 >----------< 2    (inward)
+//    1 <----------> 2    (outward)
+//
+// (The fourth possibility is actually just the first flipped around.)
+//    1 <----------< 2
+//
+// Also, since this is a *string* graph, every edge is labeled with a string
+// (DNA sequence in this case).  And since this is a bidirected graph, there is
+// actually a different string for each way the edge can be traversed.
+//
 class BidirectedStringGraphEdge : public StringGraphEdge {
 private:
+	// (high to low bit)
+	// 1 bit:   1 iff the head at vertex 1 is directed away from it.
+	// 1 bit:   1 iff the head at vertex 2 is directed towards it.
+	// 31 bits: index of vertex 1.
+	// 31 bits: index of vertex 2.
 	uint64_t _data;
+
+	// Sequence when this bidirected edge is traversed in the direction
+	// vertex 1 to vertex 2.
 	BaseVec _seq_1_to_2;
+
+	// Sequence when this bidirected edge is traversed in the direction
+	// vertex 2 to vertex 1.
 	BaseVec _seq_2_to_1;
 
+	// Serialize or deserialize this bidirected string graph edge to a
+	// stream.
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
