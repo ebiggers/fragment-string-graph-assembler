@@ -46,13 +46,13 @@ out.uncontained.overlaps:.remove-contained-reads
 	print-string-graph --dot $+ > $@
 
 %.ps:%.dot
-	dot -Tps $+ -o$@ -v
+	dot -Tps $+ -o$@ 
 
 %.pdf:%.dot
-	dot -Tpdf $+ -o$@ -v
+	dot -Tpdf $+ -o$@
 
 %.png:%.dot
-	dot -Tpng $+ -o$@ -v
+	dot -Tpng $+ -o$@
 
 out.digraph:reads.uncontained.bvv out.uncontained.overlaps
 	build-directed-string-graph $+ $@

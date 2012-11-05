@@ -87,16 +87,31 @@ public:
 		return _data >> 62;
 	}
 
+	bool v1_outward() const { return (get_dirs() & 0x2) != 0; }
+	bool v2_inward() const { return (get_dirs() & 0x1) != 0; }
+	bool v1_inward() const { return !(v1_outward()); }
+	bool v2_outward() const { return !(v2_inward()); }
+
 	void set_dirs(unsigned dirs)
 	{
 		_data = (_data & ~(3ULL << 62)) | (uint64_t(dirs) << 62);
 	}
 
-	//friend std::ostream & operator<<(std::ostream & os,
-					 //const BidirectedStringGraphEdge & e)
-	//{
-		//unimplemented();
-	//}
+	void print(std::ostream & os, const v_idx_t v_idx) const
+	{
+		v_idx_t read_1_idx = get_v1_idx();
+		v_idx_t read_2_idx = get_v2_idx();
+		char head_1 = v1_outward() ? '>' : '<';
+		char head_2 = v2_inward() ? '>' : '<';
+		if (read_1_idx != v_idx) {
+			std::swap(read_1_idx, read_2_idx);
+			head_1 = (head_1 == '>') ? '<' : '>';
+			head_2 = (head_2 == '>') ? '<' : '>';
+		}
+		os << (read_1_idx + 1) << ' ' << head_1 << "---------"
+		   << head_2 << ' ' << (read_2_idx + 1);
+	}
+
 	void print_dot(std::ostream & os, size_t e_idx) const
 	{
 		unimplemented();

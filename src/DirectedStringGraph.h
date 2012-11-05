@@ -69,18 +69,17 @@ public:
 		_v2_idx = v2_idx;
 	}
 
-	friend std::ostream & operator<<(std::ostream & os,
-					 const DirectedStringGraphEdge & e)
+	void print(std::ostream & os, const v_idx_t v_idx) const
 	{
-		v_idx_t v1_idx = e.get_v1_idx();
+		v_idx_t v1_idx = get_v1_idx();
 		v_idx_t read_1_idx = v1_idx / 2 + 1;
 		char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
-		v_idx_t v2_idx = e.get_v2_idx();
+		v_idx_t v2_idx = get_v2_idx();
 		v_idx_t read_2_idx = v2_idx / 2 + 1;
 		char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
-		return os << read_1_idx << '.' << read_1_dir << " -> "
-			  << read_2_idx << '.' << read_2_dir
-			  << '\t' << e.get_seq();
+		os << read_1_idx << '.' << read_1_dir << " -> "
+		   << read_2_idx << '.' << read_2_dir
+		   << '\t' << get_seq();
 	}
 
 	void print_dot(std::ostream & os, size_t e_idx) const

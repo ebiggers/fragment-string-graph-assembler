@@ -12,12 +12,6 @@
 #include "BaseVecVec.h"
 
 class StringGraphEdge {
-public:
-	friend std::ostream & operator<<(std::ostream & os,
-					 const StringGraphEdge & v)
-	{
-		return os << "StringGraphEdge at " << &v;
-	}
 };
 
 class StringGraphVertex {
@@ -269,9 +263,11 @@ public:
 
 	void print(std::ostream & os) const
 	{
-		for (const VERTEX_t & v : _vertices) {
-			for (const unsigned long edge_idx : v.edge_indices()) {
-				os << _edges[edge_idx] << '\n';
+		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
+			const VERTEX_t & v = _vertices[v_idx];
+			for (const edge_idx_t edge_idx : v.edge_indices()) {
+				_edges[edge_idx].print(os, v_idx);
+				os << '\n';
 			}
 		}
 		os << std::flush;
