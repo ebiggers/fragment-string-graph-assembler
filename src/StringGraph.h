@@ -117,9 +117,9 @@ private:
 				 *  Add f.E -> g.E, g.B -> f.B
 				 *
 				 *  Or bidirected edge:
-				 *  
+				 *
 				 *  f >----------> g
-				 *    
+				 *
 				 *     f.E -> g.E label: g[g_end + 1 ... g.size() - 1]
 				 *     g.B -> f.B label: f[0 ... f_beg - 1]
 				 */
@@ -136,9 +136,9 @@ private:
 				 *  Add f.E -> g.B, g.E -> f.B
 				 *
 				 *  Or bidirected edge:
-				 *  
+				 *
 				 *  f >----------< g
-				 *    
+				 *
 				 *     f.E -> g.B label: g[g_end - 1 ... 0]
 				 *     g.E -> f.B label: f[f_beg - 1 ... 0]
 				 */
@@ -158,9 +158,9 @@ private:
 				 *  Add f.B -> g.B, g.E -> f.E
 				 *
 				 *  Or bidirected edge:
-				 *  
+				 *
 				 *  f <----------< g
-				 *    
+				 *
 				 *     f.B -> g.B label: g[g_beg - 1 ... 0]
 				 *     g.E -> f.E label: f[f_end + 1 ... f.size() - 1]
 				 */
@@ -178,9 +178,9 @@ private:
 				 *  Add f.B -> g.E, g.B -> f.E
 				 *
 				 *  Or bidirected edge:
-				 *  
+				 *
 				 *  f <----------> g
-				 *    
+				 *
 				 *     f.B -> g.E label: g[g_beg + 1 ... g.size() - 1]
 				 *     g.B -> f.E label: f[f_end + 1 ... f.size() - 1]
 				 */

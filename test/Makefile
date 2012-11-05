@@ -46,7 +46,7 @@ out.uncontained.overlaps:.remove-contained-reads
 	print-string-graph --dot $+ > $@
 
 %.ps:%.dot
-	dot -Tps $+ -o$@ 
+	dot -Tps $+ -o$@
 
 %.pdf:%.dot
 	dot -Tpdf $+ -o$@

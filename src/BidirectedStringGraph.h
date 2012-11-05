@@ -136,7 +136,7 @@ public:
 // A vertex of a bidirected string graph.
 class BidirectedStringGraphVertex : public StringGraphVertex {
 public:
-	size_t out_degree() const 
+	size_t out_degree() const
 	{
 		unimplemented();
 	}
@@ -169,7 +169,7 @@ public:
 		this->read(filename);
 	}
 
-	
+
 	void print_dot_graph_attribs(std::ostream & os) const
 	{
 		os << "\tconcentrate=true;\n";

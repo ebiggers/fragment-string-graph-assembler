@@ -36,7 +36,7 @@ public:
 	}
 	friend std::ostream & operator<<(std::ostream & os, const KmerOccurrence & occ)
 	{
-		return os << "KmerOccurrence { _read_id: " << occ._read_id << 
+		return os << "KmerOccurrence { _read_id: " << occ._read_id <<
 			", _read_pos: " << occ._read_pos <<
 			", _rc: " <<occ._rc << "}";
 	}
@@ -270,7 +270,7 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 //
 // Templatized by K, the length of the k-mer seed used to find overlaps.
 template <unsigned K>
-static void compute_overlaps(const BaseVecVec &bvv, 
+static void compute_overlaps(const BaseVecVec &bvv,
 			     const unsigned min_overlap_len,
 			     const unsigned max_edits,
 			     OverlapVecVec &ovv)

@@ -103,7 +103,7 @@ class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
 private:
 	// Add an edge to a directed string graph
 	void add_edge(const v_idx_t read_1_idx,
-		      const v_idx_t read_2_idx, 
+		      const v_idx_t read_2_idx,
 		      const v_idx_t dirs,
 		      const BaseVec & bv,
 		      const BaseVec::size_type beg,

@@ -47,7 +47,7 @@ private:
 public:
 	static const size_type K = _K;
 
-	Kmer() { 
+	Kmer() {
 		for (size_type i = 0; i < NUM_STORAGES; i++)
 			_bases[i] = 0;
 	}

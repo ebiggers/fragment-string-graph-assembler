@@ -17,7 +17,7 @@
 #	define __noinline
 #endif
 
-/* 
+/*
  * Compare-and-swap.  Equivalent to the folliwng, but executed
  * atomically:
  *
@@ -38,7 +38,7 @@ static inline bool cas_bool(volatile Q *ptr, Q oval, Q nval) {
 	return __sync_bool_compare_and_swap(ptr, oval, nval);
 }
 
-/* 
+/*
  * Atomically writes @nval into @ptr and returns the previous value of
  * @ptr.
  */

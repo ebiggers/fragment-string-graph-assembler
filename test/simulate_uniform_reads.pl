@@ -25,7 +25,7 @@ if ($help) {
     print "$USAGE";
     exit 0;
 }
-                     
+
 my $file = $ARGV[0] or die $USAGE;
 
 open FILE, "<", $file or die "Cannot open \"$file\": $!";
