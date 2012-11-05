@@ -190,4 +190,10 @@ public:
 		add_edge(read_1_idx, read_2_idx, dirs, bv1, beg_1, end_1);
 		add_edge(read_2_idx, read_1_idx, (dirs ^ 3), bv2, beg_2, end_2);
 	}
+
+private:
+	void follow_unbranched_path(DirectedStringGraphEdge & e,
+				    std::vector<bool> & remove_edge,
+				    const std::vector<bool> & v_inner);
+
 };

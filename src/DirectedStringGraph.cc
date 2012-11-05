@@ -149,6 +149,41 @@ void DirectedStringGraph::transitive_reduction()
 	info("Done removing transitive edges");
 }
 
+void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
+						 std::vector<bool> & remove_edge,
+						 const std::vector<bool> & v_inner)
+{
+	BaseVecVec::size_type new_seq_len = e.length();
+	v_idx_t vi_idx = e.get_v2_idx();
+	// Found beginning of unbranched path.  Walk along it until
+	// the end to get the total sequence length.
+	do {
+		const DirectedStringGraphVertex &vi = _vertices[vi_idx];
+		assert(vi.out_degree() == 1);
+		const DirectedStringGraphEdge &ei_i1 = _edges[vi.first_edge_idx()];
+		if (new_seq_len + ei_i1.length() < new_seq_len)
+			fatal_error("Edge too long");
+		new_seq_len += ei_i1.length();
+		vi_idx = ei_i1.get_v2_idx();
+	} while (v_inner[vi_idx]);
+
+	BaseVec & new_seq = e.get_seq();
+	BaseVec::size_type seq_idx = new_seq.length();
+	new_seq.resize(new_seq_len);
+	vi_idx = e.get_v2_idx();
+	do {
+		DirectedStringGraphVertex &vi = _vertices[vi_idx];
+		const edge_idx_t ei_i1_idx = vi.first_edge_idx();
+		DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
+		const BaseVec & ei_i1_seq = ei_i1.get_seq();
+		for (BaseVec::size_type i = 0; i < ei_i1_seq.length(); i++)
+			new_seq.set(seq_idx++, ei_i1_seq[i]);
+		remove_edge[ei_i1_idx] = true;
+	} while (v_inner[vi_idx]);
+	assert(new_seq_len == seq_idx);
+	e.set_v2_idx(vi_idx);
+}
+
 void DirectedStringGraph::collapse_unbranched_paths()
 {
 	const v_idx_t n_verts = num_vertices();
@@ -186,37 +221,8 @@ void DirectedStringGraph::collapse_unbranched_paths()
 			const DirectedStringGraphVertex & v = _vertices[v_idx];
 			for (edge_idx_t edge_idx : v.edge_indices()) {
 				DirectedStringGraphEdge & e = _edges[edge_idx];
-				const v_idx_t v2_idx = e.get_v2_idx();
-				if (v_inner[v2_idx]) {
-					BaseVecVec::size_type new_seq_len = e.length();
-					v_idx_t vi_idx = v2_idx;
-					// Found beginning of unbranched path.  Walk along it until
-					// the end to get the total sequence length.
-					do {
-						const DirectedStringGraphVertex &vi = _vertices[vi_idx];
-						assert(vi.out_degree() == 1);
-						const DirectedStringGraphEdge &ei_i1 = _edges[vi.first_edge_idx()];
-						if (new_seq_len + ei_i1.length() < new_seq_len)
-							fatal_error("Edge too long");
-						new_seq_len += ei_i1.length();
-						vi_idx = ei_i1.get_v2_idx();
-					} while (v_inner[vi_idx]);
-
-					BaseVec & new_seq = e.get_seq();
-					BaseVec::size_type seq_idx = new_seq.length();
-					new_seq.resize(new_seq_len);
-					vi_idx = v2_idx;
-					do {
-						DirectedStringGraphVertex &vi = _vertices[vi_idx];
-						const edge_idx_t ei_i1_idx = vi.first_edge_idx();
-						DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
-						const BaseVec & ei_i1_seq = ei_i1.get_seq();
-						for (BaseVec::size_type i = 0; i < ei_i1_seq.length(); i++)
-							new_seq.set(seq_idx++, ei_i1_seq[i]);
-						remove_edge[ei_i1_idx] = true;
-					} while (v_inner[vi_idx]);
-					assert(new_seq_len == seq_idx);
-					e.set_v2_idx(vi_idx);
+				if (v_inner[e.get_v2_idx()]) {
+					follow_unbranched_path(e, remove_edge, v_inner);
 				}
 			}
 		}
