@@ -49,6 +49,11 @@ public:
 		return _edge_indices;
 	}
 
+	edge_idx_t first_edge_idx() const
+	{
+		return _edge_indices[0];
+	}
+
 	// Return a reference to the vertex of edge indices of this string graph
 	// vertex.
 	std::vector<edge_idx_t> & edge_indices()

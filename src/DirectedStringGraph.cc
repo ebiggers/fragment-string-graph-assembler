@@ -151,5 +151,123 @@ void DirectedStringGraph::transitive_reduction()
 
 void DirectedStringGraph::collapse_unbranched_paths()
 {
-	unimplemented();
+	v_idx_t n_verts = num_vertices();
+	edge_idx_t n_edges = num_vertices();
+
+	// Find whether each vertex is inner or not.  A vertex is inner iff it
+	// has indegree 1 and outdegree 1.
+	std::vector<bool> v_inner(n_verts);
+	{
+		std::vector<unsigned char> v_degrees(n_verts);
+		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+			const DirectedStringGraphVertex & v = _vertices[v_idx];
+			for (edge_idx_t edge_idx : v.edge_indices()) {
+				const DirectedStringGraphEdge & e = _edges[edge_idx];
+				v_idx_t v1_idx, v2_idx;
+				e.get_v_indices(v1_idx, v2_idx);
+				if (v_degrees[v1_idx] < 3)
+					v_degrees[v1_idx]++;
+				if (v_degrees[v2_idx] < 3)
+					v_degrees[v2_idx]++;
+			}
+		}
+		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+			if (v_degrees[v_idx] == 2 && _vertices[v_idx].out_degree() == 1) {
+				v_inner[v_idx] = true;
+			}
+		}
+	}
+
+	// Go through each non-inner vertex and look for any neighboring inner
+	// vertices.  These are the starts of unbranched paths that will be
+	// collapsed.
+	std::vector<bool> remove_edge(n_edges, false);
+	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+		if (!v_inner[v_idx]) {
+			const DirectedStringGraphVertex & v = _vertices[v_idx];
+			for (edge_idx_t edge_idx : v.edge_indices()) {
+				DirectedStringGraphEdge & e = _edges[edge_idx];
+				assert(e.get_v1_idx() == v_idx);
+				const v_idx_t v2_idx = e.get_v2_idx();
+				BaseVecVec::size_type new_seq_len;
+				if (v_inner[v2_idx]) {
+					new_seq_len = e.length();
+					v_idx_t vi_idx = v2_idx;
+					// Found beginning of unbranched path.
+					do {
+						const DirectedStringGraphVertex &vi = _vertices[vi_idx];
+						assert(vi.out_degree() == 1);
+						const DirectedStringGraphEdge &ei_i1 = _edges[vi.first_edge_idx()];
+						if (new_seq_len + ei_i1.length() < new_seq_len)
+							fatal_error("Edge too long");
+						new_seq_len += ei_i1.length();
+						assert(ei_i1.get_v1_idx() == vi_idx);
+						vi_idx = ei_i1.get_v2_idx();
+					} while (v_inner[vi_idx]);
+
+					BaseVec & new_seq = e.get_seq();
+					BaseVec::size_type seq_idx = new_seq.length();
+					new_seq.resize(new_seq_len);
+					vi_idx = v2_idx;
+					do {
+						DirectedStringGraphVertex &vi = _vertices[vi_idx];
+						const edge_idx_t ei_i1_idx = vi.first_edge_idx();
+						DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
+						const BaseVec & ei_i1_seq = ei_i1.get_seq();
+						for (BaseVec::size_type i = 0; i < ei_i1_seq.length(); i++)
+							new_seq.set(seq_idx + i, ei_i1_seq[i]);
+						remove_edge[ei_i1_idx] = true;
+						seq_idx += ei_i1_seq.length();
+					} while (v_inner[vi_idx]);
+					e.set_v2_idx(vi_idx);
+				}
+			}
+		}
+	}
+
+	// Compute the new vertex indices.
+	std::vector<v_idx_t> new_v_indices(n_verts);
+	v_idx_t new_v_idx = 0;
+	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++)
+		if (v_inner[v_idx])
+			new_v_indices[v_idx] = std::numeric_limits<v_idx_t>::max();
+		else
+			new_v_indices[v_idx] = new_v_idx++;
+
+	// Compute the new edge indices, set the new vertex indices in each edge,
+	// and move the edges
+	std::vector<edge_idx_t> new_edge_indices(n_edges);
+	edge_idx_t new_edge_idx = 0;
+	for (edge_idx_t edge_idx = 0; edge_idx < n_edges; edge_idx++) {
+		if (!remove_edge[edge_idx]) {
+			DirectedStringGraphEdge & e = _edges[edge_idx];
+			new_edge_indices[edge_idx] = new_edge_idx;
+			v_idx_t v1_idx, v2_idx;
+			e.get_v_indices(v1_idx, v2_idx);
+			e.set_v_indices(new_v_indices[v1_idx], new_v_indices[v2_idx]);
+			_edges[new_edge_idx++] = _edges[edge_idx];
+		}
+	}
+	_edges.resize(new_edge_idx);
+
+	// Set new edge indices in each vertex and move the vertices
+
+	new_v_idx = 0;
+	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+		if (!v_inner[v_idx]) {
+			DirectedStringGraphVertex & v = _vertices[v_idx];
+			std::vector<edge_idx_t> & edge_indices = v.edge_indices();
+			for (size_t i = 0; i < v.out_degree(); i++) {
+				edge_idx_t edge_idx = edge_indices[i];
+				edge_idx_t new_edge_idx = new_edge_indices[edge_idx];
+				edge_indices[i] = new_edge_idx;
+			}
+			_vertices[new_v_idx++] = _vertices[v_idx];
+		}
+	}
+	_vertices.resize(new_v_idx);
+
+
+
+	// Collapse the paths.
 }

@@ -33,6 +33,12 @@ public:
 		return _size;
 	}
 
+	// Return the number of bases in this BaseVec.
+	size_type length() const
+	{
+		return _size;
+	}
+
 	// Get the binary base in this BaseVec at index @idx.
 	unsigned char operator[](size_type idx) const
 	{

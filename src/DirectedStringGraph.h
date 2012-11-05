@@ -78,11 +78,29 @@ public:
 		return _v2_idx;
 	}
 
+	// Get the vertex indices at the tail (v1_idx) and head (v2_idx) of this
+	// edge in the directed string graph.
+	void get_v_indices(v_idx_t & v1_idx, v_idx_t & v2_idx) const
+	{
+		v1_idx = _v1_idx;
+		v2_idx = _v2_idx;
+	}
+
 	// Set the vertex indices at the tail (v1_idx) and head (v2_idx) of this
 	// edge in the directed string graph.
 	void set_v_indices(const v_idx_t v1_idx, const v_idx_t v2_idx)
 	{
 		_v1_idx = v1_idx;
+		_v2_idx = v2_idx;
+	}
+
+	void set_v1_idx(const v_idx_t v1_idx)
+	{
+		_v1_idx = v1_idx;
+	}
+
+	void set_v2_idx(const v_idx_t v2_idx)
+	{
 		_v2_idx = v2_idx;
 	}
 
