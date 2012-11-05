@@ -32,6 +32,8 @@ private:
 	v_idx_t _v2_idx;
 	BaseVec _seq;
 
+	// Serialize or deserialize the directed string graph edge to/from a
+	// stream.
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
@@ -41,38 +43,50 @@ private:
 		ar & _seq;
 	}
 public:
+	// Return a reference to the sequence associated with this edge of the
+	// directed string graph.
 	BaseVec & get_seq()
 	{
 		return _seq;
 	}
 
-	size_t length() const
-	{
-		return _seq.size();
-	}
-
+	// Return a const reference to the sequence associated with this edge of
+	// the directed string graph.
 	const BaseVec & get_seq() const
 	{
 		return _seq;
 	}
 
+	// Return the length of the sequence associated with this edge of the
+	// directed string graph.
+	size_t length() const
+	{
+		return _seq.size();
+	}
+
+	// Return the index of the vertex at the tail of this edge in the
+	// directed string graph.
 	v_idx_t get_v1_idx() const
 	{
 		return _v1_idx;
 	}
 
+	// Return the index of the vertex at the head of this edge in the
+	// directed string graph.
 	v_idx_t get_v2_idx() const
 	{
 		return _v2_idx;
 	}
 
+	// Set the vertex indices at the tail (v1_idx) and head (v2_idx) of this
+	// edge in the directed string graph.
 	void set_v_indices(const v_idx_t v1_idx, const v_idx_t v2_idx)
 	{
 		_v1_idx = v1_idx;
 		_v2_idx = v2_idx;
 	}
 
-	// Print a directed string graph edge
+	// Print this directed string graph edge.
 	void print(std::ostream & os, const v_idx_t v_idx) const
 	{
 		v_idx_t v1_idx = get_v1_idx();
@@ -86,7 +100,7 @@ public:
 		   << '\t' << get_seq();
 	}
 
-	// Print a directed string graph edge in DOT format
+	// Print this directed string graph edge in DOT format.
 	void print_dot(std::ostream & os, const v_idx_t v_idx) const
 	{
 		os << "v" << get_v1_idx() << " -> "
@@ -101,7 +115,7 @@ class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
 					       DirectedStringGraph>
 {
 private:
-	// Add an edge to a directed string graph
+	// Add an edge to this directed string graph.
 	void add_edge(const v_idx_t read_1_idx,
 		      const v_idx_t read_2_idx,
 		      const v_idx_t dirs,
@@ -120,8 +134,8 @@ private:
 		_vertices[v1_idx].add_edge_idx(edge_idx);
 	}
 public:
-	// Initialize a directed string graph with enough space for @num_reads
-	// reads to be inserted
+	// Initialize this directed string graph with enough space for
+	// @num_reads reads to be inserted.
 	DirectedStringGraph(size_t num_reads)
 	{
 		if (!enough_v_indices(num_reads * 2))
@@ -129,7 +143,7 @@ public:
 		_vertices.resize(num_reads * 2);
 	}
 
-	// Read a directed string graph from a file
+	// Read this directed string graph from a file.
 	DirectedStringGraph(const char *filename)
 	{
 		this->read(filename);
@@ -142,7 +156,7 @@ public:
 
 	void transitive_reduction();
 
-	// Add a pair of edges produced by an overlap to the directed string
+	// Add a pair of edges produced by an overlap to this directed string
 	// graph.
 	void add_edge_pair(const v_idx_t read_1_idx,
 			   const v_idx_t read_2_idx,

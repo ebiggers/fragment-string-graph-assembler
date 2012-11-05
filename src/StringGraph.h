@@ -11,15 +11,21 @@
 #include "Overlap.h"
 #include "BaseVecVec.h"
 
+// Base class for edges of the string graph.
 class StringGraphEdge {
 };
 
+// Base class for vertices of the string graph.
 class StringGraphVertex {
 public:
+	// Unsigned integer type of an edge index.  This places one upper bound
+	// an the number of edges that can be in the graph.
 	typedef unsigned long edge_idx_t;
 protected:
+	// vector of the indices of the edges that go out from this vertex.
 	std::vector<edge_idx_t> _edge_indices;
 
+	// Serialize or deserialize the vertex to/from a stream.
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
@@ -29,21 +35,28 @@ protected:
 
 	StringGraphVertex() { }
 public:
+	// Add a new edge index to the list of edge indices associated with this
+	// string graph vertex.
 	void add_edge_idx(const edge_idx_t edge_idx)
 	{
 		_edge_indices.push_back(edge_idx);
 	}
 
+	// Return a const reference to the vertex of edge indices of this string
+	// graph vertex.
 	const std::vector<edge_idx_t> & edge_indices() const
 	{
 		return _edge_indices;
 	}
 
+	// Return a reference to the vertex of edge indices of this string graph
+	// vertex.
 	std::vector<edge_idx_t> & edge_indices()
 	{
 		return _edge_indices;
 	}
 
+	// Print the string graph vertex.
 	friend std::ostream & operator<<(std::ostream & os,
 					 const StringGraphVertex & v)
 	{
@@ -83,6 +96,8 @@ private:
 	static const v_idx_t TAG_G_B = 0x0;
 	static const v_idx_t TAG_G_E = 0x1;
 
+	// Given an uncontained overlap and the read set from which it came, add
+	// the corresponding edge(s) to the string graph.
 	void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o)
 	{
 		Overlap::read_idx_t f_idx;
@@ -193,11 +208,14 @@ private:
 	}
 
 protected:
+	// Vector of the graph's vertices.
 	std::vector<VERTEX_t> _vertices;
+
+	// Vector of the graph's edges.
 	std::vector<EDGE_t> _edges;
 
+	// Serialize or deserialize the string graph to/from a stream.
 	friend class boost::serialization::access;
-
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
@@ -205,13 +223,19 @@ protected:
 		ar & _edges;
 	}
 
+	// Constructor is protected--- use DirectedStringGraph or
+	// BidirectedStringGraph instead.
 	StringGraph() { }
 
+	// Return %true iff the edge structures are large enough to hold indices
+	// for @num_vertices_needed different vertices.
 	bool enough_v_indices(size_t num_vertices_needed) const
 	{
 		return num_vertices_needed <= std::numeric_limits<v_idx_t>::max();
 	}
 
+	// Add an edge to vector of edges of the string graph and return its
+	// index.
 	edge_idx_t push_back_edge(const EDGE_t & e)
 	{
 		if (_edges.size() >= std::numeric_limits<edge_idx_t>::max())
@@ -222,28 +246,41 @@ protected:
 	}
 public:
 
+	// Return a reference to a vector of the string graph's edges.
 	std::vector<EDGE_t> & edges()
 	{
 		return _edges;
 	}
 
+	// Return a reference to a vector of the string graph's vertices.
 	std::vector<VERTEX_t> & vertices()
 	{
 		return _vertices;
 	}
 
+	// Return the number of edges in the string graph.
 	size_t num_edges() const
 	{
 		return _edges.size();
 	}
 
+	// Return the number of vertices in the string graph.
 	size_t num_vertices() const
 	{
 		return _vertices.size();
 	}
 
+	// Delete all edges and vertices from the string graph.
+	void clear()
+	{
+		_edges.resize(0);
+		_vertices.resize(0);
+	}
+
+	// Read the string graph from a file.
 	void read(const char *filename)
 	{
+		this->clear();
 		std::ifstream in(filename);
 		if (!in)
 			fatal_error_with_errno("Error opening \"%s\"", filename);
@@ -251,6 +288,7 @@ public:
 		ar >> *this;
 	}
 
+	// Write the string graph to a file.
 	void write(const char *filename) const
 	{
 		std::ofstream out(filename);
@@ -261,6 +299,7 @@ public:
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 
+	// Print the string graph.
 	void print(std::ostream & os) const
 	{
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
@@ -278,6 +317,7 @@ public:
 		static_cast<const IMPL_t*>(this)->print_dot_graph_attribs(os);
 	}
 
+	// Print the string graph in DOT format.
 	void print_dot(std::ostream & os) const
 	{
 		os << "digraph {\n";
@@ -298,8 +338,11 @@ public:
 		os << "}" << std::endl;
 	}
 
+	// Builds the string graph from a set of reads and their overlaps.
 	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
 	{
+		assert(bvv.size() == ovv.size());
+		this->clear();
 		for (auto overlap_set : ovv) {
 			for (const Overlap & o : overlap_set) {
 				assert_overlap_valid(o, bvv, 0, 0);
