@@ -148,3 +148,8 @@ void DirectedStringGraph::transitive_reduction()
 
 	info("Done removing transitive edges");
 }
+
+void DirectedStringGraph::collapse_unbranched_paths()
+{
+	unimplemented();
+}

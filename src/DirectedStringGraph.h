@@ -155,6 +155,7 @@ public:
 	}
 
 	void transitive_reduction();
+	void collapse_unbranched_paths();
 
 	// Add a pair of edges produced by an overlap to this directed string
 	// graph.

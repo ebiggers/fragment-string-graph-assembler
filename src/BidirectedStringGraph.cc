@@ -128,3 +128,8 @@ void BidirectedStringGraph::transitive_reduction()
 
 	info("Done removing transitive edges");
 }
+
+void BidirectedStringGraph::collapse_unbranched_paths()
+{
+	unimplemented();
+}
