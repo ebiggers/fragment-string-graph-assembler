@@ -273,20 +273,27 @@ public:
 		os << std::flush;
 	}
 
+	void print_dot_graph_attribs(std::ostream & os) const
+	{
+		static_cast<const IMPL_t*>(this)->print_dot_graph_attribs(os);
+	}
+
 	void print_dot(std::ostream & os) const
 	{
 		os << "digraph {\n";
-		os << "\tnode [shape = oval];\n";
+		print_dot_graph_attribs(os);
 		for (size_t i = 0; i < _vertices.size(); i++) {
 			os << "\t";
 			_vertices[i].print_dot(os, i);
 			os << ";\n";
 		}
 
-		for (size_t i = 0; i < _edges.size(); i++) {
-			os << "\t";
-			_edges[i].print_dot(os, i);
-			os << ";\n";
+		for (size_t i = 0; i < _vertices.size(); i++) {
+			for (edge_idx_t edge_idx : _vertices[i].edge_indices()) {
+				os << "\t";
+				_edges[edge_idx].print_dot(os, edge_idx);
+				os << ";\n";
+			}
 		}
 		os << "}" << std::endl;
 	}

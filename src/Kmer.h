@@ -3,6 +3,12 @@
 #include "BaseUtils.h"
 #include "util.h"
 
+//
+// A sequence of _K bases, stored in binary format (2 bits per base).
+//
+// Somewhat similar to a BaseVec, but this is templatized by the length _K so it
+// takes a constant amount of space determined at template instantiation time.
+//
 template <unsigned _K>
 struct Kmer {
 public:
@@ -47,6 +53,8 @@ public:
 	}
 	~Kmer() { }
 
+	// Push a base onto the end of the k-mer and shift all the other bases
+	// left by 1 space.  The base at the front is discarded.
 	void push_back(unsigned char base)
 	{
 		_bases[0] = (_bases[0] << BITS_PER_BASE) & PARTIAL_STORAGE_MASK;
@@ -60,6 +68,8 @@ public:
 		_bases[NUM_STORAGES - 1] |= base;
 	}
 
+	// Push a base onto the front of the k-mer and shift all the other bases
+	// right by 1 space.  The base at the end is discarded.
 	void push_front(unsigned char base)
 	{
 		if (NUM_STORAGES >= 2) {
@@ -73,23 +83,27 @@ public:
 			    (static_cast<storage_type>(base) << PARTIAL_STORAGE_FIRST_BASE_SHIFT);
 	}
 
+	// Changes this k-mer to the complement sequence.
 	void complement()
 	{
 		for (size_type i = 0; i < NUM_STORAGES; i++)
 			_bases[i] ^= std::numeric_limits<size_type>::max();
 	}
 
+	// Changes this k-mer to the reverse sequence.
 	void reverse()
 	{
 		unimplemented();
 	}
 
+	// Changes this k-mer to the reverse-complement sequence.
 	void reverse_complement()
 	{
 		reverse();
 		complement();
 	}
 
+	// Return the binary base at index @idx of the k-mer.
 	unsigned char operator[](const unsigned idx) const
 	{
 		unsigned slot = (idx + BASES_PER_STORAGE - BASES_IN_PARTIAL_STORAGE) /
@@ -100,6 +114,7 @@ public:
 		return static_cast<unsigned char>((_bases[slot] >> shift) & BASE_MASK);
 	}
 
+	// Return true iff two k-mers are equal base-for-base.
 	friend bool operator==(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
 		for (size_type i = 0; i < Kmer<_K>::NUM_STORAGES; i++)
@@ -108,6 +123,8 @@ public:
 		return true;
 	}
 
+	// Return true iff the first k-mer is lexicographically less than the
+	// second k-mer.
 	friend bool operator<(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
 		for (size_type i = 0; i < NUM_STORAGES; i++)
@@ -116,12 +133,14 @@ public:
 		return false;
 	}
 
+	// Returns the lexicographically lesser of two k-mers.
 	friend const Kmer<_K> &
 	canonical_kmer(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
 		return (kmer_1 < kmer_2) ? kmer_1 : kmer_2;
 	}
 
+	// Hashes a k-mer from its bases.
 	size_t hash() const
 	{
 		//static const uint64_t GOLDEN_RATIO_PRIME_64 = 0x9e37fffffffc0001UL;

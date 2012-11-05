@@ -42,6 +42,7 @@ BaseVecVec::file_type BaseVecVec::detect_file_type(const char *filename)
 	fatal_error("`%s': Unknown file type", filename);
 }
 
+// Create a new BaseVec from the ASCII read @seq and add it to this BaseVecVec.
 void BaseVecVec::push_ascii_seq(const std::string &seq)
 {
 	BaseVec bv;
@@ -49,6 +50,7 @@ void BaseVecVec::push_ascii_seq(const std::string &seq)
 	this->push_back(bv);
 }
 
+// Load the reads from a FASTA file into this BaseVecVec.
 void BaseVecVec::load_fasta(std::istream &in)
 {
 	std::string seq;
@@ -69,6 +71,7 @@ void BaseVecVec::load_fasta(std::istream &in)
 		this->push_ascii_seq(seq);
 }
 
+// Load the reads from a FASTQ file into this BaseVecVec.
 void BaseVecVec::load_fastq(std::istream &in)
 {
 	std::string tag, seq, sep, quals;
@@ -78,6 +81,8 @@ void BaseVecVec::load_fastq(std::istream &in)
 	}
 }
 
+// Load the reads from a file into this BaseVecVec.  The file may be in FASTA,
+// FASTQ, or binary BaseVecVec format.
 void BaseVecVec::read(const char *filename, BaseVecVec::file_type ft)
 {
 	if (ft == AUTODETECT)
@@ -104,6 +109,7 @@ void BaseVecVec::read(const char *filename, BaseVecVec::file_type ft)
 	//info("Loaded %zu reads from \"%s\")", this->size(), filename);
 }
 
+// Write the BaseVecVec to a file in FASTA, FASTQ, or native binary format.
 void BaseVecVec::write(const char *filename, file_type ft) const
 {
 	if (ft == AUTODETECT) {

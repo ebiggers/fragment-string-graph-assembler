@@ -4,6 +4,10 @@
 #include "DirectedStringGraph.h"
 #include "BidirectedStringGraph.h"
 
+//
+// Operate on either a BidirectedStringGraph or a DirectedStringGraph.
+// This probably should be a class with virtual methods...
+//
 class AnyStringGraph {
 private:
 	void * impl = NULL;

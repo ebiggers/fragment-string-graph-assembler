@@ -4,7 +4,25 @@
 DEFINE_USAGE(
 "Usage: remove-contained-reads READS_FILE UNCONTAINED_READS_FILE\n"
 "                              OVERLAPS_FILE UNCONTAINED_OVERLAPS_FILE\n"
+"\n"
+"Given a set of reads and all overlaps that were computed from them, find all\n"
+"reads that are fully contained by another read and discard them, along with\n"
+"the corresponding overlaps.\n"
+"\n"
+"If there are identical reads, only one of each is kept.\n"
+"\n"
+"Input:\n"
+"      READS_FILE:     The set of reads from which the overlaps were found.\n"
+"      OVERLAPS_FILE:  The set of overlaps, computed from the reads in\n"
+"                       READS_FILE.\n"
+"\n"
+"Output:\n"
+"      UNCONTAINED_READS_FILE:    The set of reads, with contained reads\n"
+"                                 removed.\n"
+"      UNCONTAINED_OVERLAPS_FILE: The set of overlaps, with overlaps with\n"
+"                                 contained reads removed.\n"
 );
+
 
 int main(int argc, char **argv)
 {

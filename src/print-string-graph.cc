@@ -3,7 +3,15 @@
 #include <getopt.h>
 
 DEFINE_USAGE(
-"Usage: print-string-graph [--dot] BIN_GRAPH_FILE\n"
+"Usage: print-string-graph [--dot] GRAPH_FILE\n"
+"\n"
+"Prints a directed or bidirected string graph.\n"
+"\n"
+"Input:\n"
+"      GRAPH_FILE:  A directed or bidirected string graph in binary format.\n"
+"\n"
+"Options:\n"
+"   --dot    Print the graph in DOT format.\n"
 );
 
 static const char *optstring = "dh";

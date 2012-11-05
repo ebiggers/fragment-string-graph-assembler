@@ -2,7 +2,12 @@
 #include "util.h"
 
 DEFINE_USAGE(
-"Usage: print-overlaps BIN_OVERLAPS_FILE\n"
+"Usage: print-overlaps OVERLAPS_FILE\n"
+"\n"
+"Prints the overlaps from a file.\n"
+"\n"
+"Input:\n"
+"      OVERLAPS_FILE:  The overlaps, in binary format.\n"
 );
 
 int main(int argc, char **argv)

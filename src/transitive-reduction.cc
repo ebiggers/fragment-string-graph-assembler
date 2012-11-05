@@ -2,6 +2,14 @@
 
 DEFINE_USAGE(
 "Usage: transitive-reduction GRAPH_FILE OUT_GRAPH_FILE\n"
+"\n"
+"Performs a transitive reduction on a directed or bidirected string graph.\n"
+"\n"
+"Input:\n"
+"      GRAPH_FILE:   A directed or bidirected string graph in binary format.\n"
+"\n"
+"Output:\n"
+"      OUT_GRAPH_FILE:  The graph with transitive reduction done.\n"
 );
 
 int main(int argc, char **argv)

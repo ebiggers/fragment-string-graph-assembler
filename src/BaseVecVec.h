@@ -4,6 +4,9 @@
 #include <vector>
 #include <boost/serialization/base_object.hpp>
 
+//
+// A vector of BaseVecs; in other words, a vector of DNA sequences (reads).
+//
 class BaseVecVec : public std::vector<BaseVec> {
 public:
 	enum file_type {

@@ -8,6 +8,9 @@
 #include <ostream>
 #include <assert.h>
 
+//
+// Vector of DNA bases, stored in binary format (2 bits per base).
+//
 class BaseVec {
 public:
 	typedef unsigned char storage_type;
@@ -24,11 +27,13 @@ private:
 
 public:
 
+	// Return the number of bases in this BaseVec.
 	size_type size() const
 	{
 		return _size;
 	}
 
+	// Get the binary base in this BaseVec at index @idx.
 	unsigned char operator[](size_type idx) const
 	{
 		assert2(idx < _size);
@@ -37,6 +42,7 @@ public:
 		return (_bases[slot] >> offset) & BASE_MASK;
 	}
 
+	// Set base @idx in this BaseVec to the binary base @base.
 	void set(size_type idx, unsigned char base)
 	{
 		assert2(base < 4);
@@ -53,6 +59,7 @@ public:
 
 	friend class boost::serialization::access;
 
+	// Serialize this BaseVec.
 	template <class Archive>
 	void save(Archive & ar, unsigned version) const
 	{
@@ -60,6 +67,7 @@ public:
 		ar.save_binary(_bases, DIV_ROUND_UP(_size, BASES_PER_BYTE));
 	}
 
+	// Deserialize this BaseVec.
 	template <class Archive>
 	void load(Archive & ar, unsigned version)
 	{
@@ -69,6 +77,7 @@ public:
 	}
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
 
+	// Resizes this BaseVec to hold up to @size bases.
 	void resize(size_type size)
 	{
 		_size = size;
@@ -76,6 +85,8 @@ public:
 		_bases = new storage_type[DIV_ROUND_UP(_size, BASES_PER_STORAGE_TYPE)];
 	}
 
+	// Initializes this BaseVec from a text string of A's, T's, C's, and
+	// G's.
 	void load_from_text(const std::string &s)
 	{
 		load_from_text(s.c_str(), s.size());
@@ -88,6 +99,8 @@ public:
 			set(i, BaseUtils::ascii_to_bin(text[i]));
 	}
 
+	// Extracts the subsequence [beg, end] from this BaseVec and inserts it
+	// into @dest.
 	void extract_seq(const size_type beg,
 			 const size_type end,
 			 BaseVec & dest) const
@@ -107,6 +120,7 @@ public:
 		}
 	}
 
+	// Print the sequence contained in this BaseVec
 	friend std::ostream & operator<<(std::ostream & os, const BaseVec & bv)
 	{
 		for (BaseVec::size_type i = 0; i < bv.size(); i++)
@@ -120,6 +134,11 @@ public:
 		_bases = NULL;
 	}
 
+	// XXX It's currently expected that the BaseVec destructor does NOT free
+	// the storage for the bases.
+	~BaseVec() { }
+
+	// Frees the storage allocated for this BaseVec.
 	void destroy()
 	{
 		_size = 0;

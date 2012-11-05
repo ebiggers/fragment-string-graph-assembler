@@ -1,10 +1,7 @@
 #include "BaseUtils.h"
 
-/* Map a DNA character, upper case or lower case, to the binary code
- * { A => 0, C => 1, G => 2, C => 3, other => 4 }.
- *
- * C99 designated initializers do not exist in C++, too bad...
- */
+// Map a DNA character, upper case or lower case, to the binary code
+// { A => 0, C => 1, G => 2, C => 3, other => 4 }.
 const unsigned char BaseUtils::_ascii_to_bin_tab[256] = {
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -26,6 +23,7 @@ const unsigned char BaseUtils::_ascii_to_bin_tab[256] = {
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
 
-const unsigned char BaseUtils::_bin_to_ascii_tab[4] = {
+// Map a binary DNA base to the corresponding ASCII character.
+const char BaseUtils::_bin_to_ascii_tab[4] = {
 	'A', 'C', 'G', 'T',
 };

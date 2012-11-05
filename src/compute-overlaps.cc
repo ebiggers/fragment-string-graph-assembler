@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <ostream>
 
-//
 // Stores the location of a k-mer in the read set.
 class KmerOccurrence {
 private:
@@ -321,8 +320,18 @@ static const struct option longopts[] = {
 };
 
 DEFINE_USAGE(
-"Usage: compute-overlaps BVV_FILE OVERLAPS_FILE\n"
+"Usage: compute-overlaps READS_FILE OVERLAPS_FILE\n"
 "\n"
+"Computes all overlaps between reads in a set of reads.\n"
+"\n"
+"Input:\n"
+"     READS_FILE:  FASTQ, FASTA, or binary reads (BaseVecVec) file\n"
+"                  containing the read set.\n"
+"\n"
+"Output:\n"
+"     OVERLAPS_FILE:  File to write the overlaps to.\n"
+"\n"
+"Options:\n"
 "  -l, --min-overlap-len=LEN\n"
 "  -e, --max-edits=MAX_EDITS\n"
 "  -h, --help\n"

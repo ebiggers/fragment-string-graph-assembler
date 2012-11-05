@@ -14,6 +14,17 @@
 class BaseVecVec;
 class BaseVec;
 
+//
+// Represents an overlap between two reads:
+//
+// The bases in the read at _read_1_idx, beginning at _read_1_beg and ending at
+// _read_2_end (both inclusive), match the bases in the read at _read_2_idx,
+// beginning at _read_2_beg and ending at _read_2_end (both inclusive).
+//
+// If either beginning position is greater than the end position, this indicates
+// the reverse-complement sequence is overlapped rather than the forward
+// sequence.
+//
 class Overlap {
 private:
 	unsigned long _read_1_idx : 24;
@@ -103,6 +114,9 @@ public:
 	}
 };
 
+//
+// A set of overlaps for each read.
+//
 class OverlapVecVec : public std::vector<std::set<Overlap> > {
 public:
 	typedef std::set<Overlap> OverlapSet;
@@ -119,6 +133,7 @@ private:
 public:
 	OverlapVecVec() { }
 
+	// Read the overlaps from a file.
 	OverlapVecVec(const char *filename)
 	{
 		std::ifstream in(filename);
@@ -126,6 +141,7 @@ public:
 		ar >> *this;
 	}
 
+	// Write the overlaps to a file.
 	void write(const char *filename)
 	{
 		std::ofstream out(filename);

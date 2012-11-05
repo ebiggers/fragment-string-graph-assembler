@@ -2,12 +2,11 @@
 
 #include "StringGraph.h"
 #include "BaseVec.h"
-#include <vector>
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/vector.hpp>
 #include <ostream>
 #include <inttypes.h>
 
+// An edge of a bidirected string graph.
 class BidirectedStringGraphEdge : public StringGraphEdge {
 private:
 	uint64_t _data;
@@ -97,31 +96,44 @@ public:
 		_data = (_data & ~(3ULL << 62)) | (uint64_t(dirs) << 62);
 	}
 
+	// Print a bidirected string graph edge
 	void print(std::ostream & os, const v_idx_t v_idx) const
 	{
 		v_idx_t read_1_idx = get_v1_idx();
 		v_idx_t read_2_idx = get_v2_idx();
 		char head_1 = v1_outward() ? '>' : '<';
 		char head_2 = v2_inward() ? '>' : '<';
+		const BaseVec * seq = &get_seq_1_to_2();
 		if (read_1_idx != v_idx) {
 			std::swap(read_1_idx, read_2_idx);
 			head_1 = (head_1 == '>') ? '<' : '>';
 			head_2 = (head_2 == '>') ? '<' : '>';
+			seq = &get_seq_2_to_1();
 		}
 		os << (read_1_idx + 1) << ' ' << head_1 << "---------"
-		   << head_2 << ' ' << (read_2_idx + 1);
+		   << head_2 << ' ' << (read_2_idx + 1)
+		   << "\t\"" << get_seq_1_to_2() << '"';
 	}
 
-	void print_dot(std::ostream & os, size_t e_idx) const
+	// Print a bidirected string graph edge in DOT format
+	void print_dot(std::ostream & os, const v_idx_t v_idx) const
 	{
-		unimplemented();
-		//os << "v" << get_v1_idx() << " -> "
-		   //<< "v" << get_v2_idx()
-		   //<< " [ label = \"" << length() << "\" ]";
+		if (v_idx == get_v1_idx()) {
+			const char *head_2 = (v2_inward()) ? "normal" : "inv";
+			os << "v" << get_v1_idx() << " -> "
+			   << "v" << get_v2_idx()
+			   << " [ label=\"" << length() << "\" shape=\"" << head_2 << "\" ]";
+		} else {
+			const char *head_1 = (v1_inward()) ? "normal" : "inv";
+			os << "v" << get_v2_idx() << " -> "
+			   << "v" << get_v1_idx()
+			   << " [ label=\"" << length() << "\" shape=\"" << head_1 << "\" ]";
+		}
 	}
 };
 
 
+// A vertex of a bidirected string graph.
 class BidirectedStringGraphVertex : public StringGraphVertex {
 public:
 	size_t out_degree() const 
@@ -129,17 +141,21 @@ public:
 		unimplemented();
 	}
 
+	// Print a bidirected string graph vertex in DOT format
 	void print_dot(std::ostream & os, size_t v_idx) const
 	{
 		os << "v" << v_idx << " [label = \"" << (v_idx + 1) << "\"]";
 	}
 };
 
+// A bidirected string graph.
 class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
 						 BidirectedStringGraphEdge,
 						 BidirectedStringGraph>
 {
 public:
+	// Initialize a bidirected string graph with enough space for @num_reads
+	// reads to be inserted
 	BidirectedStringGraph(size_t num_reads)
 	{
 		if (!enough_v_indices(num_reads * 2))
@@ -147,13 +163,22 @@ public:
 		_vertices.resize(num_reads);
 	}
 
+	// Read a bidirected string graph from a file
 	BidirectedStringGraph(const char *filename)
 	{
 		this->read(filename);
 	}
 
+	
+	void print_dot_graph_attribs(std::ostream & os) const
+	{
+		os << "\tconcentrate=true;\n";
+		os << "\tnode [shape = rect];\n";
+	}
+
 	void transitive_reduction();
 
+	// An an edge to the bidirected string graph, produced from an overlap
 	void add_edge_pair(const v_idx_t read_1_idx,
 			   const v_idx_t read_2_idx,
 			   const v_idx_t dirs,
