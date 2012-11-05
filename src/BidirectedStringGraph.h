@@ -71,9 +71,21 @@ public:
 		return _seq_2_to_1;
 	}
 
-	size_t length() const
+	BaseVec::size_type length() const
 	{
 		return _seq_1_to_2.size();
+	}
+
+	v_idx_t get_other_v_idx(v_idx_t this_v_idx) const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		if (this_v_idx == v1_idx)
+			return v2_idx;
+		else {
+			assert(this_v_idx == v2_idx);
+			return v1_idx;
+		}
 	}
 
 	v_idx_t get_v1_idx() const
@@ -118,6 +130,31 @@ public:
 	bool v2_inward() const { return (get_dirs() & 0x1) != 0; }
 	bool v1_inward() const { return !(v1_outward()); }
 	bool v2_outward() const { return !(v2_inward()); }
+
+	bool this_v_outward(v_idx_t this_v_idx) const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		if (this_v_idx == v1_idx) {
+			return v1_outward();
+		} else {
+			assert(this_v_idx == v2_idx);
+			return v2_outward();
+		}
+	}
+
+	bool other_v_outward(v_idx_t this_v_idx) const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		if (this_v_idx == v1_idx) {
+			return v2_outward();
+		} else {
+			assert(this_v_idx == v2_idx);
+			return v1_outward();
+		}
+	}
+
 
 	void set_dirs(unsigned dirs)
 	{

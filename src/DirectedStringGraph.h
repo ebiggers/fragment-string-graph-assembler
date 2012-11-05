@@ -59,7 +59,7 @@ public:
 
 	// Return the length of the sequence associated with this edge of the
 	// directed string graph.
-	size_t length() const
+	BaseVec::size_type length() const
 	{
 		return _seq.size();
 	}

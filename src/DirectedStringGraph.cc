@@ -4,20 +4,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-class cmp_by_edge_length {
-private:
-	const std::vector<DirectedStringGraphEdge> & _edges;
-public:
-	cmp_by_edge_length(const std::vector<DirectedStringGraphEdge> & edges)
-		: _edges(edges) { }
-
-	template <typename edge_idx_t>
-	bool operator()(edge_idx_t edge_idx_1, edge_idx_t edge_idx_2) const
-	{
-		return _edges[edge_idx_1].length() < _edges[edge_idx_2].length();
-	}
-};
-
 //
 // Perform transitive edge reduction on a directed string graph:
 // Remove all edges v -> x where there exist edges v -> w -> x.
@@ -33,10 +19,8 @@ void DirectedStringGraph::transitive_reduction()
 	std::vector<DirectedStringGraphVertex> & vertices = this->vertices();
 	std::vector<DirectedStringGraphEdge> & edges = this->edges();
 
-	cmp_by_edge_length cmp(edges);
 	info("Sorting adjacency lists of vertices by edge length");
-	for (DirectedStringGraphVertex & v : vertices)
-		std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
+	this->sort_adjlists_by_edge_len();
 
 	static const unsigned char VACANT = 0;
 	static const unsigned char INPLAY = 1;
@@ -66,7 +50,7 @@ void DirectedStringGraph::transitive_reduction()
 
 		// Length of the longest sequence label on the edges leaving
 		// vertex @v.
-		const size_t longest = edges[v.edge_indices().back()].length();
+		const BaseVec::size_type longest = edges[v.edge_indices().back()].length();
 
 		// For each outgoing edge from v -> w in order of labeled
 		// sequence length, consider each vertex w that is still marked

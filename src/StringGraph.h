@@ -244,6 +244,28 @@ protected:
 		_edges.push_back(e);
 		return edge_idx;
 	}
+
+private:
+	class cmp_by_edge_length {
+	private:
+		const std::vector<EDGE_t> & _edges;
+	public:
+		cmp_by_edge_length(const std::vector<EDGE_t> & edges)
+			: _edges(edges) { }
+
+		template <typename edge_idx_t>
+		bool operator()(edge_idx_t edge_idx_1, edge_idx_t edge_idx_2) const
+		{
+			return _edges[edge_idx_1].length() < _edges[edge_idx_2].length();
+		}
+	};
+protected:
+	void sort_adjlists_by_edge_len()
+	{
+		cmp_by_edge_length cmp(_edges);
+		for (VERTEX_t & v : _vertices)
+			std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
+	}
 public:
 
 	// Return a reference to a vector of the string graph's edges.
