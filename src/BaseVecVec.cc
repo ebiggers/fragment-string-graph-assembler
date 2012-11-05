@@ -143,6 +143,7 @@ void BaseVecVec::write(const char *filename, file_type ft) const
 					chars_in_line = 0;
 				}
 			}
+			out << '\n';
 		}
 		break;
 	case FASTQ:

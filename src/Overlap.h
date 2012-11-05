@@ -97,8 +97,8 @@ public:
 
 	friend std::ostream & operator<<(std::ostream & os, const Overlap & o)
 	{
-		os << "Overlap { Read " << o._read_1_idx << ": [" << o._read_1_beg
-		   << ", " << o._read_1_end << "], Read " << o._read_2_idx
+		os << "Overlap { Read " << (o._read_1_idx + 1) << ": [" << o._read_1_beg
+		   << ", " << o._read_1_end << "], Read " << (o._read_2_idx + 1)
 		   << ": [" << o._read_2_beg << ", " << o._read_2_end << "] }";
 		return os;
 	}

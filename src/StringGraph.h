@@ -344,17 +344,15 @@ public:
 	{
 		os << "digraph {\n";
 		print_dot_graph_attribs(os);
-		for (size_t i = 0; i < _vertices.size(); i++) {
+		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
 			os << "\t";
-			_vertices[i].print_dot(os, i);
-			os << ";\n";
+			_vertices[v_idx].print_dot(os, v_idx);
 		}
 
-		for (size_t i = 0; i < _vertices.size(); i++) {
-			for (edge_idx_t edge_idx : _vertices[i].edge_indices()) {
+		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
+			for (edge_idx_t edge_idx : _vertices[v_idx].edge_indices()) {
 				os << "\t";
-				_edges[edge_idx].print_dot(os, edge_idx);
-				os << ";\n";
+				_edges[edge_idx].print_dot(os, v_idx);
 			}
 		}
 		os << "}" << std::endl;
@@ -364,7 +362,6 @@ public:
 	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
 	{
 		assert(bvv.size() == ovv.size());
-		this->clear();
 		for (auto overlap_set : ovv) {
 			for (const Overlap & o : overlap_set) {
 				assert_overlap_valid(o, bvv, 0, 0);
@@ -374,7 +371,7 @@ public:
 		info("String graph has %zu vertices and %zu edges",
 		     num_vertices(), num_edges());
 		info("Average of %.2f edges per vertex",
-		     num_edges() ?
+		     num_vertices() ?
 			double(num_edges()) / double(num_vertices()) : 0);
 	}
 };

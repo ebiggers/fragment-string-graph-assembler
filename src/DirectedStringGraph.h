@@ -19,7 +19,7 @@ public:
 		size_t read_idx = v_idx / 2;
 		char read_dir = (v_idx & 1) ? 'E' : 'B';
 		os << "v" << v_idx << " [label = \"" << (read_idx + 1)
-		   << '.' << read_dir << "\"]";
+		   << '.' << read_dir << "\"];\n";
 	}
 };
 
@@ -105,7 +105,7 @@ public:
 	{
 		os << "v" << get_v1_idx() << " -> "
 		   << "v" << get_v2_idx()
-		   << " [ label = \"" << length() << "\" ]";
+		   << " [ label = \"" << length() << "\" ];\n";
 	}
 };
 
