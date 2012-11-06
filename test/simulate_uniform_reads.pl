@@ -28,6 +28,8 @@ if ($help) {
     exit 0;
 }
 
+srand(1);
+
 my $file = $ARGV[0] or die $USAGE;
 
 open FILE, "<", $file or die "Cannot open \"$file\": $!";

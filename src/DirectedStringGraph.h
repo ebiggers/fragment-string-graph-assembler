@@ -134,16 +134,13 @@ class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
 {
 private:
 	// Add an edge to this directed string graph.
-	void add_edge(const v_idx_t read_1_idx,
-		      const v_idx_t read_2_idx,
-		      const v_idx_t dirs,
+	void add_edge(const v_idx_t v1_idx,
+		      const v_idx_t v2_idx,
 		      const BaseVec & bv,
 		      const BaseVec::size_type beg,
 		      const BaseVec::size_type end)
 	{
 		DirectedStringGraphEdge e;
-		v_idx_t v1_idx = read_1_idx * 2 + (dirs >> 1);
-		v_idx_t v2_idx = read_2_idx * 2 + (dirs & 1);
 
 		e.set_v_indices(v1_idx, v2_idx);
 		bv.extract_seq(beg, end, e.get_seq());
@@ -187,8 +184,16 @@ public:
 			   const BaseVec::size_type beg_2,
 			   const BaseVec::size_type end_2)
 	{
-		add_edge(read_1_idx, read_2_idx, dirs, bv1, beg_1, end_1);
-		add_edge(read_2_idx, read_1_idx, (dirs ^ 3), bv2, beg_2, end_2);
+		const v_idx_t v1_idx = read_1_idx * 2;
+		const v_idx_t v2_idx = read_2_idx * 2;
+		const v_idx_t f_dir = dirs >> 1;
+		const v_idx_t g_dir = dirs & 1;
+
+		add_edge(v1_idx + f_dir, v2_idx + g_dir,
+			 bv1, beg_1, end_1);
+
+		add_edge(v2_idx + (g_dir ^ 1), v1_idx + (f_dir ^ 1),
+			 bv2, beg_2, end_2);
 	}
 
 private:
