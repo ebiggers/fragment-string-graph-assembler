@@ -189,6 +189,10 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	const v_idx_t n_verts = num_vertices();
 	const edge_idx_t n_edges = num_edges();
 
+	info("Collapsing unbranched paths in directed string graph");
+	info("Original graph has %u vertices and %u edges", n_verts, n_edges);
+
+	size_t num_inner_vertices = 0;
 	// Find whether each vertex is inner or not.  A vertex is inner iff it
 	// has indegree 1 and outdegree 1.
 	std::vector<bool> v_inner(n_verts, false);
@@ -207,14 +211,26 @@ void DirectedStringGraph::collapse_unbranched_paths()
 					v_in_degrees[v2_idx]++;
 			}
 		}
-		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++)
-			if (v_in_degrees[v_idx] == 1 && v_out_degrees[v_idx] == 1)
+		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+			if (v_in_degrees[v_idx] == 1 && v_out_degrees[v_idx] == 1) {
 				v_inner[v_idx] = true;
+				num_inner_vertices++;
+			}
+		}
 	}
+
+	info("Found %zu inner vertices (%f%% of all vertices)",
+	     num_inner_vertices,
+	     (n_verts ? 100 * double(num_inner_vertices) / n_verts : 0));
 
 	// Go through each non-inner vertex and look for any neighboring inner
 	// vertices.  These are the starts of unbranched paths that will be
-	// collapsed.
+	// collapsed.  For each such path, follow it until its end and determine
+	// the total length of the edges.  Then, set the first edge's label to
+	// the concatenation of the labels of all the edges in the unbranched
+	// path, then make the first edge point directly to the last vertex in
+	// the path and mark the other edges for deletion.
+	size_t num_unbranched_paths = 0;
 	std::vector<bool> remove_edge(n_edges, false);
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 		if (!v_inner[v_idx]) {
@@ -222,11 +238,14 @@ void DirectedStringGraph::collapse_unbranched_paths()
 			for (edge_idx_t edge_idx : v.edge_indices()) {
 				DirectedStringGraphEdge & e = _edges[edge_idx];
 				if (v_inner[e.get_v2_idx()]) {
+					num_unbranched_paths++;
 					follow_unbranched_path(e, remove_edge, v_inner);
 				}
 			}
 		}
 	}
+
+	info("Found %zu unbranched paths", num_unbranched_paths);
 
 	// Compute the new vertex indices.
 	std::vector<v_idx_t> new_v_indices(n_verts);
@@ -237,6 +256,9 @@ void DirectedStringGraph::collapse_unbranched_paths()
 		else
 			new_v_indices[v_idx] = new_v_idx++;
 
+	info("Updated vertices are indexed [0, %u]", new_v_idx);
+
+	info("Updating edges");
 	// Compute the new edge indices, set the new vertex indices in each edge,
 	// and move the edges
 	std::vector<edge_idx_t> new_edge_indices(n_edges);
@@ -251,8 +273,14 @@ void DirectedStringGraph::collapse_unbranched_paths()
 			_edges[new_edge_idx++] = _edges[edge_idx];
 		}
 	}
+	info("Updated edges are indexed [0, %u]", new_edge_idx);
+	info("%zu edges were removed (%f%% of total)",
+	     _edges.size() - new_edge_idx,
+	     (_edges.size() ? 100.0 * (_edges.size() - new_edge_idx) / _edges.size() : 0));
+
 	_edges.resize(new_edge_idx);
 
+	info("Updating vertices");
 	// Set new edge indices in each vertex and move the vertices
 	new_v_idx = 0;
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
@@ -268,4 +296,5 @@ void DirectedStringGraph::collapse_unbranched_paths()
 		}
 	}
 	_vertices.resize(new_v_idx);
+	info("Done collapsing unbranched paths in directed string graph");
 }

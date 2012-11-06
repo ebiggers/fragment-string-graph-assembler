@@ -1,4 +1,4 @@
-all:out.reduced.digraph out.reduced.bidigraph
+all:out.reduced.collapsed.digraph out.reduced.collapsed.bidigraph
 
 SAMPLE_SIZE ?= 300
 READ_LEN ?= 100
@@ -16,7 +16,7 @@ pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
 else
 reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl
 	./simulate_uniform_reads.pl --read-len=$(READ_LEN)	\
-			--read-sep=$(READ_SEP) $+ > $@
+			--read-sep=$(READ_SEP) --allow-rc $+ > $@
 endif
 
 ifeq ($(USE_PIRS),true)
@@ -65,6 +65,12 @@ out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
 
 %.reduced.bidigraph:%.bidigraph
 	transitive-reduction $+ $@
+
+%.collapsed.digraph:%.digraph
+	collapse-unbranched-paths $+ $@
+
+%.collapsed.bidigraph:%.bidigraph
+	collapse-unbranched-paths $+ $@
 
 clean:
 	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads
