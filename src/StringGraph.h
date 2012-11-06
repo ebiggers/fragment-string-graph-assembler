@@ -117,11 +117,16 @@ private:
 		const BaseVec & f = bvv[f_idx];
 		const BaseVec & g = bvv[g_idx];
 
-		// Must not be a contained overlap
-		assert(!((f_beg == 0 && f_end == f.size() - 1)
+		// Skip self-overlaps
+		//if (f_idx == g_idx)
+			//return;
+
+		// Skip contained overlaps
+		if (((f_beg == 0 && f_end == f.size() - 1)
 		    || (f_beg == f.size() - 1 && f_end == 0)
 		    || (g_beg == 0 && g_end == g.size() - 1)
-		    || (g_beg == g.size() - 1 && g_end == 0)));
+		    || (g_beg == g.size() - 1 && g_end == 0)))
+			return;
 
 		if (f_beg > f_end) {
 			std::swap(f_idx, g_idx);

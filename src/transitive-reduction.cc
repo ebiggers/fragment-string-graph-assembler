@@ -12,7 +12,7 @@ DEFINE_USAGE(
 "      OUT_GRAPH_FILE:  The graph with transitive reduction done.\n"
 );
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 	USAGE_IF(argc != 3);
 	info("Loading string graph from \"%s\"", argv[1]);

@@ -43,8 +43,6 @@ void DirectedStringGraph::transitive_reduction()
 		// Mark each vertex adjacent to @v as INPLAY.
 		for (const edge_idx_t edge_idx : v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
-			assert(e.get_v1_idx() == v_idx);
-			assert(e.get_v2_idx() != v_idx);
 			vertex_marks[e.get_v2_idx()] = INPLAY;
 		}
 
@@ -72,28 +70,12 @@ void DirectedStringGraph::transitive_reduction()
 					const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
 					if (e2.length() > longest)
 						break;
-					if (vertex_marks[e2.get_v2_idx()] == INPLAY) {
-						vertex_marks[e2.get_v2_idx()] = ELIMINATED;
-					}
+					const v_idx_t x_idx = e2.get_v2_idx();
+					if (vertex_marks[x_idx] == INPLAY)
+						vertex_marks[x_idx] = ELIMINATED;
 				}
 			}
 		}
-
-		#if 0
-		for (size_t j = 0; j < edge_indices.size(); j++) {
-			DirectedStringGraphEdge & e = edges[edge_indices[j]];
-			edge_idx_t w_idx = e.get_v2_idx();
-			DirectedStringGraphVertex & w = vertices[w_idx];
-			const std::vector<edge_idx_t> & w_edge_indices = w.edge_indices();
-			for (size_t k = 0; k < w_edge_indices.size(); k++) {
-				if (k == 0) { // TODO: fuzz parameter
-					if (vertex_marks[w_idx] == INPLAY) {
-						vertex_marks[w_idx] = ELIMINATED;
-					}
-				}
-			}
-		}
-		#endif
 
 		// Once again, go through the outgoing edges from v.  For each
 		// neighboring vertex marked ELIMINATED, mark the corresponding
@@ -156,17 +138,25 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 	BaseVecVec::size_type new_seq_len = e.length();
 	v_idx_t vi_idx = e.get_v2_idx();
 	assert(v_inner[vi_idx]);
+
+	//size_t path_len = 1;
+	//info("v1 = %zu", e.get_v1_idx());
+	//info("v2 = %zu", e.get_v2_idx());
 	// Found beginning of unbranched path.  Walk along it until
 	// the end to get the total sequence length.
 	do {
 		const DirectedStringGraphVertex &vi = _vertices[vi_idx];
 		assert(vi.out_degree() == 1);
+		//path_len++;
 		const DirectedStringGraphEdge &ei_i1 = _edges[vi.first_edge_idx()];
 		if (new_seq_len + ei_i1.length() < new_seq_len)
 			fatal_error("Edge too long");
 		new_seq_len += ei_i1.length();
 		vi_idx = ei_i1.get_v2_idx();
+		//info("vi = %zu", vi_idx);
 	} while (v_inner[vi_idx]);
+
+	//info("path_len = %zu", path_len);
 
 	BaseVec & new_seq = e.get_seq();
 	BaseVec::size_type seq_idx = new_seq.length();
