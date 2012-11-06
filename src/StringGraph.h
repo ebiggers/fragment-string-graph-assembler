@@ -144,6 +144,8 @@ private:
 				 *     g.B -> f.B label: f[0 ... f_beg - 1]
 				 */
 
+				assert2(g_end + 1 <= g.size() - 1);
+				assert2(f_beg > 0);
 				add_edge_pair(f_idx, g_idx,
 					      TAG_F_E | TAG_G_E,
 					      g, g_end + 1, g.size() - 1,
@@ -164,6 +166,8 @@ private:
 				 *     g.E -> f.B label: f[f_beg - 1 ... 0]
 				 */
 
+				assert2(g_end > 0);
+				assert2(f_beg > 0);
 				add_edge_pair(f_idx, g_idx,
 					      TAG_F_E | TAG_G_B,
 					      g, g_end - 1, 0,
@@ -186,6 +190,8 @@ private:
 				 *     g.E -> f.E label: f[f_end + 1 ... f.size() - 1]
 				 */
 
+				assert2(g_beg > 0);
+				assert2(f_end + 1 <= f.size() - 1);
 				add_edge_pair(f_idx, g_idx,
 					      TAG_F_B | TAG_G_B,
 					      g, g_beg - 1, 0,
@@ -205,6 +211,8 @@ private:
 				 *     f.B -> g.E label: g[g_beg + 1 ... g.size() - 1]
 				 *     g.B -> f.E label: f[f_end + 1 ... f.size() - 1]
 				 */
+				assert2(g_beg + 1 <= g.size() - 1);
+				assert2(f_end + 1 <= f.size() - 1);
 				add_edge_pair(f_idx, g_idx,
 					      TAG_F_B | TAG_G_E,
 					      g, g_beg + 1, g.size() - 1,

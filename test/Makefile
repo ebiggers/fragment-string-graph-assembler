@@ -4,6 +4,7 @@ SAMPLE_SIZE ?= 300
 READ_LEN ?= 100
 READ_SEP ?= 30
 USE_PIRS ?= true
+MIN_OVERLAP_LEN ?= 25
 GENOME ?= random_genome.fa
 
 genome.fa.$(SAMPLE_SIZE): $(GENOME)
@@ -28,7 +29,7 @@ reads.bvv:reads.fa
 endif
 
 out.overlaps:reads.bvv
-	compute-overlaps $+ $@
+	compute-overlaps $+ $@ -l $(MIN_OVERLAP_LEN)
 
 .remove-contained-reads:reads.bvv out.overlaps
 	remove-contained-reads reads.bvv reads.uncontained.bvv\
