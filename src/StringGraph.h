@@ -144,7 +144,8 @@ private:
 				 *     g.B -> f.B label: f[0 ... f_beg - 1]
 				 */
 
-				add_edge_pair(f_idx, g_idx, TAG_F_E | TAG_G_E,
+				add_edge_pair(f_idx, g_idx,
+					      TAG_F_E | TAG_G_E,
 					      g, g_end + 1, g.size() - 1,
 					      f, f_beg - 1, 0);
 			} else {
@@ -188,7 +189,7 @@ private:
 				add_edge_pair(f_idx, g_idx,
 					      TAG_F_B | TAG_G_B,
 					      g, g_beg - 1, 0,
-					      f, f_beg + 1, f.size() - 1);
+					      f, f_end + 1, f.size() - 1);
 			} else {
 
 				/*
