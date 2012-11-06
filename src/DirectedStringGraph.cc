@@ -155,6 +155,7 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 {
 	BaseVecVec::size_type new_seq_len = e.length();
 	v_idx_t vi_idx = e.get_v2_idx();
+	assert(v_inner[vi_idx]);
 	// Found beginning of unbranched path.  Walk along it until
 	// the end to get the total sequence length.
 	do {
@@ -172,13 +173,16 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 	new_seq.resize(new_seq_len);
 	vi_idx = e.get_v2_idx();
 	do {
-		DirectedStringGraphVertex &vi = _vertices[vi_idx];
+		const DirectedStringGraphVertex &vi = _vertices[vi_idx];
 		const edge_idx_t ei_i1_idx = vi.first_edge_idx();
-		DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
+		const DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
 		const BaseVec & ei_i1_seq = ei_i1.get_seq();
-		for (BaseVec::size_type i = 0; i < ei_i1_seq.length(); i++)
+		for (BaseVec::size_type i = 0; i < ei_i1_seq.length(); i++) {
+			assert2(seq_idx < new_seq_len);
 			new_seq.set(seq_idx++, ei_i1_seq[i]);
+		}
 		remove_edge[ei_i1_idx] = true;
+		vi_idx = ei_i1.get_v2_idx();
 	} while (v_inner[vi_idx]);
 	assert(new_seq_len == seq_idx);
 	e.set_v2_idx(vi_idx);
@@ -256,7 +260,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 		else
 			new_v_indices[v_idx] = new_v_idx++;
 
-	info("Updated vertices are indexed [0, %u]", new_v_idx);
+	info("Updated vertices are indexed [0, %lu)", new_v_idx);
 
 	info("Updating edges");
 	// Compute the new edge indices, set the new vertex indices in each edge,
@@ -273,7 +277,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 			_edges[new_edge_idx++] = _edges[edge_idx];
 		}
 	}
-	info("Updated edges are indexed [0, %u]", new_edge_idx);
+	info("Updated edges are indexed [0, %lu)", new_edge_idx);
 	info("%zu edges were removed (%f%% of total)",
 	     _edges.size() - new_edge_idx,
 	     (_edges.size() ? 100.0 * (_edges.size() - new_edge_idx) / _edges.size() : 0));
