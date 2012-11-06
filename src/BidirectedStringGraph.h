@@ -183,30 +183,18 @@ public:
 	// Print a bidirected string graph edge in DOT format
 	void print_dot(std::ostream & os, const v_idx_t v_idx) const
 	{
-			//const char *head_2 = (v2_inward()) ? "normal" : "inv";
-			//os << "v" << get_v1_idx() << " -> "
-			   //<< "v" << get_v2_idx()
-			   //<< " [ " << [>"label=\"" << length() << "\" " << <]"shape=\"" << head_2 << "\" ]";
 		if (v_idx == get_v1_idx()) {
 			const char *head_1 = (v1_inward()) ? "normal" : "inv";
 			const char *head_2 = (v2_inward()) ? "normal" : "inv";
-			os << "v" << get_v1_idx()
+			os << "\tv" << get_v1_idx()
 			   << " -> "
 			   << "v" << get_v2_idx()
 			   << " ["
 			   << " dir=both arrowhead=" << head_2
 			   << " arrowtail=" << head_1
-			   << " label=" << length()
-			   << "];\n";
+			   << " label=\"" << length() << "\""
+			   << " ];\n";
 		}
-		//} else {
-#if 0
-			const char *head_1 = (v1_inward()) ? "normal" : "inv";
-			os << "v" << get_v2_idx() << " -> "
-			   << "v" << get_v1_idx()
-			   << " [ " << /*"label=\"" << length() << "\" " << */"shape=\"" << head_1 << "\" ]";
-#endif
-		//}
 	}
 };
 
@@ -222,7 +210,8 @@ public:
 	// Print a bidirected string graph vertex in DOT format
 	void print_dot(std::ostream & os, size_t v_idx) const
 	{
-		os << "v" << v_idx << " [label = \"" << (v_idx + 1) << "\"];\n";
+		os << "\tv" << v_idx
+		   << " [ label = \"" << (v_idx + 1) << "\" ];\n";
 	}
 };
 

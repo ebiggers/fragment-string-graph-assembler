@@ -13,13 +13,13 @@ public:
 		return _edge_indices.size();
 	}
 
-	// Print a directed string graph vertex
+	// Print a directed string graph vertex in DOT format.
 	void print_dot(std::ostream & os, size_t v_idx) const
 	{
 		size_t read_idx = v_idx / 2;
 		char read_dir = (v_idx & 1) ? 'E' : 'B';
-		os << "v" << v_idx << " [label = \"" << (read_idx + 1)
-		   << '.' << read_dir << "\"];\n";
+		os << "\tv" << v_idx << " [ label=\""
+		   << (read_idx + 1) << '.' << read_dir << "\" ];\n";
 	}
 };
 
@@ -121,9 +121,9 @@ public:
 	// Print this directed string graph edge in DOT format.
 	void print_dot(std::ostream & os, const v_idx_t v_idx) const
 	{
-		os << "v" << get_v1_idx() << " -> "
+		os << "\tv" << get_v1_idx() << " -> "
 		   << "v" << get_v2_idx()
-		   << " [ label = \"" << length() << "\" ];\n";
+		   << " [ label=\"" << length() << "\" ];\n";
 	}
 };
 

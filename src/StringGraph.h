@@ -102,7 +102,7 @@ private:
 	static const v_idx_t TAG_G_E = 0x1;
 
 	// Given an uncontained overlap and the read set from which it came, add
-	// the corresponding edge(s) to the string graph.
+	// the corresponding edge(s) to this string graph.
 	void add_edge_from_overlap(const BaseVecVec & bvv, const Overlap & o)
 	{
 		Overlap::read_idx_t f_idx;
@@ -220,7 +220,7 @@ protected:
 	// Vector of the graph's edges.
 	std::vector<EDGE_t> _edges;
 
-	// Serialize or deserialize the string graph to/from a stream.
+	// Serialize or deserialize this string graph to/from a stream.
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
@@ -240,7 +240,7 @@ protected:
 		return num_vertices_needed <= std::numeric_limits<v_idx_t>::max();
 	}
 
-	// Add an edge to vector of edges of the string graph and return its
+	// Add an edge to vector of edges of this string graph and return its
 	// index.
 	edge_idx_t push_back_edge(const EDGE_t & e)
 	{
@@ -274,38 +274,38 @@ protected:
 	}
 public:
 
-	// Return a reference to a vector of the string graph's edges.
+	// Return a reference to a vector of this string graph's edges.
 	std::vector<EDGE_t> & edges()
 	{
 		return _edges;
 	}
 
-	// Return a reference to a vector of the string graph's vertices.
+	// Return a reference to a vector of this string graph's vertices.
 	std::vector<VERTEX_t> & vertices()
 	{
 		return _vertices;
 	}
 
-	// Return the number of edges in the string graph.
+	// Return the number of edges in this string graph.
 	size_t num_edges() const
 	{
 		return _edges.size();
 	}
 
-	// Return the number of vertices in the string graph.
+	// Return the number of vertices in this string graph.
 	size_t num_vertices() const
 	{
 		return _vertices.size();
 	}
 
-	// Delete all edges and vertices from the string graph.
+	// Delete all edges and vertices from this string graph.
 	void clear()
 	{
 		_edges.resize(0);
 		_vertices.resize(0);
 	}
 
-	// Read the string graph from a file.
+	// Read this string graph from a file.
 	void read(const char *filename)
 	{
 		this->clear();
@@ -316,7 +316,7 @@ public:
 		ar >> *this;
 	}
 
-	// Write the string graph to a file.
+	// Write this string graph to a file.
 	void write(const char *filename) const
 	{
 		std::ofstream out(filename);
@@ -327,7 +327,7 @@ public:
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 
-	// Print the string graph.
+	// Print this string graph.
 	void print(std::ostream & os) const
 	{
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
@@ -345,26 +345,21 @@ public:
 		static_cast<const IMPL_t*>(this)->print_dot_graph_attribs(os);
 	}
 
-	// Print the string graph in DOT format.
+	// Print this string graph in DOT format.
 	void print_dot(std::ostream & os) const
 	{
 		os << "digraph {\n";
 		print_dot_graph_attribs(os);
-		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
-			os << "\t";
+		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++)
 			_vertices[v_idx].print_dot(os, v_idx);
-		}
 
-		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
-			for (edge_idx_t edge_idx : _vertices[v_idx].edge_indices()) {
-				os << "\t";
+		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++)
+			for (edge_idx_t edge_idx : _vertices[v_idx].edge_indices())
 				_edges[edge_idx].print_dot(os, v_idx);
-			}
-		}
 		os << "}" << std::endl;
 	}
 
-	// Builds the string graph from a set of reads and their overlaps.
+	// Builds this string graph from a set of reads and their overlaps.
 	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
 	{
 		assert(bvv.size() == ovv.size());
