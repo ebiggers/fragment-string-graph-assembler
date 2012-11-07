@@ -33,10 +33,6 @@ void DirectedStringGraph::transitive_reduction()
 	// part of the transitive reduction or not.
 	std::vector<bool> reduce_edge(this->num_edges(), false);
 
-	std::vector<edge_idx_t> in_edges;
-	std::vector<unsigned char> num_in_edges;
-	std::vector<uint16_t> v_idx_to_in_edges(this->num_vertices(), 0xffff);
-
 	// Iterate through every vertex @v in the graph that has outgoing edges.
 	for (size_t v_idx = 0; v_idx < vertices.size(); v_idx++) {
 		const DirectedStringGraphVertex & v = vertices[v_idx];
@@ -44,38 +40,10 @@ void DirectedStringGraph::transitive_reduction()
 		if (v.out_degree() == 0)
 			continue;
 
-		if (v.out_degree() >= 0xffff) {
-			fatal_error("Out degree of vertex %zu is too high (%zu, need < 65535)",
-				    v_idx, v.out_degree());
-		}
-
-		in_edges.clear();
-		num_in_edges.clear();
-		std::fill(num_in_edges.begin(), num_in_edges.end(), 0);
-		uint16_t cur_in_edges_idx = 0;
-
-		// Make it possible to look up edges v -> w given a vertex w.
-		// (v is vertices[v_idx]).
-		// It's assumed there can be at most 2 edges v -> w, which is
-		// true if the edges originate from non-redundant overlaps.
-		for (size_t i = 0; i < v.out_degree(); i++) {
-			const edge_idx_t edge_idx = v.edge_indices()[i];
-			const v_idx_t v2_idx = edges[edge_idx].get_v2_idx();
-			uint16_t in_edges_idx = v_idx_to_in_edges[v2_idx];
-
-			//vertex_marks[v2_idx] = INPLAY;
-
-			if (in_edges_idx == 0xffff) {
-				in_edges_idx = cur_in_edges_idx++;
-				v_idx_to_in_edges[v2_idx] = in_edges_idx;
-				in_edges.push_back(edge_idx);
-				in_edges.push_back(0);
-				num_in_edges.push_back(1);
-			} else {
-				assert(num_in_edges[in_edges_idx] == 1);
-				in_edges[in_edges_idx * 2 + 1] = edge_idx;
-				num_in_edges[in_edges_idx] = 2;
-			}
+		// Mark each vertex adjacent to @v as INPLAY.
+		for (const edge_idx_t edge_idx : v.edge_indices()) {
+			const DirectedStringGraphEdge & e = edges[edge_idx];
+			vertex_marks[e.get_v2_idx()] = INPLAY;
 		}
 
 		// Length of the longest sequence label on the edges leaving
@@ -85,38 +53,27 @@ void DirectedStringGraph::transitive_reduction()
 		// For each outgoing edge from v -> w in order of labeled
 		// sequence length, consider each vertex w that is still marked
 		// INPLAY.
-		for (const edge_idx_t v_edge_idx : v.edge_indices()) {
-			const DirectedStringGraphEdge & edge_v_w = edges[v_edge_idx];
-			const v_idx_t w_idx = edge_v_w.get_v2_idx();
-			const DirectedStringGraphVertex & w = vertices[w_idx];
-
-			for (const edge_idx_t w_edge_idx : w.edge_indices()) {
-				const DirectedStringGraphEdge & edge_w_x = edges[w_edge_idx];
-
-				BaseVecVec::size_type len = edge_v_w.length() +
-							    edge_w_x.length();
-				if (len > longest)
-					continue;
-
-				const v_idx_t x_idx = edge_w_x.get_v2_idx();
-
-				uint16_t x_in_edges_idx = v_idx_to_in_edges[x_idx];
-
-				for (unsigned char in_edge_i = 0;
-				     in_edge_i < num_in_edges[x_in_edges_idx];
-				     in_edge_i++)
-				{
-					const edge_idx_t in_edge_idx =
-						in_edges[x_in_edges_idx * 2 + in_edge_i];
-					const DirectedStringGraphEdge & in_edge = 
-						edges[in_edge_idx];
-
-					if (in_edge.length() == 
-
+		for (const edge_idx_t edge_idx : v.edge_indices()) {
+			const v_idx_t w_idx = edges[edge_idx].get_v2_idx();
+			if (vertex_marks[w_idx] == INPLAY) {
+				// The edge v -> w must be an irreducible edge
+				// if w is still marked INPLAY at this point,
+				// since all shorter edges were already
+				// considered.
+				//
+				// Now, consider the edges leaving vertex w.
+				// Each such edge that goes to a vertex marked
+				// INPLAY must be directly reachable from v, and
+				// therefore the edge must be removed.
+				const DirectedStringGraphVertex & w = vertices[w_idx];
+				for (const edge_idx_t w_edge_idx : w.edge_indices()) {
+					const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
+					if (e2.length() > longest)
+						break;
+					const v_idx_t x_idx = e2.get_v2_idx();
+					if (vertex_marks[x_idx] == INPLAY)
+						vertex_marks[x_idx] = ELIMINATED;
 				}
-
-				if (vertex_marks[x_idx] == INPLAY)
-					vertex_marks[x_idx] = ELIMINATED;
 			}
 		}
 
