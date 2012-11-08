@@ -78,6 +78,11 @@ protected:
 	typedef typename EDGE_t::v_idx_t v_idx_t;
 	typedef typename VERTEX_t::edge_idx_t edge_idx_t;
 
+	static const v_idx_t TAG_F_B = 0x0;
+	static const v_idx_t TAG_F_E = 0x2;
+	static const v_idx_t TAG_G_B = 0x0;
+	static const v_idx_t TAG_G_E = 0x1;
+
 	void add_edge_pair(const v_idx_t read_1_idx,
 			   const v_idx_t read_2_idx,
 			   const v_idx_t dirs,
@@ -95,11 +100,6 @@ protected:
 							  bv2, beg_2, end_2);
 	}
 private:
-
-	static const v_idx_t TAG_F_B = 0x0;
-	static const v_idx_t TAG_F_E = 0x2;
-	static const v_idx_t TAG_G_B = 0x0;
-	static const v_idx_t TAG_G_E = 0x1;
 
 	// Given an uncontained overlap and the read set from which it came, add
 	// the corresponding edge(s) to this string graph.
@@ -244,7 +244,8 @@ protected:
 
 	// Constructor is protected--- use DirectedStringGraph or
 	// BidirectedStringGraph instead.
-	StringGraph() { }
+	StringGraph() : _vertices(), _edges()
+	{ }
 
 	// Return %true iff the edge structures are large enough to hold indices
 	// for @num_vertices_needed different vertices.
@@ -253,8 +254,8 @@ protected:
 		return num_vertices_needed <= std::numeric_limits<v_idx_t>::max();
 	}
 
-	// Add an edge to vector of edges of this string graph and return its
-	// index.
+	// Add an edge to the vector of edges of this string graph and return
+	// its index.
 	edge_idx_t push_back_edge(const EDGE_t & e)
 	{
 		if (_edges.size() >= std::numeric_limits<edge_idx_t>::max())
@@ -288,27 +289,28 @@ protected:
 public:
 
 	// Return a reference to a vector of this string graph's edges.
-	std::vector<EDGE_t> & edges()
-	{
-		return _edges;
-	}
+	std::vector<EDGE_t> & edges() { return _edges; }
+	const std::vector<EDGE_t> & edges() const { return _edges; }
 
 	// Return a reference to a vector of this string graph's vertices.
-	std::vector<VERTEX_t> & vertices()
-	{
-		return _vertices;
-	}
+	std::vector<VERTEX_t> & vertices() { return _vertices; }
+	const std::vector<VERTEX_t> & vertices() const { return _vertices; }
 
 	// Return the number of edges in this string graph.
-	size_t num_edges() const
-	{
-		return _edges.size();
-	}
+	edge_idx_t num_edges() const { return _edges.size(); }
 
 	// Return the number of vertices in this string graph.
-	size_t num_vertices() const
+	v_idx_t num_vertices() const { return _vertices.size(); }
+
+	edge_idx_t locate_edge(const v_idx_t f_idx, const v_idx_t g_idx) const
 	{
-		return _vertices.size();
+		assert(f_idx < num_vertices() && g_idx < num_vertices());
+		for (edge_idx_t edge_idx : _vertices[f_idx].edge_indices()) {
+			assert(edge_idx < num_edges());
+			if (_edges[edge_idx].get_v2_idx() == g_idx)
+				return edge_idx;
+		}
+		assert(0);
 	}
 
 	// Delete all edges and vertices from this string graph.

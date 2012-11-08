@@ -7,6 +7,7 @@
 #include <string>
 #include <ostream>
 #include <assert.h>
+#include <string.h>
 
 //
 // Vector of DNA bases, stored in binary format (2 bits per base).
@@ -37,6 +38,11 @@ public:
 	size_type length() const
 	{
 		return _size;
+	}
+
+	size_type length_bytes() const
+	{
+		return DIV_ROUND_UP(_size, BASES_PER_BYTE);
 	}
 
 	// Get the binary base in this BaseVec at index @idx.
@@ -139,6 +145,21 @@ public:
 		_size = 0;
 		_bases = NULL;
 	}
+
+	void set_from_bv(const BaseVec & bv)
+	{
+		resize(bv.size());
+		memcpy(_bases, bv._bases, bv.length_bytes());
+	}
+
+	//BaseVec(const BaseVec & a, const BaseVec & b)
+	//{
+		//this->resize(a.size() + b.size());
+		//for (size_type i = 0; i < a.size(); i++)
+			//this->set(i, a[i]);
+		//for (size_type i = 0; i < b.size(); i++)
+			//this->set(a.size() + i, b[i]);
+	//}
 
 	// XXX It's currently expected that the BaseVec destructor does NOT free
 	// the storage for the bases.

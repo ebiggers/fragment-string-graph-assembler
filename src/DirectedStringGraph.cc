@@ -14,6 +14,14 @@ const char DirectedStringGraph::magic[] =
 // See:
 //    "The fragment string assembly graph", Eugene W. Myers, 2005
 //
+// There are, however, some changes that have to be made to make the algorithm
+// work in practice.  In particular, the edge v -> x should only be removed if
+// it is actually labeled by the same sequence as v -> w -> x.
+//
+// It's important to keep in mind that there can only at most one edge v -> w
+// for any v and w, since this represents one kind of overlap.  But, it's
+// possible for there to be an edge w -> v as well.
+//
 void DirectedStringGraph::transitive_reduction()
 {
 	info("Performing transitive reduction on directed string graph with "
@@ -72,8 +80,8 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 
-			//if (vertex_marks[w_idx] != INPLAY)
-				//continue;
+			if (vertex_marks[w_idx] != INPLAY)
+				continue;
 
 			// The edge v -> w must be an irreducible edge if w is
 			// still marked INPLAY at this point, since all shorter

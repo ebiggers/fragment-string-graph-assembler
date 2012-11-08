@@ -1,8 +1,33 @@
 #include "BidirectedStringGraph.h"
+#include "DirectedStringGraph.h"
 
 const char BidirectedStringGraph::magic[]
 		= {'B', 'i', 'd', 'i', 'g', 'r', 'a', 'p', 'h', '\0'};
 
+//
+// Transitive reduction of a bidirected string graph.
+//
+// This is based on the code for transitive reduction of a directed string graph
+// (DirectedStringGraph::transitive_reduction()), but some modifications need to
+// be made to make it work on bidirected graphs.
+//
+// In particular, an edge v ?-? x can only be considered transitive given a pair
+// of edges v ?-? w ?-? x if:
+// 	(1) The two heads adjacent to w have opposite orientation;
+// 	(2) The heads adjacent to v in v ?-? w and v ?-? x have the same
+// 	orientation, and
+// 	(3) The heads adjacent to x in v ?-? x and w ?-? x have the same
+// 	orientation.
+// 	(4) And as in the directed case, the sequence v ?-? x must be equal to
+// 	the sequence v ?-? w + v ?-? x.
+//
+// In addition, in the directed case, there can be at most one edge v -> w
+// (although there may be an edge w -> v as well).  But in the bidirected case,
+// there can be up to 4 edges between v and w:
+// 	v >--> w
+// 	v <--< w
+// 	v >--< w
+// 	v <--> w
 void BidirectedStringGraph::transitive_reduction()
 {
 	info("Performing transitive reduction on bidirected string graph with "
@@ -29,6 +54,9 @@ void BidirectedStringGraph::transitive_reduction()
 
 	for (size_t v_idx = 0; v_idx < vertices.size(); v_idx++) {
 		bool v_head_outward = true;
+		// First, only consider edges leaving v with an out head.  Then,
+		// on the second iteration, only consider edges leaving v with
+		// an in head.
 		do {
 			const BidirectedStringGraphVertex & v = vertices[v_idx];
 
@@ -135,4 +163,65 @@ void BidirectedStringGraph::transitive_reduction()
 void BidirectedStringGraph::collapse_unbranched_paths()
 {
 	unimplemented();
+}
+
+void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digraph)
+{
+	info("Building bidirected string graph from directed string graph");
+	info("Directed string graph: %zu vertices", digraph.num_vertices());
+	info("Bidirected string graph: %zu vertices", this->num_vertices());
+	assert(digraph.num_vertices() % 2 == 0);
+	assert(num_vertices() == digraph.num_vertices() / 2);
+	assert(num_edges() == 0);
+	for (v_idx_t f_idx = 0; f_idx < digraph.num_vertices(); f_idx++) {
+		//
+		// digraph edge
+		// f.?1 -> g.?2   such that f_idx <= g_idx
+		//      seq
+		//
+		// find edge g.^?1 -> f.^?2
+		// 
+		// add bidigraph edge
+		//
+		//   f ?-? g where dirs =
+		//   (?1 == E ? TAG_F_E : TAG_F_B) | (?2 == E ? TAG_G_E : TAG_G_B)
+		//
+		//   seq
+		//
+		for (const edge_idx_t f_g_edge_idx : digraph.vertices()[f_idx].edge_indices())
+		{
+			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
+			const v_idx_t g_idx = f_g.get_v2_idx();
+
+			if (f_idx == g_idx)
+				unimplemented();
+			if (f_idx < g_idx) {
+				const edge_idx_t g_f_edge_idx =
+						digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
+
+				const DirectedStringGraphEdge & g_f =
+						digraph.edges()[g_f_edge_idx];
+
+				v_idx_t dirs = 0;
+				dirs |= (f_idx & 1) ?  TAG_F_E : TAG_F_B;
+				dirs |= (g_idx & 1) ?  TAG_G_E : TAG_G_B;
+
+				BidirectedStringGraphEdge e;
+				const v_idx_t v1_idx = f_idx / 2;
+				const v_idx_t v2_idx = g_idx / 2;
+
+				//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
+				//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
+				e.get_seq_1_to_2() = f_g.get_seq();
+				e.get_seq_2_to_1() = g_f.get_seq();
+				e.set_v_indices(v1_idx, v2_idx);
+				e.set_dirs(dirs);
+
+				edge_idx_t edge_idx = this->push_back_edge(e);
+				_vertices[v1_idx].add_edge_idx(edge_idx);
+				_vertices[v2_idx].add_edge_idx(edge_idx);
+			}
+		}
+	}
+	info("Done building bidirected string graph from directed string graph");
 }

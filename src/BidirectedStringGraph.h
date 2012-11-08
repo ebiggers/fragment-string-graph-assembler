@@ -6,6 +6,8 @@
 #include <ostream>
 #include <inttypes.h>
 
+class DirectedStringGraph;
+
 // An edge of a bidirected string graph.
 //
 // An edge in a bidirected graph has a head at each edge of the edge.  As a
@@ -223,7 +225,7 @@ class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
 public:
 	// Initialize a bidirected string graph with enough space for @num_reads
 	// reads to be inserted
-	BidirectedStringGraph(size_t num_reads)
+	BidirectedStringGraph(size_t num_reads) : StringGraph()
 	{
 		if (!enough_v_indices(num_reads * 2))
 			fatal_error("Too many reads (%zu)", num_reads);
@@ -231,10 +233,12 @@ public:
 	}
 
 	// Read a bidirected string graph from a file
-	BidirectedStringGraph(const char *filename)
+	BidirectedStringGraph(const char *filename) : StringGraph()
 	{
 		this->read(filename);
 	}
+
+	void build_from_digraph(const DirectedStringGraph & digraph);
 
 	static const char magic[10];
 
