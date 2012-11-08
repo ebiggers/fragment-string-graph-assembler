@@ -29,6 +29,11 @@ void DirectedStringGraph::transitive_reduction()
 	// Per-vertex mark.  Initially set to VACANT.
 	std::vector<unsigned char> vertex_marks(this->num_vertices(), VACANT);
 
+	// Map from vertex index to index of edges back to the vertex currently
+	// under consideration
+	std::vector<edge_idx_t> v_idx_to_back_edge_idx(this->num_vertices(),
+						       std::numeric_limits<edge_idx_t>::max());
+
 	// Per-edge boolean indicating whether each edge is to be deleted as
 	// part of the transitive reduction or not.
 	std::vector<bool> reduce_edge(this->num_edges(), false);
@@ -40,10 +45,17 @@ void DirectedStringGraph::transitive_reduction()
 		if (v.out_degree() == 0)
 			continue;
 
+		v_idx_to_back_edge_idx.clear();
+
 		// Mark each vertex adjacent to @v as INPLAY.
 		for (const edge_idx_t edge_idx : v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
-			vertex_marks[e.get_v2_idx()] = INPLAY;
+			const v_idx_t w_idx = e.get_v2_idx();
+			assert(edge_idx != std::numeric_limits<edge_idx_t>::max());
+			assert(v_idx_to_back_edge_idx[w_idx] ==
+			       std::numeric_limits<edge_idx_t>::max());
+			v_idx_to_back_edge_idx[w_idx] = edge_idx;
+			vertex_marks[w_idx] = INPLAY;
 		}
 
 		// Length of the longest sequence label on the edges leaving
@@ -54,26 +66,54 @@ void DirectedStringGraph::transitive_reduction()
 		// sequence length, consider each vertex w that is still marked
 		// INPLAY.
 		for (const edge_idx_t edge_idx : v.edge_indices()) {
-			const v_idx_t w_idx = edges[edge_idx].get_v2_idx();
-			if (vertex_marks[w_idx] == INPLAY) {
-				// The edge v -> w must be an irreducible edge
-				// if w is still marked INPLAY at this point,
-				// since all shorter edges were already
-				// considered.
-				//
-				// Now, consider the edges leaving vertex w.
-				// Each such edge that goes to a vertex marked
-				// INPLAY must be directly reachable from v, and
-				// therefore the edge must be removed.
-				const DirectedStringGraphVertex & w = vertices[w_idx];
-				for (const edge_idx_t w_edge_idx : w.edge_indices()) {
-					const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
-					if (e2.length() > longest)
-						break;
-					const v_idx_t x_idx = e2.get_v2_idx();
-					if (vertex_marks[x_idx] == INPLAY)
-						vertex_marks[x_idx] = ELIMINATED;
-				}
+			const DirectedStringGraphEdge & e = edges[edge_idx];
+			const v_idx_t w_idx = e.get_v2_idx();
+
+			if (vertex_marks[w_idx] != INPLAY)
+				continue;
+
+			// The edge v -> w must be an irreducible edge
+			// if w is still marked INPLAY at this point,
+			// since all shorter edges were already
+			// considered.
+			//
+			// Now, consider the edges leaving vertex w.
+			// Each such edge that goes to a vertex marked
+			// INPLAY must be directly reachable from v, and
+			// therefore the edge must be removed.
+			const DirectedStringGraphVertex & w = vertices[w_idx];
+			for (const edge_idx_t w_edge_idx : w.edge_indices()) {
+				const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
+				if (e.length() + e2.length() > longest)
+					break;
+				const v_idx_t x_idx = e2.get_v2_idx();
+				if (vertex_marks[x_idx] != INPLAY)
+					continue;
+
+				const edge_idx_t back_edge_idx =
+						v_idx_to_back_edge_idx[x_idx];
+
+				assert(back_edge_idx !=
+				       std::numeric_limits<edge_idx_t>::max());
+
+				const DirectedStringGraphEdge & back_edge =
+					edges[back_edge_idx];
+
+				if (e.length() + e2.length() != back_edge.length())
+					continue;
+
+				for (BaseVec::size_type i = 0; i < e.length(); i++)
+					if (e.get_seq()[i] != back_edge.get_seq()[i])
+						goto next_edge;
+
+				for (BaseVec::size_type i = 0; i < e2.length(); i++)
+					if (e2.get_seq()[i] !=
+					    back_edge.get_seq()[i + e.length()])
+						goto next_edge;
+
+				vertex_marks[x_idx] = ELIMINATED;
+				next_edge:
+				;
 			}
 		}
 
@@ -81,12 +121,14 @@ void DirectedStringGraph::transitive_reduction()
 		// neighboring vertex marked ELIMINATED, mark the corresponding
 		// edge(s) for reduction.  Return both INPLAY and ELIMINATED
 		// vertices to VACANT status.
-		for (const edge_idx_t edge_idx : v.edge_indices())
-			if (vertex_marks[edges[edge_idx].get_v2_idx()] == ELIMINATED)
+		for (const edge_idx_t edge_idx : v.edge_indices()) {
+			const DirectedStringGraphEdge & e = edges[edge_idx];
+			const v_idx_t w_idx = e.get_v2_idx();
+			if (vertex_marks[w_idx] == ELIMINATED)
 				reduce_edge[edge_idx] = true;
-
-		for (const edge_idx_t edge_idx : v.edge_indices())
-			vertex_marks[edges[edge_idx].get_v2_idx()] = VACANT;
+			v_idx_to_back_edge_idx[w_idx] = std::numeric_limits<edge_idx_t>::max();
+			vertex_marks[w_idx] = VACANT;
+		}
 	}
 
 	info("Transitive reduction algorithm complete.  Now updating the string graph");
