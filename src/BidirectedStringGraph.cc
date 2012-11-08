@@ -1,5 +1,8 @@
 #include "BidirectedStringGraph.h"
 
+const char BidirectedStringGraph::magic[]
+		= {'B', 'i', 'd', 'i', 'g', 'r', 'a', 'p', 'h', '\0'};
+
 void BidirectedStringGraph::transitive_reduction()
 {
 	info("Performing transitive reduction on bidirected string graph with "

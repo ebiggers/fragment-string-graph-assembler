@@ -4,6 +4,9 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
+const char DirectedStringGraph::magic[] = 
+	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
+
 //
 // Perform transitive edge reduction on a directed string graph:
 // Remove all edges v -> x where there exist edges v -> w -> x.
@@ -45,9 +48,9 @@ void DirectedStringGraph::transitive_reduction()
 		if (v.out_degree() == 0)
 			continue;
 
-		v_idx_to_back_edge_idx.clear();
-
-		// Mark each vertex adjacent to @v as INPLAY.
+		// Mark each vertex adjacent to @v as INPLAY, and initialize the
+		// map from the adjacent vertices' indices to the back edges
+		// indices.
 		for (const edge_idx_t edge_idx : v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
@@ -69,18 +72,19 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 
-			if (vertex_marks[w_idx] != INPLAY)
-				continue;
+			//if (vertex_marks[w_idx] != INPLAY)
+				//continue;
 
-			// The edge v -> w must be an irreducible edge
-			// if w is still marked INPLAY at this point,
-			// since all shorter edges were already
-			// considered.
+			// The edge v -> w must be an irreducible edge if w is
+			// still marked INPLAY at this point, since all shorter
+			// edges were already considered.
 			//
-			// Now, consider the edges leaving vertex w.
-			// Each such edge that goes to a vertex marked
-			// INPLAY must be directly reachable from v, and
-			// therefore the edge must be removed.
+			// Now, consider the edges leaving vertex w.  Each such
+			// edge that goes to a vertex marked INPLAY must be
+			// directly reachable from v, and therefore the edge
+			// must be removed, unless its sequence does not
+			// actually match the sequence from the edges
+			// v -> w -> x.
 			const DirectedStringGraphVertex & w = vertices[w_idx];
 			for (const edge_idx_t w_edge_idx : w.edge_indices()) {
 				const DirectedStringGraphEdge & e2 = edges[w_edge_idx];

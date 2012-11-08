@@ -325,6 +325,12 @@ public:
 		std::ifstream in(filename);
 		if (!in)
 			fatal_error_with_errno("Error opening \"%s\"", filename);
+		char buf[10];
+		in.read(buf, 10);
+		const char * magic = static_cast<IMPL_t*>(this)->magic;
+		if (memcmp(buf, magic, 10) != 0) {
+			throw std::runtime_error("Invalid magic characters in graph file");
+		}
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
 	}
@@ -333,6 +339,7 @@ public:
 	void write(const char *filename) const
 	{
 		std::ofstream out(filename);
+		out.write(static_cast<const IMPL_t*>(this)->magic, 10);
 		boost::archive::binary_oarchive ar(out);
 		ar << *this;
 		out.close();

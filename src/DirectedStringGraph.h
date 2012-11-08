@@ -164,6 +164,8 @@ public:
 		this->read(filename);
 	}
 
+	static const char magic[10];
+
 	void print_dot_graph_attribs(std::ostream & os) const
 	{
 		os << "\tnode [shape = oval];\n";

@@ -7,8 +7,13 @@ USE_PIRS ?= true
 MIN_OVERLAP_LEN ?= 25
 GENOME ?= random_genome.fa
 
+ifeq ($(GENOME),random_genome.fa)
+genome.fa.$(SAMPLE_SIZE):
+	./gen_random_genome.pl $(SAMPLE_SIZE) > $@
+else
 genome.fa.$(SAMPLE_SIZE): $(GENOME)
 	fasta-head -c $(SAMPLE_SIZE) $+ > $@
+endif
 
 ifeq ($(USE_PIRS),true)
 pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)

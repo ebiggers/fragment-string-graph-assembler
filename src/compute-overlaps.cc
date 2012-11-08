@@ -443,8 +443,14 @@ int main(int argc, char *argv[])
 		compute_overlaps<32>(bvv, min_overlap_len, max_edits, ovv);
 	else if (min_overlap_len < 48)
 		compute_overlaps<40>(bvv, min_overlap_len, max_edits, ovv);
-	else
+	else if (min_overlap_len < 64)
 		compute_overlaps<48>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 96)
+		compute_overlaps<64>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 128)
+		compute_overlaps<96>(bvv, min_overlap_len, max_edits, ovv);
+	else
+		compute_overlaps<128>(bvv, min_overlap_len, max_edits, ovv);
 
 	info("Writing overlaps to \"%s\"", argv[1]);
 	ovv.write(argv[1]);
