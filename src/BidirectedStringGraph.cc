@@ -228,5 +228,73 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 
 void BidirectedStringGraph::print_stats(std::ostream & os) const
 {
-	unimplemented();
+	os << "BidirectedStringGraph {" << std::endl;
+	os << "    Number of vertices: " << num_vertices() << std::endl;
+	os << "    Number of edges: " << num_edges() << std::endl;
+
+	std::vector<unsigned char> out_degrees(num_vertices(), 0);
+	std::vector<unsigned char> in_degrees(num_vertices(), 0);
+	std::vector<v_idx_t> dir_histo(4, 0);
+	foreach(const BidirectedStringGraphEdge & e, _edges) {
+		v_idx_t v1_idx, v2_idx;
+		e.get_v_indices(v1_idx, v2_idx);
+		dir_histo[e.get_dirs()]++;
+		if (e.v1_inward()) {
+			if (in_degrees[v1_idx] + 1 != 0)
+				in_degrees[v1_idx]++;
+		} else {
+			if (out_degrees[v1_idx] + 1 != 0)
+				out_degrees[v1_idx]++;
+		}
+		if (e.v2_inward()) {
+			if (in_degrees[v2_idx] + 1 != 0)
+				in_degrees[v2_idx]++;
+		} else {
+			if (out_degrees[v2_idx] + 1 != 0)
+				out_degrees[v2_idx]++;
+		}
+	}
+	std::vector<v_idx_t> out_degree_hist(0xff, 0);
+	std::vector<v_idx_t> in_degree_hist(0xff, 0);
+	std::vector<v_idx_t> in_out_degree_hist(0xffff, 0);
+	v_idx_t v_in_neq_out = 0;
+	for (v_idx_t v_idx = 0; v_idx < num_vertices(); v_idx++) {
+		out_degree_hist[out_degrees[v_idx]]++;
+		in_degree_hist[in_degrees[v_idx]]++;
+		if (out_degrees[v_idx] != in_degrees[v_idx])
+			v_in_neq_out++;
+		in_out_degree_hist[(v_idx_t(in_degrees[v_idx]) << 8) + out_degrees[v_idx]]++;
+	}
+	v_idx_t max_out_degree = 0, max_in_degree = 0;
+	for (size_t i = 0; i < out_degree_hist.size(); i++)
+		if (out_degree_hist[i] != 0)
+			max_out_degree = i;
+	for (size_t i = 0; i < in_degree_hist.size(); i++)
+		if (in_degree_hist[i] != 0)
+			max_in_degree = i;
+	os << "    Number of isolated vertices: "
+	   << in_out_degree_hist[0x000] << std::endl;
+	os << "    Number of inner vertices: "
+	   << in_out_degree_hist[0x101] << std::endl;
+	os << "    Number of branch beginning vertices: "
+	   << in_out_degree_hist[0x001] << std::endl;
+	os << "    Number of branch ending vertices: "
+	   << in_out_degree_hist[0x100] << std::endl;
+	os << "    Number of vertices with unequal in degree and out degree: "
+	   << v_in_neq_out << std::endl;
+	os << "    Max in degree: " << max_in_degree
+	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+	os << "    Max out degree: " << max_out_degree
+	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+
+	// 11
+	// (v1_outward, v2_inward)
+	// 00 => in, out    <---<
+	// 01 => in, in     <--->
+	// 10 => out, out   >---<
+	// 11 => out, in    >--->
+	os << "    Number of edges >--->: " << (dir_histo[0x0] + dir_histo[0x3]) << std::endl;
+	os << "    Number of edges <--->: " << (dir_histo[0x1]) << std::endl;
+	os << "    Number of edges >---<: " << (dir_histo[0x2]) << std::endl;
+	os << "}" << std::endl;
 }
