@@ -3,6 +3,19 @@
 #include <assert.h>
 #include <limits.h>
 #include "compiler.h"
+#include <stdio.h>
+
+
+#if __cplusplus >= 201103L
+#define foreach(member, list) \
+	for (member : list)
+
+#else
+#include <boost/foreach.hpp>
+#define foreach(member, list) \
+		BOOST_FOREACH(member, list)
+#endif
+
 
 extern void fatal_error(const char *msg, ...) __noreturn;
 extern void fatal_error_with_errno(const char *msg, ...);

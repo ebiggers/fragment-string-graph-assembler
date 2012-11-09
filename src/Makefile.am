@@ -1,6 +1,6 @@
 
 LDADD = libassemble.a -lboost_serialization
-AM_CXXFLAGS = -std=c++11
+AM_CXXFLAGS = 
 
 bin_PROGRAMS =				\
 	convert-reads			\
