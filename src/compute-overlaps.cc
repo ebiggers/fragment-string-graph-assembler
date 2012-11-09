@@ -381,9 +381,6 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
 	unsigned long num_pairs_considered = 0;
-	typedef std::pair<typename KmerOccurrenceMap::key_type,
-			  typename KmerOccurrenceMap::value_type>
-			  KmerOccsPair;
 
 	typename KmerOccurrenceMap::const_iterator it;
 	for (it = occ_map.begin(); it != occ_map.end(); it++) {

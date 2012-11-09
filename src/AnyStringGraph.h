@@ -10,11 +10,12 @@
 //
 class AnyStringGraph {
 private:
-	void * impl = NULL;
+	void * impl;
 	bool is_bidigraph;
 public:
 	AnyStringGraph(const char * filename)
 	{
+		impl = NULL;
 		try {
 			impl = (void*)new BidirectedStringGraph(filename);
 			is_bidigraph = true;
