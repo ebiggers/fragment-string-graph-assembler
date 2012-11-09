@@ -66,7 +66,7 @@ public:
 					 const StringGraphVertex & v)
 	{
 		os << "StringGraphVertex {_edge_indices = [";
-		for (edge_idx_t idx : v.edge_indices())
+		foreach(edge_idx_t idx, v.edge_indices())
 			os << idx << ", ";
 		return os << "] }";
 	}
@@ -268,7 +268,7 @@ protected:
 	void sort_adjlists_by_edge_len()
 	{
 		cmp_by_edge_length cmp(_edges);
-		for (VERTEX_t & v : _vertices)
+		foreach(VERTEX_t & v, _vertices)
 			std::sort(v.edge_indices().begin(), v.edge_indices().end(), cmp);
 	}
 public:
@@ -290,7 +290,7 @@ public:
 	edge_idx_t locate_edge(const v_idx_t f_idx, const v_idx_t g_idx) const
 	{
 		assert(f_idx < num_vertices() && g_idx < num_vertices());
-		for (edge_idx_t edge_idx : _vertices[f_idx].edge_indices()) {
+		foreach(edge_idx_t edge_idx, _vertices[f_idx].edge_indices()) {
 			assert(edge_idx < num_edges());
 			if (_edges[edge_idx].get_v2_idx() == g_idx)
 				return edge_idx;
@@ -339,7 +339,7 @@ public:
 	{
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
 			const VERTEX_t & v = _vertices[v_idx];
-			for (const edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 				_edges[edge_idx].print(os, v_idx);
 				os << '\n';
 			}
@@ -361,7 +361,7 @@ public:
 			_vertices[v_idx].print_dot(os, v_idx);
 
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++)
-			for (edge_idx_t edge_idx : _vertices[v_idx].edge_indices())
+			foreach(edge_idx_t edge_idx, _vertices[v_idx].edge_indices())
 				_edges[edge_idx].print_dot(os, v_idx);
 		os << "}" << std::endl;
 	}
@@ -370,8 +370,8 @@ public:
 	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
 	{
 		assert(bvv.size() == ovv.size());
-		for (auto overlap_set : ovv) {
-			for (const Overlap & o : overlap_set) {
+		foreach(auto overlap_set, ovv) {
+			foreach(const Overlap & o, overlap_set) {
 				assert_overlap_valid(o, bvv, 0, 0);
 				add_edge_from_overlap(bvv, o);
 			}

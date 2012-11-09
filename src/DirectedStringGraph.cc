@@ -62,7 +62,7 @@ void DirectedStringGraph::transitive_reduction()
 		// Mark each vertex adjacent to @v as INPLAY, and initialize the
 		// map from the adjacent vertices' indices to the back edges
 		// indices.
-		for (const edge_idx_t edge_idx : v.edge_indices()) {
+		foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 			assert(edge_idx != std::numeric_limits<edge_idx_t>::max());
@@ -79,7 +79,7 @@ void DirectedStringGraph::transitive_reduction()
 		// For each outgoing edge from v -> w in order of labeled
 		// sequence length, consider each vertex w that is still marked
 		// INPLAY.
-		for (const edge_idx_t edge_idx : v.edge_indices()) {
+		foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 
@@ -97,7 +97,7 @@ void DirectedStringGraph::transitive_reduction()
 			// actually match the sequence from the edges
 			// v -> w -> x.
 			const DirectedStringGraphVertex & w = vertices[w_idx];
-			for (const edge_idx_t w_edge_idx : w.edge_indices()) {
+			foreach(const edge_idx_t w_edge_idx, w.edge_indices()) {
 				const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
 				if (e.length() + e2.length() > longest)
 					break;
@@ -136,7 +136,7 @@ void DirectedStringGraph::transitive_reduction()
 		// neighboring vertex marked ELIMINATED, mark the corresponding
 		// edge(s) for reduction.  Return both INPLAY and ELIMINATED
 		// vertices to VACANT status.
-		for (const edge_idx_t edge_idx : v.edge_indices()) {
+		foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 			if (vertex_marks[w_idx] == ELIMINATED)
@@ -173,10 +173,10 @@ void DirectedStringGraph::transitive_reduction()
 
 	// Re-number the edge indices list of each vertex, and remove any
 	// indices that correspond to edges that were removed.
-	for (DirectedStringGraphVertex & v : vertices) {
+	foreach(DirectedStringGraphVertex & v, vertices) {
 		std::vector<edge_idx_t> & edge_indices = v.edge_indices();
 		size_t j = 0;
-		for (const edge_idx_t edge_idx : edge_indices) {
+		foreach(const edge_idx_t edge_idx, edge_indices) {
 			const edge_idx_t new_edge_idx = new_edge_indices[edge_idx];
 			if (new_edge_idx != std::numeric_limits<edge_idx_t>::max()) {
 				edge_indices[j++] = new_edge_idx;
@@ -252,7 +252,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 		std::vector<unsigned char> v_out_degrees(n_verts, 0);
 		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 			const DirectedStringGraphVertex & v = _vertices[v_idx];
-			for (edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(edge_idx_t edge_idx, v.edge_indices()) {
 				const DirectedStringGraphEdge & e = _edges[edge_idx];
 				v_idx_t v1_idx, v2_idx;
 				e.get_v_indices(v1_idx, v2_idx);
@@ -286,7 +286,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 		if (!v_inner[v_idx]) {
 			const DirectedStringGraphVertex & v = _vertices[v_idx];
-			for (edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(edge_idx_t edge_idx, v.edge_indices()) {
 				DirectedStringGraphEdge & e = _edges[edge_idx];
 				if (v_inner[e.get_v2_idx()]) {
 					num_unbranched_paths++;

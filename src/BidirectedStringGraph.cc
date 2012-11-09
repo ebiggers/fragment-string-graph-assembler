@@ -62,7 +62,7 @@ void BidirectedStringGraph::transitive_reduction()
 
 			BaseVec::size_type longest = 0;
 
-			for (const edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 				const BidirectedStringGraphEdge & e = edges[edge_idx];
 				if (e.this_v_outward(v_idx) == v_head_outward) {
 					if (e.other_v_outward(v_idx))
@@ -76,13 +76,13 @@ void BidirectedStringGraph::transitive_reduction()
 			if (longest == 0)
 				goto cont;
 
-			for (const edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 				const v_idx_t w_idx = edges[edge_idx].get_other_v_idx(v_idx);
 				if (vertex_marks[w_idx] & INPLAY) {
 					const bool w_tail_outward =
 							edges[edge_idx].other_v_outward(v_idx);
 					const BidirectedStringGraphVertex & w = vertices[w_idx];
-					for (const edge_idx_t w_edge_idx : w.edge_indices()) {
+					foreach(const edge_idx_t w_edge_idx, w.edge_indices()) {
 						const BidirectedStringGraphEdge & e2 = edges[w_edge_idx];
 						if (e2.length() > longest)
 							break;
@@ -102,7 +102,7 @@ void BidirectedStringGraph::transitive_reduction()
 				}
 			}
 
-			for (const edge_idx_t edge_idx : v.edge_indices()) {
+			foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 				const BidirectedStringGraphEdge & e = edges[edge_idx];
 				if (e.this_v_outward(v_idx) == v_head_outward
 				    && vertex_marks[e.get_other_v_idx(v_idx)] == ELIMINATED)
@@ -111,7 +111,7 @@ void BidirectedStringGraph::transitive_reduction()
 				}
 			}
 
-			for (const edge_idx_t edge_idx : v.edge_indices())
+			foreach(const edge_idx_t edge_idx, v.edge_indices())
 				vertex_marks[edges[edge_idx].get_other_v_idx(v_idx)] = VACANT;
 		cont:
 			v_head_outward = !v_head_outward;
@@ -145,10 +145,10 @@ void BidirectedStringGraph::transitive_reduction()
 
 	// Re-number the edge indices list of each vertex, and remove any
 	// indices that correspond to edges that were removed.
-	for (BidirectedStringGraphVertex & v : vertices) {
+	foreach(BidirectedStringGraphVertex & v, vertices) {
 		std::vector<edge_idx_t> & edge_indices = v.edge_indices();
 		size_t j = 0;
-		for (const edge_idx_t edge_idx : edge_indices) {
+		foreach(const edge_idx_t edge_idx, edge_indices) {
 			const edge_idx_t new_edge_idx = new_edge_indices[edge_idx];
 			if (new_edge_idx != std::numeric_limits<edge_idx_t>::max()) {
 				edge_indices[j++] = new_edge_idx;
@@ -188,7 +188,7 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 		//
 		//   seq
 		//
-		for (const edge_idx_t f_g_edge_idx : digraph.vertices()[f_idx].edge_indices())
+		foreach(const edge_idx_t f_g_edge_idx, digraph.vertices()[f_idx].edge_indices())
 		{
 			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
 			const v_idx_t g_idx = f_g.get_v2_idx();

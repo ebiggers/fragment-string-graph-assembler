@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
 	info("Searching for overlaps indicating contained reads");
 	for (const std::set<Overlap> & overlap_set : ovv) {
-		for (const Overlap & o : overlap_set) {
+		foreach(const Overlap & o, overlap_set) {
 			Overlap::read_idx_t f_idx;
 			Overlap::read_pos_t f_beg;
 			Overlap::read_pos_t f_end;
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	for (i = 0, j = 0; i < ovv.size(); i++) {
 		if (!read_contained[i]) {
 			std::set<Overlap> new_set;
-			for (const Overlap & o : ovv[i]) {
+			foreach(const Overlap & o, ovv[i]) {
 				Overlap::read_idx_t f_idx;
 				Overlap::read_idx_t g_idx;
 				num_overlaps++;

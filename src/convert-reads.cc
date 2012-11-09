@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	if (num_in_files > 1)
 		info("Merging reads from %d files...", num_in_files);
 	for (int i = 1; i < num_in_files; i++) {
-		for (const BaseVec & bv : vecs[i])
+		foreach(const BaseVec & bv, vecs[i])
 			vecs[0].push_back(bv);
 		vecs[i].clear();
 	}

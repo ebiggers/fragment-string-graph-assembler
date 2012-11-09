@@ -355,7 +355,7 @@ static void compute_overlaps(const BaseVecVec &bvv,
 		fatal_error("'class Overlap' only supports up to %zu reads",
 			    Overlap::MAX_READ_IDX + 1);
 	}
-	for (const BaseVec & bv : bvv) {
+	foreach(const BaseVec & bv, bvv) {
 		if (bv.size() > Overlap::MAX_READ_LEN + 1) {
 			fatal_error("'class Overlap' only supports reads up to "
 				    "%zu bp long", Overlap::MAX_READ_LEN + 1);
@@ -372,7 +372,7 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
 	unsigned long num_pairs_considered = 0;
-	for (auto kmer_occs_pair : occ_map) {
+	foreach(auto kmer_occs_pair, occ_map) {
 		overlaps_from_kmer_seed<K>(kmer_occs_pair.second, bvv,
 					   min_overlap_len, max_edits,
 					   ovv, num_overlaps,
