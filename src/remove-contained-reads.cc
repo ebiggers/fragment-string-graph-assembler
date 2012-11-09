@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	std::vector<bool> read_contained(bvv.size(), false);
 
 	info("Searching for overlaps indicating contained reads");
-	for (const std::set<Overlap> & overlap_set : ovv) {
+	foreach (const std::set<Overlap> & overlap_set, ovv) {
 		foreach(const Overlap & o, overlap_set) {
 			Overlap::read_idx_t f_idx;
 			Overlap::read_pos_t f_beg;

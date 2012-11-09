@@ -225,7 +225,7 @@ class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
 public:
 	// Initialize a bidirected string graph with enough space for @num_reads
 	// reads to be inserted
-	BidirectedStringGraph(size_t num_reads) : StringGraph()
+	BidirectedStringGraph(size_t num_reads)
 	{
 		if (!enough_v_indices(num_reads * 2))
 			fatal_error("Too many reads (%zu)", num_reads);
@@ -233,7 +233,7 @@ public:
 	}
 
 	// Read a bidirected string graph from a file
-	BidirectedStringGraph(const char *filename) : StringGraph()
+	BidirectedStringGraph(const char *filename)
 	{
 		this->read(filename);
 	}
