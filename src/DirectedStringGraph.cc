@@ -349,3 +349,96 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	_vertices.resize(new_v_idx);
 	info("Done collapsing unbranched paths in directed string graph");
 }
+
+void DirectedStringGraph::mark_component(const v_idx_t v_idx,
+					 std::vector<bool> & visited,
+					 v_idx_t & component_size) const
+{
+	assert(!visited[v_idx]);
+	visited[v_idx] = true;
+	component_size++;
+	foreach (edge_idx_t edge_idx, _vertices[v_idx].edge_indices()) {
+		const v_idx_t w_idx = _edges[edge_idx].get_v2_idx();
+		if (!visited[w_idx]) {
+			mark_component(w_idx, visited, component_size);
+		}
+	}
+}
+
+void DirectedStringGraph::print_stats(std::ostream & os) const
+{
+	os << "DirectedStringGraph" << std::endl;
+	os << "Number of vertices: " << num_vertices() << std::endl;
+	os << "Number of edges: " << num_edges() << std::endl;
+
+	std::vector<unsigned char> out_degrees(num_vertices(), 0);
+	std::vector<unsigned char> in_degrees(num_vertices(), 0);
+	foreach(const DirectedStringGraphEdge & e, _edges) {
+		if (out_degrees[e.get_v1_idx()] + 1 != 0) {
+			out_degrees[e.get_v1_idx()]++;
+		}
+		if (in_degrees[e.get_v2_idx()] + 1 != 0) {
+			in_degrees[e.get_v2_idx()]++;
+		}
+	}
+	std::vector<v_idx_t> out_degree_hist(0xff, 0);
+	std::vector<v_idx_t> in_degree_hist(0xff, 0);
+	std::vector<v_idx_t> in_out_degree_hist(0xffff, 0);
+	v_idx_t v_in_neq_out = 0;
+	for (edge_idx_t i = 0; i < num_vertices(); i++) {
+		out_degree_hist[out_degrees[i]]++;
+		in_degree_hist[in_degrees[i]]++;
+		if (out_degrees[i] != in_degrees[i])
+			v_in_neq_out++;
+		in_out_degree_hist[(v_idx_t(in_degrees[i]) << 8) + out_degrees[i]]++;
+	}
+	v_idx_t max_out_degree = 0, max_in_degree = 0;
+	for (size_t i = 0; i < out_degree_hist.size(); i++)
+		if (out_degree_hist[i] != 0)
+			max_out_degree = i;
+	for (size_t i = 0; i < in_degree_hist.size(); i++)
+		if (in_degree_hist[i] != 0)
+			max_in_degree = i;
+	os << "Number of isolated vertices: "
+	   << in_out_degree_hist[0x000] << std::endl;
+	os << "Number of inner vertices: "
+	   << in_out_degree_hist[0x101] << std::endl;
+	os << "Number of branch beginning vertices: "
+	   << in_out_degree_hist[0x001] << std::endl;
+	os << "Number of branch ending vertices: "
+	   << in_out_degree_hist[0x100] << std::endl;
+	os << "Number of vertices with unequal in degree and out degree: "
+	   << v_in_neq_out << std::endl;
+	os << "Max in degree: " << max_in_degree
+	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+	os << "Max out degree: " << max_out_degree
+	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+
+	std::vector<bool> visited(num_vertices(), false);
+	std::vector<v_idx_t> component_sizes;
+
+	v_idx_t num_components = 0;
+	for (v_idx_t v_idx = 0; v_idx < num_vertices(); v_idx++) {
+		if (!visited[v_idx] && in_degrees[v_idx] == 0) {
+			info("Mark at %zu", v_idx);
+			v_idx_t component_size = 0;
+			mark_component(v_idx, visited, component_size);
+			component_sizes.push_back(component_size);
+		}
+	}
+	for (v_idx_t v_idx = 0; v_idx < num_vertices(); v_idx++) {
+		if (!visited[v_idx]) {
+			info("Mark at %zu", v_idx);
+			v_idx_t component_size = 0;
+			mark_component(v_idx, visited, component_size);
+			component_sizes.push_back(component_size);
+		}
+	}
+	std::sort(component_sizes.begin(), component_sizes.end());
+	os << "Number of components: " << num_components << std::endl;
+	os << "Component sizes:" << std::endl;
+	foreach (v_idx_t component_size, component_sizes) {
+		os << "    " << component_size << ' '
+		   << (component_size == 1 ? "vertex" : "vertices") << std::endl;
+	}
+}

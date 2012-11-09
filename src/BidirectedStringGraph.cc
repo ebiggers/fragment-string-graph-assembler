@@ -225,3 +225,8 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 	}
 	info("Done building bidirected string graph from directed string graph");
 }
+
+void BidirectedStringGraph::print_stats(std::ostream & os) const
+{
+	unimplemented();
+}

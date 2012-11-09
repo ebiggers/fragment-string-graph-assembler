@@ -174,6 +174,7 @@ public:
 
 	void transitive_reduction();
 	void collapse_unbranched_paths();
+	void print_stats(std::ostream & os) const;
 
 	// Add a pair of edges produced by an overlap to this directed string
 	// graph.
@@ -207,5 +208,8 @@ private:
 	void follow_unbranched_path(DirectedStringGraphEdge & e,
 				    std::vector<bool> & remove_edge,
 				    const std::vector<bool> & v_inner);
+	void mark_component(const v_idx_t v_idx,
+			    std::vector<bool> & visited,
+			    v_idx_t & component_size) const;
 
 };

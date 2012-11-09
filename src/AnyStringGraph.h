@@ -56,6 +56,7 @@ public:
 
 	DISPATCH0(transitive_reduction);
 	DISPATCH0(collapse_unbranched_paths);
+	DISPATCH1(print_stats, std::ostream &);
 	DISPATCH1(print, std::ostream &);
 	DISPATCH1(print_dot, std::ostream &);
 	DISPATCH1(write, const char *);

@@ -250,6 +250,7 @@ public:
 
 	void transitive_reduction();
 	void collapse_unbranched_paths();
+	void print_stats(std::ostream & os) const;
 
 	// An an edge to the bidirected string graph, produced from an overlap
 	void add_edge_pair(const v_idx_t read_1_idx,
