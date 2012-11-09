@@ -32,7 +32,7 @@ private:
 
 	static const storage_type PARTIAL_STORAGE_MASK =
 		(BASES_IN_PARTIAL_STORAGE == BASES_PER_STORAGE) ?
-			std::numeric_limits<storage_type>::max() :
+			~(storage_type)0 :
 			(static_cast<storage_type>(1) <<
 				(BASES_IN_PARTIAL_STORAGE * BITS_PER_BASE)) - 1;
 
@@ -140,6 +140,14 @@ public:
 		return (kmer_1 < kmer_2) ? kmer_1 : kmer_2;
 	}
 
+	struct hash_functor
+	{
+		size_t operator()(const Kmer<_K> & kmer) const
+		{
+			return kmer.hash();
+		}
+	};
+
 	// Hashes a k-mer from its bases.
 	size_t hash() const
 	{
@@ -149,14 +157,4 @@ public:
 			h = 1099511628211ul * (h ^ _bases[i]);
 		return h;
 	}
-	friend struct std::hash<Kmer<_K> >;
 };
-namespace std {
-	template <unsigned _K>
-	struct hash<Kmer<_K> > {
-		size_t operator()(const Kmer<_K> & kmer) const
-		{
-			return kmer.hash();
-		}
-	};
-}

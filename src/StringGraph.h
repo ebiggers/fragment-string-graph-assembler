@@ -370,7 +370,7 @@ public:
 	void build(const BaseVecVec & bvv, const OverlapVecVec & ovv)
 	{
 		assert(bvv.size() == ovv.size());
-		foreach(auto overlap_set, ovv) {
+		foreach(const OverlapVecVec::OverlapSet & overlap_set, ovv) {
 			foreach(const Overlap & o, overlap_set) {
 				assert_overlap_valid(o, bvv, 0, 0);
 				add_edge_from_overlap(bvv, o);

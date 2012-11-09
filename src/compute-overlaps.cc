@@ -3,7 +3,14 @@
 #include <getopt.h>
 #include "Kmer.h"
 
+#if __cplusplus >= 201103L
 #include <unordered_map>
+#define std_unordered_map std::unordered_map
+#else
+#include <ext/hash_map>
+#define std_unordered_map __gnu_cxx::hash_map
+#endif
+
 #include <ostream>
 
 // Stores the location of a k-mer in the read set.
@@ -280,8 +287,9 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 //
 template <unsigned K>
 static void load_kmer_occurrences(const BaseVecVec &bvv,
-				  std::unordered_map<Kmer<K>,
-				  		     std::vector<KmerOccurrence> > &occ_map)
+				  std_unordered_map<Kmer<K>,
+				  		    std::vector<KmerOccurrence>,
+						    typename Kmer<K>::hash_functor > &occ_map)
 {
 	info("Finding all occurrences of %u-mers in the reads", K);
 	occ_map.clear();
@@ -345,7 +353,8 @@ static void compute_overlaps(const BaseVecVec &bvv,
 			     const unsigned max_edits,
 			     OverlapVecVec &ovv)
 {
-	typedef std::unordered_map<Kmer<K>, std::vector<KmerOccurrence> >
+	typedef std_unordered_map<Kmer<K>, std::vector<KmerOccurrence>,
+				 typename Kmer<K>::hash_functor >
 		KmerOccurrenceMap;
 
 	if (max_edits > 0)
@@ -372,8 +381,13 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	info("Finding overlaps from %u-mer seeds", K);
 	unsigned long num_overlaps = 0;
 	unsigned long num_pairs_considered = 0;
-	foreach(auto kmer_occs_pair, occ_map) {
-		overlaps_from_kmer_seed<K>(kmer_occs_pair.second, bvv,
+	typedef std::pair<typename KmerOccurrenceMap::key_type,
+			  typename KmerOccurrenceMap::value_type>
+			  KmerOccsPair;
+
+	typename KmerOccurrenceMap::const_iterator it;
+	for (it = occ_map.begin(); it != occ_map.end(); it++) {
+		overlaps_from_kmer_seed<K>(it->second, bvv,
 					   min_overlap_len, max_edits,
 					   ovv, num_overlaps,
 					   num_pairs_considered);
