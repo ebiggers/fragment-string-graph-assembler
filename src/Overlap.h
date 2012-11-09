@@ -103,6 +103,12 @@ public:
 		read_2_idx = _read_2_idx;
 	}
 
+	bool longer_than(const Overlap & other) const 
+	{
+		return (_read_1_end - _read_1_beg) >
+			(other._read_1_end - other._read_1_end);
+	}
+
 	friend std::ostream & operator<<(std::ostream & os, const Overlap & o)
 	{
 		os << "Overlap { Read " << (o._read_1_idx + 1) << ": [" << o._read_1_beg
@@ -117,9 +123,22 @@ public:
 		return memcmp(&o1, &o2, sizeof(Overlap)) == 0;
 	}
 
+	int type() const
+	{
+		return ((_read_1_beg > 0) << 1) | _rc;
+	}
+
 	friend bool operator<(const Overlap & o1, const Overlap & o2)
 	{
-		return memcmp(&o1, &o2, sizeof(Overlap)) < 0;
+		if (o1._read_1_idx == o2._read_1_idx) {
+			if (o1._read_2_idx == o2._read_2_idx) {
+				return o1.type() < o2.type();
+			} else {
+				return o1._read_2_idx < o2._read_2_idx;
+			}
+		} else {
+			return o1._read_1_idx < o2._read_1_idx;
+		}
 	}
 };
 

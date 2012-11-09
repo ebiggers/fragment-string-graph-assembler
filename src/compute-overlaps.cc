@@ -256,14 +256,20 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 				          min_overlap_len, max_edits, K, o))
 				continue;
 
-			OverlapVecVec::OverlapSet & os = ovv[occ1.get_read_id()];
-			if (os.find(o) != os.end())
-				continue;
-
 			assert_overlap_valid(o, bvv,
 					     min_overlap_len, max_edits);
-			os.insert(o);
-			num_overlaps++;
+
+			OverlapVecVec::OverlapSet & os = ovv[occ1.get_read_id()];
+			OverlapVecVec::OverlapSet::iterator it;
+			it = os.find(o);
+
+			if (it == os.end()) {
+				os.insert(o);
+				num_overlaps++;
+			} else if (o.longer_than(*it)) {
+				os.erase(it);
+				os.insert(o);
+			}
 		}
 	}
 }
