@@ -258,16 +258,18 @@ public:
 			   const BaseVec & bv1,
 			   const BaseVec::size_type beg_1,
 			   const BaseVec::size_type end_1,
+			   const bool bv1_rc,
 			   const BaseVec & bv2,
 			   const BaseVec::size_type beg_2,
-			   const BaseVec::size_type end_2)
+			   const BaseVec::size_type end_2,
+			   const bool bv2_rc)
 	{
 		BidirectedStringGraphEdge e;
 		const v_idx_t v1_idx = read_1_idx;
 		const v_idx_t v2_idx = read_2_idx;
 
-		bv1.extract_seq(beg_1, end_1, e.get_seq_1_to_2());
-		bv2.extract_seq(beg_2, end_2, e.get_seq_2_to_1());
+		bv1.extract_seq(beg_1, end_1, bv1_rc, e.get_seq_1_to_2());
+		bv2.extract_seq(beg_2, end_2, bv2_rc, e.get_seq_2_to_1());
 		e.set_v_indices(v1_idx, v2_idx);
 		e.set_dirs(dirs);
 

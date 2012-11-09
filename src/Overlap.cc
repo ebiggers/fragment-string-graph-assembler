@@ -57,25 +57,21 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	Overlap::read_pos_t read_1_beg, read_1_end;
 	Overlap::read_idx_t read_2_idx;
 	Overlap::read_pos_t read_2_beg, read_2_end;
+	bool rc;
 
 	o.get(read_1_idx, read_1_beg, read_1_end,
-	      read_2_idx, read_2_beg, read_2_end);
+	      read_2_idx, read_2_beg, read_2_end, rc);
+
+	assert(read_1_idx <= read_2_idx);
+	assert(read_1_idx < bvv.size());
+	assert(read_2_idx < bvv.size());
+
 	const BaseVec & bv1 = bvv[read_1_idx];
 	const BaseVec & bv2 = bvv[read_2_idx];
 	assert(read_1_beg < bv1.size());
-	assert(read_1_end < bv1.size());
+	assert(read_1_beg <= read_1_end);
 	assert(read_2_beg < bv2.size());
-	assert(read_2_end < bv2.size());
-	assert(read_1_beg != read_1_end);
-	assert(read_2_beg != read_2_end);
-
-	bool is_rc_1 = (read_1_beg > read_1_end);
-	bool is_rc_2 = (read_2_beg > read_2_end);
-
-	if (read_1_end < read_1_beg)
-		std::swap(read_1_beg, read_1_end);
-	if (read_2_end < read_2_beg)
-		std::swap(read_2_beg, read_2_end);
+	assert(read_2_beg <= read_2_end);
 
 	Overlap::read_pos_t len_1, len_2;
 	len_1 = read_1_end - read_1_beg + 1;
@@ -83,5 +79,5 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	assert(len_1 == len_2);
 	assert(len_1 >= min_overlap_len);
 	assert_seed_valid(bv1, bv2, read_1_beg, read_2_beg, len_1,
-			  is_rc_1, is_rc_2, "OVERLAP");
+			  false, rc, "OVERLAP");
 }

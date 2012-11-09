@@ -49,6 +49,9 @@ void DirectedStringGraph::transitive_reduction()
 	// part of the transitive reduction or not.
 	std::vector<bool> reduce_edge(this->num_edges(), false);
 
+	info("Looking for transitive edges based at each of %zu vertices",
+	     vertices.size());
+
 	// Iterate through every vertex @v in the graph that has outgoing edges.
 	for (size_t v_idx = 0; v_idx < vertices.size(); v_idx++) {
 		const DirectedStringGraphVertex & v = vertices[v_idx];

@@ -1,11 +1,12 @@
 all:out.reduced.collapsed.digraph out.reduced.collapsed.bidigraph
 
-SAMPLE_SIZE ?= 300
-READ_LEN ?= 100
-READ_SEP ?= 30
-USE_PIRS ?= true
+SAMPLE_SIZE     ?= 300
+READ_LEN        ?= 100
+READ_SEP        ?= 30
+USE_PIRS        ?= true
 MIN_OVERLAP_LEN ?= 25
-GENOME ?= random_genome.fa
+GENOME          ?= random_genome.fa
+BIDIGRAPH_OPS   ?= false
 
 ifeq ($(GENOME),random_genome.fa)
 genome.fa.$(SAMPLE_SIZE):
@@ -69,14 +70,23 @@ out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
 %.reduced.digraph:%.digraph
 	transitive-reduction $+ $@
 
+ifeq ($(BIDIGRAPH_OPS),true)
 %.reduced.bidigraph:%.bidigraph
 	transitive-reduction $+ $@
+endif
 
 %.collapsed.digraph:%.digraph
 	collapse-unbranched-paths $+ $@
 
+ifeq ($(BIDIGRAPH_OPS),true)
 %.collapsed.bidigraph:%.bidigraph
 	collapse-unbranched-paths $+ $@
+endif
+
+ifneq ($(BIDIGRAPH_OPS),true)
+%.bidigraph:%.digraph
+	digraph-to-bidigraph $+ $@
+endif
 
 clean:
 	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads

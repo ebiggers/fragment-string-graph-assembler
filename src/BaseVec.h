@@ -115,20 +115,20 @@ public:
 	// into @dest.
 	void extract_seq(const size_type beg,
 			 const size_type end,
+			 const bool rc,
 			 BaseVec & dest) const
 	{
-		size_type len;
-		size_type i;
-		if (end > beg) {
-			len = end - beg + 1;
-			dest.resize(len);
-			for (i = 0; i < len; i++)
-				dest.set(i, (*this)[beg + i]);
+		assert(end >= beg);
+		assert(end < size());
+
+		size_type len = end - beg + 1;
+		dest.resize(len);
+		if (rc) {
+			for (size_type i = 0; i < len; i++)
+				dest.set(i, (3 ^ (*this)[end - i]));
 		} else {
-			len = beg - end + 1;
-			dest.resize(len);
-			for (i = 0; i < len; i++)
-				dest.set(i, (3 ^ (*this)[beg - i]));
+			for (size_type i = 0; i < len; i++)
+				dest.set(i, (*this)[beg + i]);
 		}
 	}
 

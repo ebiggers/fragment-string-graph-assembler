@@ -132,7 +132,12 @@ static bool find_overlap(const BaseVecVec & bvv,
 	Overlap::read_pos_t len = K;
 	const bool is_rc_1 = occ1.is_rc();
 	const bool is_rc_2 = occ2.is_rc();
+
+	// Note: in this function we should NOT be given a pair of k-mer
+	// occurrences that are (reverse-complement, forward).  They always must
+	// be switched to (forward, reverse-complement) first.
 	assert(!(is_rc_1 && !is_rc_2));
+
 	extend_seed(bv1, bv2, pos1, pos2, len, is_rc_1, is_rc_2);
 
 	// The overlap must be at least @min_overlap_len base pairs long.
@@ -177,7 +182,6 @@ static bool find_overlap(const BaseVecVec & bvv,
 	//
 	// The same applies to reads that share the same suffix.
 
-	// Shared prefix?
 	{
 		Overlap::read_pos_t _read_2_beg, _read_2_end;
 		if (!is_rc_1 && is_rc_2) {
@@ -188,6 +192,7 @@ static bool find_overlap(const BaseVecVec & bvv,
 			_read_2_end = read_2_end;
 		}
 
+		// Shared prefix?
 		if (read_1_beg == 0 && _read_2_beg == 0 && num_extremes < 3)
 			return false;
 
@@ -197,18 +202,9 @@ static bool find_overlap(const BaseVecVec & bvv,
 			return false;
 	}
 
-	// Swap the beginning and end of one of the regions in the case of a
-	// reverse-complement overlap.
-	//
-	// Note: in this function we should NOT be given a pair of k-mer
-	// occurrences that are (reverse-complement, forward).  They always must
-	// be switched to (forward, reverse-complement) first.
-	assert(!(is_rc_1 && !is_rc_2));
-	if (!is_rc_1 && is_rc_2)
-		std::swap(read_2_beg, read_2_end);
-
 	o.set(occ1.get_read_id(), read_1_beg, read_1_end,
-	      occ2.get_read_id(), read_2_beg, read_2_end);
+	      occ2.get_read_id(), read_2_beg, read_2_end,
+	      (!is_rc_1 && is_rc_2));
 	return true;
 }
 

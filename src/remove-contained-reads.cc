@@ -53,16 +53,13 @@ int main(int argc, char **argv)
 			Overlap::read_idx_t g_idx;
 			Overlap::read_pos_t g_beg;
 			Overlap::read_pos_t g_end;
+			bool rc;
 
 			assert_overlap_valid(o, bvv, 0, 0);
 
-			o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end);
+			o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end, rc);
 			const BaseVec & f = bvv[f_idx];
 			const BaseVec & g = bvv[g_idx];
-			if (f_beg > f_end)
-				std::swap(f_beg, f_end);
-			if (g_beg > g_end)
-				std::swap(g_beg, g_end);
 
 			if ((f_beg == 0 && f_end == f.size() - 1)) {
 				if (g_beg == 0 && g_end == g.size() - 1) {

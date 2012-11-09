@@ -19,11 +19,8 @@ class BaseVec;
 //
 // The bases in the read at _read_1_idx, beginning at _read_1_beg and ending at
 // _read_2_end (both inclusive), match the bases in the read at _read_2_idx,
-// beginning at _read_2_beg and ending at _read_2_end (both inclusive).
-//
-// If either beginning position is greater than the end position, this indicates
-// the reverse-complement sequence is overlapped rather than the forward
-// sequence.
+// beginning at _read_2_beg and ending at _read_2_end (both inclusive).  If _rc
+// is 1, it is actually the reverse-complement sequence that is matched.
 //
 class Overlap {
 private:
@@ -33,6 +30,7 @@ private:
 	unsigned long _read_2_idx : 24;
 	unsigned long _read_2_beg : 12;
 	unsigned long _read_2_end : 12;
+	unsigned long _rc         : 1;
 
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -48,15 +46,22 @@ public:
 	typedef unsigned int read_idx_t;
 	typedef unsigned int read_pos_t;
 
-	void set(read_idx_t read_1_idx,
-		 read_pos_t read_1_beg,
-		 read_pos_t read_1_end,
-		 read_idx_t read_2_idx,
-		 read_pos_t read_2_beg,
-		 read_pos_t read_2_end)
+	void set(const read_idx_t read_1_idx,
+		 const read_pos_t read_1_beg,
+		 const read_pos_t read_1_end,
+		 const read_idx_t read_2_idx,
+		 const read_pos_t read_2_beg,
+		 const read_pos_t read_2_end,
+		 const bool rc)
 	{
-		assert(read_1_end > read_1_beg ||
-		       read_2_end > read_2_beg);
+		assert(read_1_end >= read_1_beg);
+		assert(read_2_end >= read_2_end);
+		assert(read_1_beg < MAX_READ_LEN);
+		assert(read_1_end < MAX_READ_LEN);
+		assert(read_2_beg < MAX_READ_LEN);
+		assert(read_2_end < MAX_READ_LEN);
+		assert(read_1_idx < MAX_READ_IDX);
+		assert(read_2_idx < MAX_READ_IDX);
 
 		_read_1_idx = read_1_idx;
 		_read_1_beg = read_1_beg;
@@ -64,6 +69,7 @@ public:
 		_read_2_idx = read_2_idx;
 		_read_2_beg = read_2_beg;
 		_read_2_end = read_2_end;
+		_rc         = rc;
 	}
 
 	void set_indices(read_idx_t read_1_idx,
@@ -78,7 +84,8 @@ public:
 		 read_pos_t & read_1_end,
 		 read_idx_t & read_2_idx,
 		 read_pos_t & read_2_beg,
-		 read_pos_t & read_2_end) const
+		 read_pos_t & read_2_end,
+		 bool       & rc) const
 	{
 		read_1_idx = _read_1_idx;
 		read_1_beg = _read_1_beg;
@@ -86,6 +93,7 @@ public:
 		read_2_idx = _read_2_idx;
 		read_2_beg = _read_2_beg;
 		read_2_end = _read_2_end;
+		rc = _rc;
 	}
 
 	void get_indices(read_idx_t & read_1_idx,
@@ -99,7 +107,8 @@ public:
 	{
 		os << "Overlap { Read " << (o._read_1_idx + 1) << ": [" << o._read_1_beg
 		   << ", " << o._read_1_end << "], Read " << (o._read_2_idx + 1)
-		   << ": [" << o._read_2_beg << ", " << o._read_2_end << "] }";
+		   << ": [" << o._read_2_beg << ", " << o._read_2_end
+		   << "], rc = " << o._rc << " }";
 		return os;
 	}
 

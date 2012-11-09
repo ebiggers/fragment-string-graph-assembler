@@ -138,12 +138,13 @@ private:
 		      const v_idx_t v2_idx,
 		      const BaseVec & bv,
 		      const BaseVec::size_type beg,
-		      const BaseVec::size_type end)
+		      const BaseVec::size_type end,
+		      const bool rc)
 	{
 		DirectedStringGraphEdge e;
 
 		e.set_v_indices(v1_idx, v2_idx);
-		bv.extract_seq(beg, end, e.get_seq());
+		bv.extract_seq(beg, end, rc, e.get_seq());
 
 		edge_idx_t edge_idx = this->push_back_edge(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
@@ -182,20 +183,24 @@ public:
 			   const BaseVec & bv1,
 			   const BaseVec::size_type beg_1,
 			   const BaseVec::size_type end_1,
+			   const bool bv1_rc,
 			   const BaseVec & bv2,
 			   const BaseVec::size_type beg_2,
-			   const BaseVec::size_type end_2)
+			   const BaseVec::size_type end_2,
+			   const bool bv2_rc)
 	{
 		const v_idx_t v1_idx = read_1_idx * 2;
 		const v_idx_t v2_idx = read_2_idx * 2;
 		const v_idx_t f_dir = dirs >> 1;
 		const v_idx_t g_dir = dirs & 1;
 
+		assert((dirs & 3) == dirs);
+
 		add_edge(v1_idx + f_dir, v2_idx + g_dir,
-			 bv1, beg_1, end_1);
+			 bv1, beg_1, end_1, bv1_rc);
 
 		add_edge(v2_idx + (g_dir ^ 1), v1_idx + (f_dir ^ 1),
-			 bv2, beg_2, end_2);
+			 bv2, beg_2, end_2, bv2_rc);
 	}
 
 private:
