@@ -19,7 +19,9 @@ public:
 		size_t read_idx = v_idx / 2;
 		char read_dir = (v_idx & 1) ? 'E' : 'B';
 		os << "\tv" << v_idx << " [ label=\""
-		   << (read_idx + 1) << '.' << read_dir << "\" ];\n";
+		   << (read_idx + 1) << '.' << read_dir << '\"'
+		   << " fillcolor=" << (read_dir == 'E' ? "green" : "cyan")
+		   << " ];\n";
 	}
 };
 
@@ -105,7 +107,8 @@ public:
 	}
 
 	// Print this directed string graph edge.
-	void print(std::ostream & os, const v_idx_t v_idx) const
+	void print(std::ostream & os, const v_idx_t v_idx,
+		   const bool print_seqs) const
 	{
 		v_idx_t v1_idx = get_v1_idx();
 		v_idx_t read_1_idx = v1_idx / 2 + 1;
@@ -115,15 +118,25 @@ public:
 		char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
 		os << read_1_idx << '.' << read_1_dir << " -> "
 		   << read_2_idx << '.' << read_2_dir
-		   << '\t' << get_seq();
+		   << '\t';
+		if (print_seqs)
+			os << _seq;
+		else
+			os << _seq.length();
 	}
 
 	// Print this directed string graph edge in DOT format.
-	void print_dot(std::ostream & os, const v_idx_t v_idx) const
+	void print_dot(std::ostream & os, const v_idx_t v_idx,
+		       const bool print_seqs) const
 	{
 		os << "\tv" << get_v1_idx() << " -> "
 		   << "v" << get_v2_idx()
-		   << " [ label=\"" << length() << "\" ];\n";
+		   << " [ label=\"";
+		if (print_seqs)
+			os << _seq;
+		else
+			os << _seq.length();
+		os << "\" ];\n";
 	}
 };
 
@@ -169,7 +182,8 @@ public:
 
 	void print_dot_graph_attribs(std::ostream & os) const
 	{
-		os << "\tnode [shape = oval];\n";
+		//os << "\tnode [shape = oval];\n";
+		os << "\tnode [style=filled];\n";
 	}
 
 	void transitive_reduction();

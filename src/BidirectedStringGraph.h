@@ -5,6 +5,7 @@
 #include <boost/serialization/access.hpp>
 #include <ostream>
 #include <inttypes.h>
+#include <math.h>
 
 class DirectedStringGraph;
 
@@ -164,7 +165,8 @@ public:
 	}
 
 	// Print a bidirected string graph edge
-	void print(std::ostream & os, const v_idx_t v_idx) const
+	void print(std::ostream & os, const v_idx_t v_idx,
+		   const bool print_seqs) const
 	{
 		v_idx_t read_1_idx = get_v1_idx();
 		v_idx_t read_2_idx = get_v2_idx();
@@ -179,11 +181,22 @@ public:
 		}
 		os << (read_1_idx + 1) << ' ' << head_1 << "---------"
 		   << head_2 << ' ' << (read_2_idx + 1)
-		   << "\t\"" << get_seq_1_to_2() << '"';
+		   << '\t';
+		if (print_seqs)
+			os << _seq_1_to_2;
+		else
+			os << _seq_1_to_2.length();
+		os << '\t';
+		if (print_seqs)
+			os << _seq_2_to_1;
+		else
+			os << _seq_2_to_1.length();
+		os << '\r';
 	}
 
 	// Print a bidirected string graph edge in DOT format
-	void print_dot(std::ostream & os, const v_idx_t v_idx) const
+	void print_dot(std::ostream & os, const v_idx_t v_idx,
+		       const bool print_seqs) const
 	{
 		if (v_idx == get_v1_idx()) {
 			const char *head_1 = (v1_inward()) ? "normal" : "inv";
@@ -194,7 +207,33 @@ public:
 			   << " ["
 			   << " dir=both arrowhead=" << head_2
 			   << " arrowtail=" << head_1
-			   << " label=\"" << length() << "\""
+			   << " taillabel=\"";
+			if (print_seqs)
+				os << _seq_1_to_2;
+			else
+				os << _seq_1_to_2.length();
+			os << "\" headlabel=\"";
+			if (print_seqs)
+				os << _seq_2_to_1;
+			else
+				os << _seq_2_to_1.length();
+			//
+			//   |\\\\
+			//   |    \\\\\
+			// C |         \\\\
+			//   --------------
+			//    length
+			//
+			// C / length = tan(theta)
+			// theta = atan(C/length)
+			// labelangle = 90-180*(2pi)*theta
+			const double C = 2.0;
+			const double len = double(length());
+			const double theta = atan(C / len);
+			const double labelangle = 90 - (180 / (2.0 * M_PI)) * theta;
+			os << '"'
+			   << " labelangle=" << labelangle
+			   << " labeldistance=" << double(length()) / 2.5
 			   << " ];\n";
 		}
 	}
@@ -245,7 +284,7 @@ public:
 	void print_dot_graph_attribs(std::ostream & os) const
 	{
 		//os << "\tconcentrate=true;\n";
-		//os << "\tnode [shape = rect];\n";
+		//os << "\tnode [shape=circle];\n";
 	}
 
 	void transitive_reduction();

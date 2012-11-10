@@ -335,12 +335,12 @@ public:
 	}
 
 	// Print this string graph.
-	void print(std::ostream & os) const
+	void print(std::ostream & os, const bool print_seqs) const
 	{
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++) {
 			const VERTEX_t & v = _vertices[v_idx];
 			foreach(const edge_idx_t edge_idx, v.edge_indices()) {
-				_edges[edge_idx].print(os, v_idx);
+				_edges[edge_idx].print(os, v_idx, print_seqs);
 				os << '\n';
 			}
 		}
@@ -353,16 +353,18 @@ public:
 	}
 
 	// Print this string graph in DOT format.
-	void print_dot(std::ostream & os) const
+	void print_dot(std::ostream & os, const bool print_seqs) const
 	{
-		os << "digraph {\n";
+		os << "digraph {\n"
+		   << "\tnode [shape=circle fontname=\"Arial\"]\n"
+		   << "\tedge [fontname=\"Courier new bold\" fontsize=11]\n";
 		print_dot_graph_attribs(os);
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++)
 			_vertices[v_idx].print_dot(os, v_idx);
 
 		for (v_idx_t v_idx = 0; v_idx < _vertices.size(); v_idx++)
 			foreach(edge_idx_t edge_idx, _vertices[v_idx].edge_indices())
-				_edges[edge_idx].print_dot(os, v_idx);
+				_edges[edge_idx].print_dot(os, v_idx, print_seqs);
 		os << "}" << std::endl;
 	}
 
