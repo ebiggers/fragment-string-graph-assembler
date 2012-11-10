@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'l':
 			min_overlap_len = parse_long(optarg, "--min-overlap-len",
-						     16, UINT_MAX);
+						     4, UINT_MAX);
 			break;
 		case 'e':
 			max_edits = parse_long(optarg, "--max-edits",
@@ -448,7 +448,11 @@ int main(int argc, char *argv[])
 	info("Loaded %zu reads from \"%s\"", bvv.size(), argv[0]);
 	OverlapVecVec ovv;
 
-	if (min_overlap_len < 24)
+	if (min_overlap_len < 8)
+		compute_overlaps<4>(bvv, min_overlap_len, max_edits, ovv);
+	if (min_overlap_len < 16)
+		compute_overlaps<8>(bvv, min_overlap_len, max_edits, ovv);
+	else if (min_overlap_len < 24)
 		compute_overlaps<16>(bvv, min_overlap_len, max_edits, ovv);
 	else if (min_overlap_len < 32)
 		compute_overlaps<24>(bvv, min_overlap_len, max_edits, ovv);
