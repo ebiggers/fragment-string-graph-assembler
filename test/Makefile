@@ -47,10 +47,10 @@ reads.uncontained.bvv:.remove-contained-reads
 out.uncontained.overlaps:.remove-contained-reads
 
 %.bidigraph.dot:%.bidigraph
-	print-string-graph --dot --seqs $+ > $@
+	print-string-graph --dot $+ > $@
 
 %.digraph.dot:%.digraph
-	print-string-graph --dot --seqs $+ > $@
+	print-string-graph --dot $+ > $@
 
 %.ps:%.dot
 	dot -Tps $+ -o$@

@@ -206,35 +206,34 @@ public:
 			   << "v" << get_v2_idx()
 			   << " ["
 			   << " dir=both arrowhead=" << head_2
-			   << " arrowtail=" << head_1
-			   << " taillabel=\"";
-			if (print_seqs)
-				os << _seq_1_to_2;
-			else
-				os << _seq_1_to_2.length();
-			os << "\" headlabel=\"";
-			if (print_seqs)
-				os << _seq_2_to_1;
-			else
-				os << _seq_2_to_1.length();
-			//
-			//   |\\\\
-			//   |    \\\\\
-			// C |         \\\\
-			//   --------------
-			//    length
-			//
-			// C / length = tan(theta)
-			// theta = atan(C/length)
-			// labelangle = 90-180*(2pi)*theta
-			const double C = 2.0;
-			const double len = double(length());
-			const double theta = atan(C / len);
-			const double labelangle = 90 - (180 / (2.0 * M_PI)) * theta;
-			os << '"'
-			   << " labelangle=" << labelangle
-			   << " labeldistance=" << double(length()) / 2.5
-			   << " ];\n";
+			   << " arrowtail=" << head_1;
+			if (print_seqs) {
+				os << " taillabel=\""
+				   << _seq_1_to_2
+				   << "\" headlabel=\""
+				   << _seq_2_to_1
+				   << '"';
+
+				//
+				//   |\\\\
+				//   |    \\\\\
+				// C |         \\\\
+				//   --------------
+				//    length
+				//
+				// C / length = tan(theta)
+				// theta = atan(C/length)
+				// labelangle = 90-180*(2pi)*theta
+				const double C = 2.0;
+				const double len = double(length());
+				const double theta = atan(C / len);
+				const double labelangle = 90 - (180 / (2.0 * M_PI)) * theta;
+				os << " labelangle=" << labelangle
+				   << " labeldistance=" << (double(len) / 2.5 + 1.0);
+			} else {
+				os << " label=\"" << length() << "\"";
+			}
+			os << " ];\n";
 		}
 	}
 };
