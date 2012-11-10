@@ -202,9 +202,7 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 				const DirectedStringGraphEdge & g_f =
 						digraph.edges()[g_f_edge_idx];
 
-				v_idx_t dirs = 0;
-				dirs |= (f_idx & 1) ?  TAG_F_E : TAG_F_B;
-				dirs |= (g_idx & 1) ?  TAG_G_E : TAG_G_B;
+				v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
 
 				BidirectedStringGraphEdge e;
 				const v_idx_t v1_idx = f_idx / 2;

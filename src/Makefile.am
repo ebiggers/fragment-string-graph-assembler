@@ -17,18 +17,21 @@ bin_PROGRAMS =				\
 noinst_LIBRARIES = libassemble.a
 
 libassemble_a_SOURCES =			\
-	Base.h				\
+	AnyStringGraph.h		\
 	BaseUtils.cc			\
 	BaseUtils.h			\
 	BaseVec.h			\
 	BaseVecVec.cc			\
 	BaseVecVec.h			\
-	DirectedStringGraph.h		\
-	DirectedStringGraph.cc		\
-	BidirectedStringGraph.h		\
 	BidirectedStringGraph.cc	\
-	Overlap.cc			\
+	BidirectedStringGraph.h		\
 	compiler.h			\
+	DirectedStringGraph.cc		\
+	DirectedStringGraph.h		\
+	Kmer.h				\
+	Overlap.cc			\
+	Overlap.h			\
+	StringGraph.h			\
 	util.cc				\
 	util.h
 
