@@ -1,0 +1,113 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{enumerate}
+
+\title{MATH-469 Homework 6}
+\author{Eric Biggers}
+
+\begin{document}
+\maketitle
+
+The goal of my project is to implement an algorithm that can assemble a genome,
+given a set of reads that came from it.  For the purposes of this project, a
+genome is defined as a sequence of A's, T's, C's, and G's, along with the
+corresponding opposite strand that matches T's with A's and G's with C's.  The
+input to the algorithm is a set of {\em reads} that are substrings from the
+genome.  Each read may be from either the ``forward'' strand of the genome or
+the ``reverse'' strand of the genome, but the reads will always be directed
+forwards along the ``forward'' strand or backwards along the ``reverse'' strand
+(this corresponds to the sequencing reactions always proceeding from the 5' to
+the 3' end of each strand).
+
+The reads will not be required to be of any particular length, other than long
+enough to actually compute some overlaps, but the longer they are, the better
+the algorithm should work.  The algorithm will not account for any pairing
+information that may exist among reads (e.g. reads that came from the same DNA
+fragment or insert of known size).  Also, I will initially assume that the reads
+do not contain any sequencing errors and that there is no foreign DNA in the
+sample.
+
+The overall description of the algorithm is as follows:
+
+\begin{enumerate}
+\setcounter{enumi}{-1}
+\item For testing the algorithm, the initial step is to simulate reads from a
+sample genome.  An existing program can be used for this.
+\item Compute all overlaps of some length $\ell$ among the reads.  An overlap is
+where the bases at one end of a read match the bases at one end of another read.
+The bases may match literally, or they may match the reverse-complement
+sequence.  The length $\ell$ is chosen so that the probability of two random DNA
+sequences having an overlap of length $\ell$ purely by chance is sufficiently
+low; this will depend on the genome size.
+
+The original algorithm accounts for erroneous data by looking not for perfect
+overlaps, but rather for overlaps where the edit distance between the overlapped
+regions is less than a certain fraction of the overlap.  (i.e., the bases might
+be different by up to a certain threshold, such as 2.5\%, and still be
+considered a valid overlap).  I will initially work with error-free data and
+compute only perfect overlaps, but this could be something to look into
+implementing later.
+
+The naive approach to computing overlaps requires comparing all $N$ of the reads
+to every other read--- an $O(N^2)$ approach that would likely be a significant
+bottleneck in the overall algorithm.  I plan to speed up the running time of
+this step of the algorithm by using a seed-and-extend approach where only reads
+sharing a $k$-mer are compared, where $k \le \ell$ (for perfect overlaps).  This
+can be done by placing each $k$-mer, along with its location, in a hash table
+indexed by the $k$-mer.
+
+\item Build a graph where each vertex corresponds to either the beginning or the
+end of a read, and the overlaps are used to connect vertices.  (Edges are
+labeled with DNA sequences.)  The exact edges that should be added to the graph
+given an overlap $o$ are described in the original paper.  Basically, the edges
+are always labeled with sequences oriented {\em outwards} from the overlapped
+region, and this sequence may be either forward or reverse-complement.  Reads
+that are fully contained by another read are not included in the graph, as they
+theoretically do not contain any information not provided by the longer read.
+The main challenge in this step is probably to represent the graph in a
+memory-efficient way.
+\item Delete all transitive edges from each vertex (i.e. edges $f \to h$ where
+there are also edges $f \to g \to h$), since these edges are redundant.  The
+algorithm for this step is provided in the original paper, and pseudocode is
+provided, so it should be fairly easy to implement this step, although again it
+might be tricky to keep memory usage from being too high.
+\item Collapse unbranched paths in the graph, since the interior vertices are
+redundant.  This should be relatively easy.  For example, branchless paths could
+be extended from all vertices of degree 2.
+\item Use a calculation called the A-statistic to compute the probabilitity that
+each unbranched path contains unique sequence (i.e. should be traversed only 1
+time).  The A-statistic for an unbranched path of length $\Delta$ that contains
+$k$ internal vertices is $\Delta(n/G) - k \ln 2$, where $n$ is the total number
+of reads and $G$ is the estimated genome size.  This step sounds
+straightforward, but there are a couple things to consider.  First, when
+collapsing unbranched paths in the previous step, the number of vertices in the
+uncollapsed path must be remembered.  Secondly, the genome size must be
+estimated, as it is not known.  And finally, reads that are fully contained in a
+longer read should be mapped back into the graph to increase the accurancy of
+the A-statistic calculations.
+\item Calculate a traversal count for each edge in the graph to make the graph
+Eulerian.  In the original paper, this is formulated as a minimum cost network
+flow problem, so it should theoretically be possible to just set up the problem
+and plug it into existing code, such as that in the LEMON library.  However,
+since the actual problem is not actually a fully general minimum cost network
+flow problem, there could eventually be some optimizations made by writing
+stand-alone code.
+\item Compute an Eulerian tour of the graph.  There may be several, but one
+should be the original sequence.  I'm planning to do this using the stack-based
+algorithm.
+\item When doing evalutions of this algorithm, the last step is to compare the
+assembly with the original genome.  This can be done with existing tools such as
+the {\tt dnadiff} script included with the {\em MUMmer} sequence alignment
+software.  This comparison will indicate how similar the assembled genome is to
+the original genome.  Ideally, they should be identical.
+\end{enumerate}
+
+The actual implementation of this algorithm will be done in C++.  I will
+initially implement the entire algorithm in one executable program, but I may
+eventually split it into several executable problems if it makes sense to do so
+(this is only possible once all the intermediate data structures can be
+serialized and deserialized to external files).  Regardless of this, each step
+of the algorithm will be split into one or more subroutines.  Logging will be
+enabled by default.
+
+\end{document}

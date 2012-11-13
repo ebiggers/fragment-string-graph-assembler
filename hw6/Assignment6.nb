@@ -1,0 +1,1163 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     43275,       1154]
+NotebookOptionsPosition[     40696,       1062]
+NotebookOutlinePosition[     41049,       1078]
+CellTagsIndexPosition[     41006,       1075]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell["\<\
+This is not really an assignment (as far as assignment grading goes), but I \
+am requiring you to complete your task listed here by the Monday after Oct. \
+break, Oct. 29. That is two weeks from now. I would imagine that some or all \
+of of you will do a little more than is asked for here. And of course, if \
+questions arise on coding, etc., do ask. 
+
+We will be starting presentations.....  well, last class day is Dec. 10, \
+which I would like to reserve. Therefore there are 3 class days in Dec. for 6 \
+of you...  and 2 more in November for 4 more:  This means Nov 26 and Nov 24. \
+So that is less than a month away from this assignment due date. So work has \
+to begin in earnest now.
+
+
+Project Time:  A Customized Assignment. \
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+  3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+  3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+  3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+  3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+  3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+  3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+  3.558693245221257*^9, 3.558693250225511*^9}, {3.559219848208788*^9, 
+  3.559219881455332*^9}, {3.5592199911264057`*^9, 3.559220043923868*^9}, {
+  3.55925534875168*^9, 3.559255354678775*^9}, {3.559255429927155*^9, 
+  3.5592555043326902`*^9}, {3.559299467277754*^9, 3.559299541578068*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Jenna", "Subsection",
+ CellChangeTimes->{{3.558707737068287*^9, 3.558707737668139*^9}}],
+
+Cell["\<\
+Make up a simulated season of 10 teams and assume 70% of the games have been \
+played. Form the network and figure out which teams can still win the \
+championship. Here is code that makes up a random season. (You might need to \
+vary the numbers for your purposes.\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+   3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+   3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+   3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+   3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+   3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+   3.558693245221257*^9, 3.558693250225511*^9}, 3.558707513971552*^9, {
+   3.558707739067753*^9, 3.558707782410676*^9}, {3.558707949104535*^9, 
+   3.558707958974668*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"n", "=", "5"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"games", "=", 
+   RowBox[{"List", "@@@", 
+    RowBox[{"EdgeList", "[", 
+     RowBox[{"CompleteGraph", "[", "5", "]"}], "]"}]}]}], "  ", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+    RowBox[{"sneakily", " ", "avoiding", " ", "Table"}], ",", " ", "etc"}], 
+   " ", "*)"}], " "}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"seasonAll", "=", 
+    RowBox[{"Join", "@@", 
+     RowBox[{"Table", "[", 
+      RowBox[{"games", ",", " ", 
+       RowBox[{"{", 
+        RowBox[{"4", " ", "n"}], "}"}]}], "]"}]}]}], ";"}], "  ", 
+  RowBox[{"(*", " ", 
+   RowBox[{"each", " ", "game", " ", "occurs", " ", "four", " ", "times"}], 
+   " ", "*)"}], " "}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"played", " ", "=", " ", 
+   RowBox[{"RandomSample", "[", 
+    RowBox[{"seasonAll", ",", 
+     RowBox[{"Round", "[", " ", 
+      RowBox[{"0.7", " ", 
+       RowBox[{"Length", "[", "seasonAll", "]"}]}], "]"}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.5587075295525*^9, 3.558707732286365*^9}, {
+  3.5587077842448673`*^9, 3.558707892618877*^9}, {3.558707936904826*^9, 
+  3.558707942767733*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "5"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "5"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "5"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"4", ",", "5"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.558707817599557*^9, 3.558707892993703*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"results", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"Append", "[", 
+      RowBox[{"p", ",", " ", 
+       RowBox[{"p", "[", 
+        RowBox[{"[", 
+         RowBox[{"RandomInteger", "[", 
+          RowBox[{"{", 
+           RowBox[{"1", ",", "2"}], "}"}], "]"}], "]"}], "]"}]}], "]"}], ",", 
+     " ", 
+     RowBox[{"{", 
+      RowBox[{"p", ",", " ", "played"}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"results", "[", 
+  RowBox[{"[", "5", "]"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.5587075295525*^9, 3.558707732286365*^9}, {
+  3.5587077842448673`*^9, 3.558707828710041*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"1", ",", "3", ",", "1"}], "}"}]], "Output",
+ CellChangeTimes->{{3.558707543379116*^9, 3.5587075582795267`*^9}, 
+   3.5587075955234413`*^9, 3.558707647166643*^9, 3.558707726604244*^9, {
+   3.558707795385096*^9, 3.5587078291269007`*^9}, 3.5587078954624147`*^9}]
+}, Closed]]
+}, Open  ]],
+
+Cell["\<\
+This means that in the 5th game in the list, team 1 won.\
+\>", "Text",
+ CellChangeTimes->{{3.558707830849496*^9, 3.558707831217547*^9}, {
+  3.5587078973030663`*^9, 3.558707908551963*^9}}],
+
+Cell["\<\
+You can use the FindMaximumFlowLP function in Graphs469 package.\
+\>", "Text",
+ CellChangeTimes->{{3.559220065508469*^9, 3.559220079412079*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Malcolm", "Subsection",
+ CellChangeTimes->{{3.558707913591773*^9, 3.558707914519363*^9}}],
+
+Cell["\<\
+Malcolm: Not sure. Show me something new relevant to your project; and \
+perhaps outline your plan, and start some coding.\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+  3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+  3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+  3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+  3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+  3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+  3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+  3.558693245221257*^9, 3.558693250225511*^9}, {3.558707513971552*^9, 
+  3.558707522256135*^9}, {3.559220093659692*^9, 3.559220123065734*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Eric", "Subsection",
+ CellChangeTimes->{{3.558707970358582*^9, 3.5587079708544703`*^9}}],
+
+Cell["\<\
+Given that paper you found:  
+
+A description of the algorithm you intend to program.
+If appropriate, a by-hand computation of a toy example. If not, start in on a \
+real example...\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+  3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+  3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+  3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+  3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+  3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+  3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+  3.558693245221257*^9, 3.558693245897778*^9}, {3.558707972206193*^9, 
+  3.558707973893837*^9}, {3.559220134172256*^9, 3.55922014664955*^9}, {
+  3.559255272578306*^9, 3.5592553237757473`*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Ben", "Subsection",
+ CellChangeTimes->{{3.558711052696432*^9, 3.558711052944427*^9}}],
+
+Cell["\<\
+Write a program that accepts some points and a cycle (of indices) with \
+duplicates, and eliminates the duplicates in a greedy way based on the \
+distance saved by the shortcutting. Here are some sample points and a cycle \
+with dups.\
+\>", "Text",
+ CellChangeTimes->{{3.558711057392851*^9, 3.558711113302412*^9}, {
+  3.559220175387972*^9, 3.55922017793715*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"SeedRandom", "[", "1", "]"}], ";", " ", 
+  RowBox[{"pts", " ", "=", " ", 
+   RowBox[{"RandomReal", "[", 
+    RowBox[{"1", ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"10", ",", "2"}], "}"}]}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.55871108734124*^9, 3.55871109831283*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.8173894901710712`", ",", "0.11141961113123644`"}], "}"}], ",", 
+   
+   RowBox[{"{", 
+    RowBox[{"0.7895259946338515`", ",", "0.18780314670602638`"}], "}"}], ",", 
+   
+   RowBox[{"{", 
+    RowBox[{"0.24136096745765045`", ",", "0.06573875950878105`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.5422466205096241`", ",", "0.23115450673602744`"}], "}"}], ",", 
+   
+   RowBox[{"{", 
+    RowBox[{"0.3960060815485871`", ",", "0.7004737819422449`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.21182597905412748`", ",", "0.748656881482948`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.42285064933994887`", ",", "0.247494780864008`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.9771717617407765`", ",", "0.8251629394885138`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.9252752011788627`", ",", "0.5780561519943792`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.2928697367979225`", ",", "0.20805106478059265`"}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.558711098825303*^9}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"SeedRandom", "[", "2", "]"}], ";", " ", 
+  RowBox[{"cy", "=", 
+   RowBox[{"RandomChoice", "[", 
+    RowBox[{
+     RowBox[{"Range", "[", "10", "]"}], ",", " ", 
+     RowBox[{"{", "30", "}"}]}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.5587111359953938`*^9, 3.558711161855494*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "9", ",", "5", ",", "6", ",", "5", ",", "8", ",", "5", ",", "1", ",", "2", 
+   ",", "1", ",", "5", ",", "4", ",", "8", ",", "4", ",", "1", ",", "3", ",", 
+   "8", ",", "9", ",", "8", ",", "10", ",", "4", ",", "7", ",", "3", ",", "4",
+    ",", "9", ",", "10", ",", "2", ",", "4", ",", "9", ",", "6", ",", "6"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.558711162149241*^9}]
+}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Megan", "Subsection",
+ CellChangeTimes->{{3.558706338540615*^9, 3.5587063390324783`*^9}}],
+
+Cell["\<\
+Your first order of business might be to work out a very simple example by \
+hand. Summarize what the basic algorithm is? And show what the network looks \
+like for a small example.\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+  3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+  3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+  3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+  3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+  3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+  3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+  3.558693245221257*^9, 3.558693247017845*^9}, {3.558706314887878*^9, 
+  3.558706343731584*^9}, {3.5592202038093643`*^9, 3.559220215032524*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Nick", "Subsection",
+ CellChangeTimes->{{3.558706369541081*^9, 3.55870636998731*^9}}],
+
+Cell[TextData[{
+ "Use the \[OpenCurlyDoubleQuote]all maximal independent set\
+\[CloseCurlyDoubleQuote] method (the \[OpenCurlyDoubleQuote]static\
+\[CloseCurlyDoubleQuote] method) to make an ILP setup that will yield the \
+chromatic number and also the fractional chromatic number of the following \
+graph. Use my ",
+ Cell[BoxData["MaximalIndependentSets"]],
+ " function to get all the maximal independent sets for this graph. There are \
+only 16. Once this is working, try a larger graph too."
+}], "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+   3.5585395107150707`*^9}, {3.5585398931635227`*^9, 3.558539895457329*^9}, {
+   3.558540608544774*^9, 3.558540628535921*^9}, {3.558540764021604*^9, 
+   3.55854077118856*^9}, {3.558540880115018*^9, 3.5585409115372763`*^9}, {
+   3.55854110438902*^9, 3.558541134946744*^9}, {3.558542179782535*^9, 
+   3.558542188164338*^9}, {3.5585435063670263`*^9, 3.5585435371966057`*^9}, {
+   3.558693245221257*^9, 3.558693247017845*^9}, 3.558706314887878*^9, {
+   3.558706377338936*^9, 3.558706378434722*^9}, {3.558706952999606*^9, 
+   3.5587070680275173`*^9}, {3.559220266769528*^9, 3.559220266771523*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"g", "=", 
+  RowBox[{
+  "GraphData", "[", "\"\<GolombGraph\>\"", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"VertexList", "[", "g", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"EdgeList", "[", "g", "]"}]}], "Input",
+ CellChangeTimes->{{3.558706915178123*^9, 3.5587069447510557`*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[
+  NamespaceBox["NetworkGraphics",
+   DynamicModuleBox[{Typeset`graph = HoldComplete[
+     Graph[{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {Null, 
+       SparseArray[
+       Automatic, {10, 10}, 0, {
+        1, {{0, 3, 6, 9, 13, 16, 20, 23, 27, 30, 36}, {{2}, {3}, {4}, {1}, {
+          3}, {6}, {1}, {2}, {8}, {1}, {5}, {9}, {10}, {4}, {6}, {10}, {2}, {
+          5}, {7}, {10}, {6}, {8}, {10}, {3}, {7}, {9}, {10}, {4}, {8}, {
+          10}, {4}, {5}, {6}, {7}, {8}, {9}}}, Pattern}]}, {
+      VertexCoordinates -> {{0.16666666666666666`, 0.5527707983925666}, {
+        0.3953802205448357, -0.4207229664936898}, {-0.5620468872115023, \
+-0.13204783189887687`}, {1., 0.}, {
+        0.5, -0.8660254037844386}, {-0.5, -0.8660254037844386}, {-1., 
+        0.}, {-0.5, 0.8660254037844386}, {0.5, 0.8660254037844386}, {0., 
+        0.}}}]], Typeset`boxes, Typeset`boxes$s2d = GraphicsGroupBox[{{
+       Directive[
+        Hue[0.6, 0.2, 0.8], 
+        EdgeForm[
+         Directive[
+          GrayLevel[0], 
+          Opacity[0.7]]]], 
+       TagBox[
+        DiskBox[{0.16666666666666666`, 0.5527707983925666}, 
+         0.02261146496815286], "DynamicName", BoxID -> "VertexID$1"], 
+       TagBox[
+        DiskBox[{0.3953802205448357, -0.4207229664936898}, 
+         0.02261146496815286], "DynamicName", BoxID -> "VertexID$2"], 
+       TagBox[
+        DiskBox[{-0.5620468872115023, -0.13204783189887687`}, 
+         0.02261146496815286], "DynamicName", BoxID -> "VertexID$3"], 
+       TagBox[
+        DiskBox[{1., 0.}, 0.02261146496815286], "DynamicName", BoxID -> 
+        "VertexID$4"], 
+       TagBox[
+        DiskBox[{0.5, -0.8660254037844386}, 0.02261146496815286], 
+        "DynamicName", BoxID -> "VertexID$5"], 
+       TagBox[
+        DiskBox[{-0.5, -0.8660254037844386}, 0.02261146496815286], 
+        "DynamicName", BoxID -> "VertexID$6"], 
+       TagBox[
+        DiskBox[{-1., 0.}, 0.02261146496815286], "DynamicName", BoxID -> 
+        "VertexID$7"], 
+       TagBox[
+        DiskBox[{-0.5, 0.8660254037844386}, 0.02261146496815286], 
+        "DynamicName", BoxID -> "VertexID$8"], 
+       TagBox[
+        DiskBox[{0.5, 0.8660254037844386}, 0.02261146496815286], 
+        "DynamicName", BoxID -> "VertexID$9"], 
+       TagBox[
+        DiskBox[{0., 0.}, 0.02261146496815286], "DynamicName", BoxID -> 
+        "VertexID$10"]}, {
+       Directive[
+        Opacity[0.7], 
+        Hue[0.6, 0.7, 0.5]], 
+       LineBox[{{
+          DynamicLocation["VertexID$1", Automatic, Center], 
+          DynamicLocation["VertexID$2", Automatic, Center]}, {
+          DynamicLocation["VertexID$1", Automatic, Center], 
+          DynamicLocation["VertexID$3", Automatic, Center]}, {
+          DynamicLocation["VertexID$1", Automatic, Center], 
+          DynamicLocation["VertexID$4", Automatic, Center]}, {
+          DynamicLocation["VertexID$2", Automatic, Center], 
+          DynamicLocation["VertexID$3", Automatic, Center]}, {
+          DynamicLocation["VertexID$2", Automatic, Center], 
+          DynamicLocation["VertexID$6", Automatic, Center]}, {
+          DynamicLocation["VertexID$3", Automatic, Center], 
+          DynamicLocation["VertexID$8", Automatic, Center]}, {
+          DynamicLocation["VertexID$4", Automatic, Center], 
+          DynamicLocation["VertexID$5", Automatic, Center]}, {
+          DynamicLocation["VertexID$4", Automatic, Center], 
+          DynamicLocation["VertexID$9", Automatic, Center]}, {
+          DynamicLocation["VertexID$4", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}, {
+          DynamicLocation["VertexID$5", Automatic, Center], 
+          DynamicLocation["VertexID$6", Automatic, Center]}, {
+          DynamicLocation["VertexID$5", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}, {
+          DynamicLocation["VertexID$6", Automatic, Center], 
+          DynamicLocation["VertexID$7", Automatic, Center]}, {
+          DynamicLocation["VertexID$6", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}, {
+          DynamicLocation["VertexID$7", Automatic, Center], 
+          DynamicLocation["VertexID$8", Automatic, Center]}, {
+          DynamicLocation["VertexID$7", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}, {
+          DynamicLocation["VertexID$8", Automatic, Center], 
+          DynamicLocation["VertexID$9", Automatic, Center]}, {
+          DynamicLocation["VertexID$8", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}, {
+          DynamicLocation["VertexID$9", Automatic, Center], 
+          DynamicLocation["VertexID$10", Automatic, Center]}}]}}], 
+    Typeset`data}, 
+    TagBox[
+     DynamicBox[GraphComputation`NetworkGraphicsBox[
+      2, Typeset`graph, Typeset`boxes], {
+      CachedValue :> Typeset`boxes, SingleEvaluation -> True, 
+       SynchronousUpdating -> False, TrackedSymbols :> {}},
+      ImageSizeCache->{{6.17999999999998, 
+       352.82000000000005`}, {-153.10720000000006`, 148.38074917572234`}}],
+     MouseAppearanceTag["NetworkGraphics"]],
+    AllowKernelInitialization->False,
+    UnsavedVariables:>{Typeset`data}]],
+  BaseStyle->{},
+  DefaultBaseStyle->{
+   "NetworkGraphics", FrontEnd`GraphicsHighlightColor -> Hue[0.8, 1., 0.6]},
+  FrameTicks->None,
+  LabelStyle->{},
+  TicksStyle->{}]], "Output",
+ CellChangeTimes->{{3.5587069156423283`*^9, 3.55870694515273*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "1", ",", "2", ",", "3", ",", "4", ",", "5", ",", "6", ",", "7", ",", "8", 
+   ",", "9", ",", "10"}], "}"}]], "Output",
+ CellChangeTimes->{{3.5587069156423283`*^9, 3.558706945159191*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"1", "\[UndirectedEdge]", "2"}], ",", 
+   RowBox[{"1", "\[UndirectedEdge]", "3"}], ",", 
+   RowBox[{"1", "\[UndirectedEdge]", "4"}], ",", 
+   RowBox[{"2", "\[UndirectedEdge]", "3"}], ",", 
+   RowBox[{"2", "\[UndirectedEdge]", "6"}], ",", 
+   RowBox[{"3", "\[UndirectedEdge]", "8"}], ",", 
+   RowBox[{"4", "\[UndirectedEdge]", "5"}], ",", 
+   RowBox[{"4", "\[UndirectedEdge]", "9"}], ",", 
+   RowBox[{"4", "\[UndirectedEdge]", "10"}], ",", 
+   RowBox[{"5", "\[UndirectedEdge]", "6"}], ",", 
+   RowBox[{"5", "\[UndirectedEdge]", "10"}], ",", 
+   RowBox[{"6", "\[UndirectedEdge]", "7"}], ",", 
+   RowBox[{"6", "\[UndirectedEdge]", "10"}], ",", 
+   RowBox[{"7", "\[UndirectedEdge]", "8"}], ",", 
+   RowBox[{"7", "\[UndirectedEdge]", "10"}], ",", 
+   RowBox[{"8", "\[UndirectedEdge]", "9"}], ",", 
+   RowBox[{"8", "\[UndirectedEdge]", "10"}], ",", 
+   RowBox[{"9", "\[UndirectedEdge]", "10"}]}], "}"}]], "Output",
+ CellChangeTimes->{{3.5587069156423283`*^9, 3.558706945160668*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"<<", "Graphs469`"}], "\[IndentingNewLine]", 
+ RowBox[{"MaximalIndependentSets", "[", "g", "]"}]}], "Input",
+ CellChangeTimes->{{3.558707005933057*^9, 3.558707016421772*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "5", ",", "7", ",", "9"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "5", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "6", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "6", ",", "9"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "10"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "4", ",", "7"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "4", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "5", ",", "7", ",", "9"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "5", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "10"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "4", ",", "6"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "4", ",", "7"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "5", ",", "7", ",", "9"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "9", ",", "6"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "10"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"4", ",", "6", ",", "8"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.558707017273672*^9}]
+}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Yu", "Subsection",
+ CellChangeTimes->{{3.558625952311685*^9, 3.5586259525334997`*^9}}],
+
+Cell["\<\
+Work out a small example of the VRP routing problem. Just use two trucks and \
+let all demands and capacities be 1. Here is a sample problem.\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+  3.5585389198172493`*^9, 3.558539006029417*^9}, {3.558539493749148*^9, 
+  3.558539511561499*^9}, {3.5586259539091377`*^9, 3.55862597466868*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"SeedRandom", "[", "3", "]"}], ";", 
+  RowBox[{"pts", "=", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{
+     RowBox[{"RandomReal", "[", 
+      RowBox[{"1", ",", " ", 
+       RowBox[{"{", 
+        RowBox[{"20", ",", "2"}], "}"}]}], "]"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{".5", ",", ".5"}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Graphics", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"PointSize", "[", ".02", "]"}], ",", " ", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", "Yellow", ",", " ", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"Disk", "[", 
+        RowBox[{"#", ",", ".03"}], "]"}], "&"}], " ", "/@", 
+      RowBox[{"Rest", "@", "pts"}]}], ",", 
+     RowBox[{"PointSize", "[", ".04", "]"}], ",", " ", 
+     RowBox[{"RGBColor", "[", 
+      RowBox[{"1", ",", "0.6", ",", "0.4"}], "]"}], ",", 
+     RowBox[{"Disk", "[", 
+      RowBox[{
+       RowBox[{"pts", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", " ", ".03"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"Black", ",", " ", 
+       RowBox[{"Table", "[", 
+        RowBox[{
+         RowBox[{"Text", "[", 
+          RowBox[{
+           RowBox[{"Style", "[", 
+            RowBox[{"i", ",", "9"}], "]"}], ",", " ", 
+           RowBox[{"pts", "[", 
+            RowBox[{"[", "i", "]"}], "]"}]}], "]"}], ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"i", ",", " ", "2", ",", "20"}], "}"}]}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Text", "[", 
+        RowBox[{
+         RowBox[{"Style", "[", 
+          RowBox[{"1", ",", "12", ",", "Bold"}], "]"}], ",", " ", 
+         RowBox[{"pts", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "]"}]}], "}"}]}], "}"}], ",", " ", 
+   RowBox[{"Frame", "\[Rule]", "True"}], ",", " ", 
+   RowBox[{"FrameTicks", "\[Rule]", "False"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", "1"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "1"}], "}"}]}], "}"}]}], ",", 
+   RowBox[{"PlotRangePadding", "\[Rule]", ".042"}], ",", " ", 
+   RowBox[{"PlotLabel", "\[Rule]", "\"\<Center red point is depot\>\""}]}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.5586259955851383`*^9, 3.558626230989479*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[
+  {RGBColor[1, 1, 0], PointSize[0.02], EdgeForm[GrayLevel[
+   0]], {DiskBox[{0.4785538089186683, 0.008696916817696687}, 0.03], 
+    DiskBox[{0.34702929535492655`, 0.1392798273842255}, 0.03], 
+    DiskBox[{0.18060266455745766`, 0.5287012112413121}, 0.03], 
+    DiskBox[{0.5785867785984598, 0.7603494187101738}, 0.03], 
+    DiskBox[{0.40429785674104424`, 0.9037262805877408}, 0.03], 
+    DiskBox[{0.9759042480826978, 0.6203600189312912}, 0.03], 
+    DiskBox[{0.09800148528293073, 0.9817547207207011}, 0.03], 
+    DiskBox[{0.7501726704443339, 0.13372082324090928`}, 0.03], 
+    DiskBox[{0.3488323721423001, 0.1823284966925054}, 0.03], 
+    DiskBox[{0.6480708365371364, 0.3695339634483692}, 0.03], 
+    DiskBox[{0.6647855320830622, 0.23095088455858037`}, 0.03], 
+    DiskBox[{0.5584824294879369, 0.8046077970949836}, 0.03], 
+    DiskBox[{0.0307941900473645, 0.45912307274301245`}, 0.03], 
+    DiskBox[{0.5319427119289448, 0.5407446302251406}, 0.03], 
+    DiskBox[{0.33118387081927847`, 0.5762133254143005}, 0.03], 
+    DiskBox[{0.5933712879056472, 0.3718368352210357}, 0.03], 
+    DiskBox[{0.5415105671018867, 0.6005453240179868}, 0.03], 
+    DiskBox[{0.12490316401873458`, 0.3856795011953411}, 0.03], 
+    DiskBox[{0.19543433447766212`, 0.4300732524934001}, 0.03], 
+    DiskBox[{0.9144846829052486, 0.11301447688441213`}, 0.03]}, 
+   {RGBColor[1, 0.6, 0.4], PointSize[0.04], DiskBox[{0.5, 0.5}, 0.03], 
+    {GrayLevel[0], {InsetBox[
+       StyleBox["2",
+        StripOnInput->False,
+        FontSize->9], {0.4785538089186683, 0.008696916817696687}], InsetBox[
+       StyleBox["3",
+        StripOnInput->False,
+        FontSize->9], {0.34702929535492655`, 0.1392798273842255}], InsetBox[
+       StyleBox["4",
+        StripOnInput->False,
+        FontSize->9], {0.18060266455745766`, 0.5287012112413121}], InsetBox[
+       StyleBox["5",
+        StripOnInput->False,
+        FontSize->9], {0.5785867785984598, 0.7603494187101738}], InsetBox[
+       StyleBox["6",
+        StripOnInput->False,
+        FontSize->9], {0.40429785674104424`, 0.9037262805877408}], InsetBox[
+       StyleBox["7",
+        StripOnInput->False,
+        FontSize->9], {0.9759042480826978, 0.6203600189312912}], InsetBox[
+       StyleBox["8",
+        StripOnInput->False,
+        FontSize->9], {0.09800148528293073, 0.9817547207207011}], InsetBox[
+       StyleBox["9",
+        StripOnInput->False,
+        FontSize->9], {0.7501726704443339, 0.13372082324090928`}], InsetBox[
+       StyleBox["10",
+        StripOnInput->False,
+        FontSize->9], {0.3488323721423001, 0.1823284966925054}], InsetBox[
+       StyleBox["11",
+        StripOnInput->False,
+        FontSize->9], {0.6480708365371364, 0.3695339634483692}], InsetBox[
+       StyleBox["12",
+        StripOnInput->False,
+        FontSize->9], {0.6647855320830622, 0.23095088455858037`}], InsetBox[
+       StyleBox["13",
+        StripOnInput->False,
+        FontSize->9], {0.5584824294879369, 0.8046077970949836}], InsetBox[
+       StyleBox["14",
+        StripOnInput->False,
+        FontSize->9], {0.0307941900473645, 0.45912307274301245`}], InsetBox[
+       StyleBox["15",
+        StripOnInput->False,
+        FontSize->9], {0.5319427119289448, 0.5407446302251406}], InsetBox[
+       StyleBox["16",
+        StripOnInput->False,
+        FontSize->9], {0.33118387081927847`, 0.5762133254143005}], InsetBox[
+       StyleBox["17",
+        StripOnInput->False,
+        FontSize->9], {0.5933712879056472, 0.3718368352210357}], InsetBox[
+       StyleBox["18",
+        StripOnInput->False,
+        FontSize->9], {0.5415105671018867, 0.6005453240179868}], InsetBox[
+       StyleBox["19",
+        StripOnInput->False,
+        FontSize->9], {0.12490316401873458`, 0.3856795011953411}], InsetBox[
+       StyleBox["20",
+        StripOnInput->False,
+        FontSize->9], {0.19543433447766212`, 0.4300732524934001}]}, InsetBox[
+      StyleBox["1",
+       StripOnInput->False,
+       FontSize->12,
+       FontWeight->Bold], {0.5, 0.5}]}}},
+  BaseStyle->16,
+  Frame->True,
+  FrameTicks->False,
+  ImageSize->{245., Automatic},
+  LabelStyle->16,
+  PlotLabel->FormBox["\"Center red point is depot\"", TraditionalForm],
+  PlotRange->{{0, 1}, {0, 1}},
+  PlotRangePadding->0.042,
+  TicksStyle->16]], "Output",
+ CellChangeTimes->{{3.558539025020924*^9, 3.5585390774898167`*^9}, 
+   3.55853911661502*^9, 3.558539162650528*^9, {3.5586259773870773`*^9, 
+   3.558626054370203*^9}, {3.558626087083399*^9, 3.5586262258633423`*^9}}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Junyi", "Subsection",
+ CellChangeTimes->{{3.558693207594119*^9, 3.558693208209792*^9}}],
+
+Cell["\<\
+Finish off that table I started so that you understand the data structure we \
+need to move forward. This requires you read some of the definitions of \
+left(), right(), origin(), destination() as they apply to all \
+\[OpenCurlyDoubleQuote]objects\[CloseCurlyDoubleQuote] of a graph.
+And write code to assign the desired topological numbering to a given st \
+graph. I can give you an example.\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, 3.558625838425511*^9, {
+   3.5586262441374483`*^9, 3.5586262442947063`*^9}, {3.558626415289442*^9, 
+   3.5586266309211807`*^9}, {3.558626688889165*^9, 3.5586267603605347`*^9}, {
+   3.558693195499737*^9, 3.558693236793209*^9}, {3.559220287936241*^9, 
+   3.559220289509753*^9}}],
+
+Cell["\<\
+Here is code to compute the faces of a graph...  Well, I am not quite there \
+yet. But I want to try to get this in good shape so that you can use it \
+easily.\
+\>", "Text",
+ CellChangeTimes->{{3.559220295239003*^9, 3.559220300752449*^9}, {
+  3.55925523224441*^9, 3.559255252529819*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Tim", "Subsection",
+ CellChangeTimes->{{3.558626763018743*^9, 3.558626763178831*^9}}],
+
+Cell["\<\
+
+Tim:  Start learning about the ILP setup for the FacLoc problem. The equation \
+are below. Solve a simple case with 20 points and 3 hosts. Explain why this \
+ILP setup works. 
+\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, 3.558625838425511*^9, {
+   3.5586262441374483`*^9, 3.5586262442947063`*^9}, {3.558626415289442*^9, 
+   3.5586266309211807`*^9}, {3.558626688889165*^9, 3.5586267603605347`*^9}, 
+   3.5589675990734177`*^9, {3.559220315630375*^9, 3.559220323141857*^9}}],
+
+Cell[TextData[{
+ "Input: ",
+ Cell[BoxData[
+  FormBox["n", TraditionalForm]]],
+ " points ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["P", "i"], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox["k", TraditionalForm]]],
+ ", the number of hosts (to be chosen from the points)\nVariables:  ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", 
+    RowBox[{"i", ",", "j"}]], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"i", "\[LessEqual]", "n"}], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"j", "\[LessEqual]", "n"}], TraditionalForm]]],
+ "  (represents whether ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["P", "i"], TraditionalForm]]],
+ " goes to party at ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["P", "j"], TraditionalForm]]],
+ "\n                 ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["y", "i"], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"i", "\[LessEqual]", "n"}], TraditionalForm]]],
+ "  (represents whether ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["P", "i"], TraditionalForm]]],
+ " is a host)\nConstraints:  \n1.   ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "x", "\[LessEqual]", "1"}], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "y", "\[LessEqual]", "1"}], TraditionalForm]]],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"x", ",", 
+    RowBox[{"y", "\[Element]", "Integers"}]}], TraditionalForm]]],
+ "                 \n2.   for each i,j, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["x", 
+     RowBox[{"i", ",", "j"}]], "\[LessEqual]", 
+    SubscriptBox["y", "j"]}], TraditionalForm]]],
+ "    \n3.  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Sum]", 
+     SubscriptBox["y", "j"]}], "\[LessEqual]", "k"}], TraditionalForm]]],
+ "\n\nObjective: ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Sum]", 
+     RowBox[{" ", 
+      RowBox[{"i", ",", "j"}]}]], 
+    RowBox[{
+     SubscriptBox["d", 
+      RowBox[{"i", ",", "j"}]], 
+     SubscriptBox["x", 
+      RowBox[{"i", ",", "j"}]]}]}], TraditionalForm]]],
+ "  THis is what guarantees each point goes to NEAREST host.\n\n",
+ StyleBox["Now, solve a small problem. 30 random points. k = 4.",
+  FontWeight->"Bold"],
+ "\n\nFuture: Add symmetry-breaking constraints. Adds speed.\nRemove people \
+from consideration (on the boundary). Maybe not good idea on torus."
+}], "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, 3.558625838425511*^9, {
+   3.5586262441374483`*^9, 3.5586262442947063`*^9}, {3.558626415289442*^9, 
+   3.5586266309211807`*^9}, {3.558626688889165*^9, 3.5586267603605347`*^9}, {
+   3.5589675990734177`*^9, 3.558967601319559*^9}, {3.558967729958419*^9, 
+   3.5589677394594097`*^9}, {3.558968080607727*^9, 3.558968148124194*^9}, {
+   3.558968278472074*^9, 3.55896829508712*^9}, {3.5589684897178307`*^9, 
+   3.5589685241937857`*^9}, {3.5589685558365593`*^9, 3.558968572216715*^9}, 
+   3.559220329448536*^9},
+ FontSize->14],
+
+Cell["\<\
+
+Explain why minimizing the objective subject to the constraints solves the \
+Facilities Location problem.
+  
+\
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, 3.558625838425511*^9, {
+   3.5586262441374483`*^9, 3.5586262442947063`*^9}, {3.558626415289442*^9, 
+   3.5586266309211807`*^9}, {3.558626688889165*^9, 3.5586267603605347`*^9}, {
+   3.5589675990734177`*^9, 3.558967601319559*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Min", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"obj", ",", " ", 
+     RowBox[{"Flatten", "[", 
+      RowBox[{"{", 
+       RowBox[{"con1", ",", " ", "con2", ",", " ", "con3", ",", " ", 
+        RowBox[{"Table", "[", 
+         RowBox[{
+          RowBox[{"v", "\[Element]", "Integers"}], ",", " ", 
+          RowBox[{"{", 
+           RowBox[{"v", ",", "var"}], "}"}]}], "]"}]}], "}"}], "]"}]}], "}"}],
+    ",", "var"}], "]"}]], "Input",
+ CellChangeTimes->{{3.558967781889092*^9, 3.558967842211529*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"\[AliasIndicator]elem\[AliasIndicator]", " ", "gives"}], " ", 
+  "\[Element]"}]], "Input",
+ CellChangeTimes->{{3.558967851395051*^9, 3.558967863985818*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Maxray", "Subsection",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, {3.558625838425511*^9, 
+   3.558625843063325*^9}}],
+
+Cell["\<\
+ILP has two parts: Here is a nice problem that can be used to illustrate the \
+branch-and-bround approach to ILP. \
+\>", "Text",
+ CellChangeTimes->{{3.558438863079258*^9, 3.558439240387678*^9}, {
+   3.5585389198172493`*^9, 3.558539006029417*^9}, 3.558539493749148*^9, {
+   3.558539634432392*^9, 3.558539634831327*^9}, {3.558625838425511*^9, 
+   3.558625879910571*^9}}],
+
+Cell[TextData[{
+ "An ice cream company can make up to 28 flavors of ice cream. Flavor ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]]],
+ " requires ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["a", "i"], TraditionalForm]]],
+ " (integer) lbs of sugar and earns (nets) ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["$c", "i"], TraditionalForm]]],
+ " per gallon sold. At least ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["u", "i"], TraditionalForm]]],
+ " must be made of flavor i if it is to sell. ",
+ Cell[BoxData[
+  FormBox["S", TraditionalForm]]],
+ " pounds of sugar are available. What flavors to make to maximize profit?\n\n\
+Let ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", "i"], TraditionalForm]]],
+ " be the amount of flavor ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]]],
+ " to make (integer number of gallons)\nLet ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["y", "i"], TraditionalForm]]],
+ " be whether to make any (0 or 1)\nObjective:  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Sum]", 
+    RowBox[{
+     SubscriptBox["c", "i"], 
+     SubscriptBox["x", "i"]}]}], TraditionalForm]]],
+ "\nConstraints:  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Sum]", 
+     RowBox[{
+      SubscriptBox["x", "i"], 
+      SubscriptBox["a", "i"]}]}], "=", "S"}], TraditionalForm]]],
+ "\n   ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", 
+    SubscriptBox["y", "i"], "\[LessEqual]", "1"}], TraditionalForm]]],
+ "    but want:        ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["y", "i"], "\[Element]", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "1"}], "}"}]}], TraditionalForm]]],
+ " \nBut how to invoke the \[OpenCurlyDoubleQuote]if make any, make at least ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["u", "i"], TraditionalForm]]],
+ "\[CloseCurlyDoubleQuote]\n\nA. Explain why simply adding the constraints  \
+",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["u", "i"], 
+     SubscriptBox["y", "i"]}], "\[LessEqual]", 
+    SubscriptBox["x", "i"]}], TraditionalForm]]],
+ " does not give a workably setup.\n\nB. The right way: Explain why ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["x", "i"], "\[LessEqual]", 
+    RowBox[{
+     SubscriptBox["y", "i"], 
+     RowBox[{"\[LeftFloor]", 
+      FractionBox["S", 
+       SubscriptBox["a", "i"]], "\[RightFloor]"}]}]}], TraditionalForm]]],
+ ". Then explain why adding the constraints \n\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["u", "i"], 
+     SubscriptBox["y", "i"]}], "\[LessEqual]", 
+    SubscriptBox["x", "i"], "\[LessEqual]", 
+    RowBox[{
+     SubscriptBox["y", "i"], 
+     RowBox[{"\[LeftFloor]", 
+      FractionBox["S", 
+       SubscriptBox["a", "i"]], "\[RightFloor]"}]}]}], TraditionalForm]]],
+ " does give a workable setup. \n\nC.  Use the preceding and ",
+ Cell[BoxData["Maximize"]],
+ " to solve thefollowing example: There are 9 flavors and 240 pounds of \
+sugar. The sugar-required vector is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"a", "=", 
+    RowBox[{"{", 
+     RowBox[{
+     "6", ",", "8", ",", "3", ",", "4", ",", "5", ",", "3", ",", "3", ",", 
+      "7", ",", "8"}], "}"}]}], TraditionalForm]]],
+ ", the $-cost-per-gallon vector is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"c", "=", 
+    RowBox[{"{", 
+     RowBox[{
+     "12", ",", "12", ",", "12", ",", "11", ",", "10", ",", "10", ",", "12", 
+      ",", "11", ",", "13"}], "}"}]}], TraditionalForm]]],
+ ", and the minimum to make vector is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"u", "=", 
+    RowBox[{"{", 
+     RowBox[{
+     "5", ",", "11", ",", "10", ",", "5", ",", "6", ",", "8", ",", "8", ",", 
+      "8", ",", "11"}], "}"}]}], TraditionalForm]]],
+ ". (Hint: Answer is $960.00)\n\nBut more important is to start learning \
+about what branch&bound and cutting planes are. See me, and look at Thie book."
+}], "Text",
+ CellChangeTimes->{{3.558625259754918*^9, 3.558625271688895*^9}, {
+   3.5586253190047493`*^9, 3.558625392418385*^9}, {3.558625434395666*^9, 
+   3.558625515960791*^9}, {3.558625585367758*^9, 3.558625763585606*^9}, {
+   3.5586258012733583`*^9, 3.5586258136090107`*^9}, 3.559220351807309*^9, {
+   3.5592203975182543`*^9, 3.559220450475595*^9}},
+ FontSize->14]
+}, Closed]]
+},
+WindowSize->{1141, 799},
+WindowMargins->{{53, Automatic}, {Automatic, 0}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 22, \
+2012)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 1557, 26, 131, "Text"],
+Cell[CellGroupData[{
+Cell[2139, 50, 93, 1, 34, "Subsection"],
+Cell[2235, 53, 975, 15, 41, "Text"],
+Cell[CellGroupData[{
+Cell[3235, 72, 1196, 33, 73, "Input"],
+Cell[4434, 107, 707, 23, 27, "Output"],
+Cell[CellGroupData[{
+Cell[5166, 134, 649, 19, 43, "Input"],
+Cell[5818, 155, 299, 5, 27, "Output"]
+}, Closed]]
+}, Open  ]],
+Cell[6144, 164, 197, 4, 26, "Text"],
+Cell[6344, 170, 154, 3, 26, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[6535, 178, 95, 1, 26, "Subsection"],
+Cell[6633, 181, 798, 12, 26, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[7468, 198, 94, 1, 26, "Subsection"],
+Cell[7565, 201, 906, 16, 71, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[8508, 222, 91, 1, 26, "Subsection"],
+Cell[8602, 225, 372, 7, 41, "Text"],
+Cell[CellGroupData[{
+Cell[8999, 236, 312, 8, 27, "Input"],
+Cell[9314, 246, 1066, 27, 58, "Output"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[10417, 278, 316, 8, 21, "Input"],
+Cell[10736, 288, 415, 8, 27, "Output"]
+}, Closed]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[11200, 302, 95, 1, 26, "Subsection"],
+Cell[11298, 305, 859, 13, 26, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[12194, 323, 91, 1, 26, "Subsection"],
+Cell[12288, 326, 1239, 19, 41, "Text"],
+Cell[CellGroupData[{
+Cell[13552, 349, 302, 6, 58, "Input"],
+Cell[13857, 357, 5422, 110, 329, "Output"],
+Cell[19282, 469, 229, 5, 27, "Output"],
+Cell[19514, 476, 1027, 21, 43, "Output"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[20578, 502, 198, 3, 37, "Input"],
+Cell[20779, 507, 1202, 35, 43, "Output"]
+}, Closed]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[22030, 548, 92, 1, 26, "Subsection"],
+Cell[22125, 551, 378, 6, 26, "Text"],
+Cell[CellGroupData[{
+Cell[22528, 561, 2318, 63, 88, "Input"],
+Cell[24849, 626, 4454, 97, 279, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[29352, 729, 93, 1, 26, "Subsection"],
+Cell[29448, 732, 882, 14, 56, "Text"],
+Cell[30333, 748, 297, 6, 26, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[30667, 759, 91, 1, 26, "Subsection"],
+Cell[30761, 762, 641, 12, 56, "Text"],
+Cell[31405, 776, 3103, 98, 262, "Text"],
+Cell[34511, 876, 552, 12, 71, "Text"],
+Cell[35066, 890, 528, 14, 27, "Input"],
+Cell[35597, 906, 191, 4, 27, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[35825, 915, 268, 4, 26, "Subsection"],
+Cell[36096, 921, 378, 7, 26, "Text"],
+Cell[36477, 930, 4203, 129, 380, "Text"]
+}, Closed]]
+}
+]
+*)
+
+(* End of internal cache information *)
