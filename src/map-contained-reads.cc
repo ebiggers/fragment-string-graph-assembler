@@ -137,7 +137,6 @@ int main(int argc, char **argv)
 				std::swap(f_end, g_end);
 			}
 
-			const BaseVec & f = orig_reads[f_idx];
 			const BaseVec & g = orig_reads[g_idx];
 
 			Overlap::read_pos_t overhang_len;
@@ -170,6 +169,7 @@ int main(int argc, char **argv)
 	}
 
 
+	info("Reading string graph from \"%s\"", graph_file);
 	AnyStringGraph graph(graph_file);
 
 	// Map the contained reads into the graph, given the overlap to use to
@@ -184,13 +184,16 @@ int main(int argc, char **argv)
 		assert(old_to_new_indices[orig_read_idx] != ~size_t(0));
 		size_t new_read_idx = old_to_new_indices[orig_read_idx];
 
-		assert(new_to_old_indices[f_idx] != ~size_t(0));
-		assert(new_to_old_indices[g_idx] != ~size_t(0));
-		f_idx = new_to_old_indices[f_idx];
-		g_idx = new_to_old_indices[g_idx];
+		assert(old_to_new_indices[f_idx] != ~size_t(0));
+		assert(old_to_new_indices[g_idx] != ~size_t(0));
+		f_idx = old_to_new_indices[f_idx];
+		g_idx = old_to_new_indices[g_idx];
 		o->set_indices(f_idx, g_idx);
 		graph.map_contained_read(new_read_idx, *o, overhang_lens[i]);
 	}
+
+	info("Writing string graph to \"%s\"", out_graph_file);
+	graph.write(out_graph_file);
 
 	return 0;
 }

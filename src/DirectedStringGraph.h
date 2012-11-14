@@ -231,4 +231,10 @@ private:
 			    std::vector<bool> & visited,
 			    v_idx_t & component_size) const;
 
+	void walk_back_edges(const v_idx_t v_idx,
+			     size_t overhang_len,
+			     edge_idx_t mapped_edges[],
+			     size_t & num_mapped_edges,
+			     size_t max_mapped_edges);
+
 };

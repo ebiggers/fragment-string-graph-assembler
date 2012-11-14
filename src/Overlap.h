@@ -72,8 +72,8 @@ public:
 		_rc         = rc;
 	}
 
-	void set_indices(read_idx_t read_1_idx,
-			 read_idx_t read_2_idx)
+	void set_indices(const read_idx_t read_1_idx,
+			 const read_idx_t read_2_idx)
 	{
 		_read_1_idx = read_1_idx;
 		_read_2_idx = read_2_idx;

@@ -442,6 +442,38 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	os << "}" << std::endl;
 }
 
+void DirectedStringGraph::walk_back_edges(const v_idx_t v_idx,
+					  size_t overhang_len,
+					  edge_idx_t mapped_edges[],
+					  size_t & num_mapped_edges,
+					  size_t max_mapped_edges)
+{
+	assert(_back_edges.size() == _vertices.size());
+
+	foreach (edge_idx_t edge_idx, _back_edges[v_idx]) {
+		const DirectedStringGraphEdge & e = _edges[edge_idx];
+		assert(e.get_v2_idx() == v_idx);
+		if (overhang_len < e.length()) {
+			mapped_edges[num_mapped_edges++] = edge_idx;
+			if (num_mapped_edges == max_mapped_edges)
+				return;
+		}
+	}
+
+	foreach (edge_idx_t edge_idx, _back_edges[v_idx]) {
+		const DirectedStringGraphEdge & e = _edges[edge_idx];
+		if (overhang_len >= e.length()) {
+			walk_back_edges(e.get_v1_idx(),
+					overhang_len - e.length(),
+					mapped_edges,
+					num_mapped_edges,
+					max_mapped_edges);
+			if (num_mapped_edges == max_mapped_edges)
+				return;
+		}
+	}
+}
+
 void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 					     const Overlap & o,
 					     const size_t overhang_len)
@@ -457,16 +489,19 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 	o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end, rc);
 
 	assert(contained_read_idx < num_vertices());
-	assert(f_idx == contained_read_idx || g_idx == contained_read_idx);
 
 	if (contained_read_idx == g_idx) {
 		std::swap(f_idx, g_idx);
 		std::swap(f_beg, g_beg);
 		std::swap(f_end, g_end);
+	} else {
+		assert(contained_read_idx == f_idx);
 	}
 
-	v_idx_t v_idx;
-	v_idx = contained_read_idx * 2;
+	assert(f_idx * 2 + 1 < num_vertices());
+	assert(g_idx * 2 + 1 < num_vertices());
+
+	v_idx_t v_idx = contained_read_idx * 2;
 
 	if (rc) {
 		assert(overhang_len == g_beg);
@@ -478,6 +513,8 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 	}
 
 	if (_back_edges.size() == 0) {
+		info("Indexing back edges (num_vertices = %zu, num_edges = %zu)",
+				num_vertices(), num_edges());
 		_back_edges.resize(num_vertices());
 		foreach (const DirectedStringGraphVertex v, _vertices)
 			foreach (edge_idx_t edge_idx, v.edge_indices())
@@ -486,5 +523,8 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 	assert(_back_edges.size() == num_vertices());
 
 	assert(v_idx < num_vertices());
-	DirectedStringGraphVertex & v = _vertices[v_idx];
+
+	edge_idx_t mapped_edges[100];
+	size_t num_mapped_edges = 0;
+	walk_back_edges(v_idx, overhang_len, mapped_edges, num_mapped_edges, 100);
 }

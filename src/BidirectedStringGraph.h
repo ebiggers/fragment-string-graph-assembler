@@ -172,12 +172,10 @@ public:
 		v_idx_t read_2_idx = get_v2_idx();
 		char head_1 = v1_outward() ? '>' : '<';
 		char head_2 = v2_inward() ? '>' : '<';
-		const BaseVec * seq = &get_seq_1_to_2();
 		if (read_1_idx != v_idx) {
 			std::swap(read_1_idx, read_2_idx);
 			head_1 = (head_1 == '>') ? '<' : '>';
 			head_2 = (head_2 == '>') ? '<' : '>';
-			seq = &get_seq_2_to_1();
 		}
 		os << (read_1_idx + 1) << ' ' << head_1 << "---------"
 		   << head_2 << ' ' << (read_2_idx + 1)
