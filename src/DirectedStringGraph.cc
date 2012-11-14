@@ -228,6 +228,7 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 			assert2(seq_idx < new_seq_len);
 			new_seq.set(seq_idx++, ei_i1_seq[i]);
 		}
+		e.increment_mapped_read_count(ei_i1.get_mapped_count());
 		remove_edge[ei_i1_idx] = true;
 		vi_idx = ei_i1.get_v2_idx();
 	} while (v_inner[vi_idx]);
