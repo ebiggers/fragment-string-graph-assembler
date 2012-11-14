@@ -40,6 +40,7 @@ private:
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
+		ar & _mapped_read_count;
 		ar & _v1_idx;
 		ar & _v2_idx;
 		ar & _seq;

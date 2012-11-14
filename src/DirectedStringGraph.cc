@@ -373,6 +373,8 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 
 	std::vector<unsigned char> out_degrees(num_vertices(), 0);
 	std::vector<unsigned char> in_degrees(num_vertices(), 0);
+	double total_mapped_count = 0.0;
+	size_t more_than_one_mapped_count = 0;
 	foreach(const DirectedStringGraphEdge & e, _edges) {
 		if (out_degrees[e.get_v1_idx()] + 1 != 0) {
 			out_degrees[e.get_v1_idx()]++;
@@ -380,6 +382,10 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 		if (in_degrees[e.get_v2_idx()] + 1 != 0) {
 			in_degrees[e.get_v2_idx()]++;
 		}
+		assert(e.get_mapped_count() >= 1.0);
+		total_mapped_count += e.get_mapped_count();
+		if (e.get_mapped_count() > 1.0)
+			more_than_one_mapped_count++;
 	}
 	std::vector<v_idx_t> out_degree_hist(0xff, 0);
 	std::vector<v_idx_t> in_degree_hist(0xff, 0);
@@ -413,6 +419,11 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
 	os << "    Max out degree: " << max_out_degree
 	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+
+	os << "    Number of edges that one or more contained reads map onto: " 
+	   << more_than_one_mapped_count << std::endl;
+	os << "    Average number of contained reads that map onto each edge: "
+	   << (num_edges() ? total_mapped_count / num_edges() : 0) << std::endl;
 
 	std::vector<bool> visited(num_vertices(), false);
 	std::vector<v_idx_t> component_sizes;
@@ -527,4 +538,12 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 	edge_idx_t mapped_edges[100];
 	size_t num_mapped_edges = 0;
 	walk_back_edges(v_idx, overhang_len, mapped_edges, num_mapped_edges, 100);
+
+	if (num_mapped_edges < 100 && num_mapped_edges > 0) {
+		double div = 1.0f / double(num_mapped_edges);
+		for (size_t i = 0; i < num_mapped_edges; i++) {
+			assert(mapped_edges[i] < num_edges());
+			_edges[mapped_edges[i]].increment_mapped_read_count(div);
+		}
+	}
 }

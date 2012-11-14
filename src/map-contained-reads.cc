@@ -193,6 +193,7 @@ int main(int argc, char **argv)
 	}
 
 	info("Writing string graph to \"%s\"", out_graph_file);
+
 	graph.write(out_graph_file);
 
 	return 0;

@@ -16,9 +16,17 @@ class StringGraphEdge {
 protected:
 	StringGraphEdge()
 	{
-		mapped_read_count = 1.0;
+		_mapped_read_count = 1.0;
 	}
-	float mapped_read_count;
+	float _mapped_read_count;
+public:
+	void increment_mapped_read_count(const float n)
+	{
+		_mapped_read_count += n;
+	}
+	float get_mapped_count() const {
+		return _mapped_read_count;
+	}
 };
 
 // Base class for vertices of the string graph.
