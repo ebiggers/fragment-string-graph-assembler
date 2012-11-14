@@ -4,6 +4,7 @@
 DEFINE_USAGE(
 "Usage: remove-contained-reads READS_FILE UNCONTAINED_READS_FILE\n"
 "                              OVERLAPS_FILE UNCONTAINED_OVERLAPS_FILE\n"
+"                              OLD_NEW_INDICES_MAP\n"
 "\n"
 "Given a set of reads and all overlaps that were computed from them, find all\n"
 "reads that are fully contained by another read and discard them, along with\n"
@@ -21,16 +22,19 @@ DEFINE_USAGE(
 "                                 removed.\n"
 "      UNCONTAINED_OVERLAPS_FILE: The set of overlaps, with overlaps with\n"
 "                                 contained reads removed.\n"
+"      OLD_NEW_INDICES_MAP:       A map from the old read indices to the new\n"
+"                                 read indices.\n"
 );
 
 
 int main(int argc, char **argv)
 {
-	USAGE_IF(argc != 5);
+	USAGE_IF(argc != 6);
 	const char *reads_file = argv[1];
 	const char *uncontaired_reads_file = argv[2];
 	const char *overlaps_file = argv[3];
 	const char *uncontained_overlaps_file = argv[4];
+	const char *old_new_indices_map = argv[5];
 
 	info("Loading reads from \"%s\"", reads_file);
 	BaseVecVec bvv(reads_file);
@@ -81,6 +85,8 @@ int main(int argc, char **argv)
 		if (!read_contained[i]) {
 			new_indices[i] = j++;
 			uncontained_bvv.push_back(bvv[i]);
+		} else {
+			new_indices[i] = std::numeric_limits<size_t>::max();
 		}
 	}
 	info("%zu of %zu reads were contained",
@@ -121,6 +127,19 @@ int main(int argc, char **argv)
 	uncontained_bvv.write(uncontaired_reads_file);
 	info("Writing uncontained overlaps to \"%s\"", uncontained_overlaps_file);
 	ovv.write(uncontained_overlaps_file);
+
+	info("Writing map from old read indices to new read indices to \"%s\"",
+	     old_new_indices_map);
+	{
+		std::ofstream out(old_new_indices_map);
+		boost::archive::binary_oarchive ar(out);
+		ar << new_indices;
+		out.close();
+		if (out.fail())
+			fatal_error_with_errno("Error writing to \"%s\"",
+					       old_new_indices_map);
+	}
+
 	info("Done");
 	return 0;
 }

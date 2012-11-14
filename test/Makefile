@@ -39,7 +39,8 @@ out.overlaps:reads.bvv
 
 .remove-contained-reads:reads.bvv out.overlaps
 	remove-contained-reads reads.bvv reads.uncontained.bvv\
-			       out.overlaps out.uncontained.overlaps
+			       out.overlaps out.uncontained.overlaps \
+			       out.indices_map
 	touch .remove-contained-reads
 
 reads.uncontained.bvv:.remove-contained-reads
