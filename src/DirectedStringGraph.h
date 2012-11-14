@@ -146,6 +146,8 @@ class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
 					       DirectedStringGraph>
 {
 private:
+	std::vector<std::vector<edge_idx_t>> _back_edges;
+
 	// Add an edge to this directed string graph.
 	void add_edge(const v_idx_t v1_idx,
 		      const v_idx_t v2_idx,
@@ -190,7 +192,8 @@ public:
 	void collapse_unbranched_paths();
 	void print_stats(std::ostream & os) const;
 
-	void map_contained_read(size_t contained_read_idx, const Overlap & o);
+	void map_contained_read(size_t contained_read_idx, const Overlap & o,
+				size_t overhang_len);
 
 	// Add a pair of edges produced by an overlap to this directed string
 	// graph.

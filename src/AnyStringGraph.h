@@ -63,12 +63,20 @@ public:
 		else	\
 			static_cast<DirectedStringGraph*>(impl)->f(arg1, arg2); \
 	}
+#define DISPATCH3(f, type1, type2, type3) \
+	void f(type1 arg1, type2 arg2, type3 arg3) \
+	{ \
+		if (is_bidigraph) \
+			static_cast<BidirectedStringGraph*>(impl)->f(arg1, arg2, arg3); \
+		else	\
+			static_cast<DirectedStringGraph*>(impl)->f(arg1, arg2, arg3); \
+	}
 
 	DISPATCH0(transitive_reduction);
 	DISPATCH0(collapse_unbranched_paths);
 	DISPATCH1(print_stats, std::ostream &);
+	DISPATCH1(write, const char *);
 	DISPATCH2(print, std::ostream &, bool);
 	DISPATCH2(print_dot, std::ostream &, bool);
-	DISPATCH2(map_contained_read, size_t, const Overlap &);
-	DISPATCH1(write, const char *);
+	DISPATCH3(map_contained_read, size_t, const Overlap &, size_t);
 };

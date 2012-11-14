@@ -290,7 +290,8 @@ public:
 	void collapse_unbranched_paths();
 	void print_stats(std::ostream & os) const;
 
-	void map_contained_read(size_t contained_read_idx, const Overlap & o);
+	void map_contained_read(size_t contained_read_idx, const Overlap & o,
+				size_t overhang_len);
 
 	// An an edge to the bidirected string graph, produced from an overlap
 	void add_edge_pair(const v_idx_t read_1_idx,

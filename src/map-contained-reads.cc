@@ -46,15 +46,13 @@ int main(int argc, char **argv)
 	       && orig_overlaps.size() == orig_reads.size());
 
 	std::vector<size_t> contained_read_indices;
-	std::vector<size_t> orig_to_contained_indices(orig_reads.size());
 	std::vector<size_t> new_to_old_indices(old_to_new_indices.size(), ~size_t(0));
 	for (size_t i = 0; i < orig_reads.size(); i++) {
-		new_to_old_indices[old_to_new_indices[i]] = i;
 		if (old_to_new_indices[i] == ~size_t(0)) {
-			orig_to_contained_indices[i] = contained_read_indices.size();
+			old_to_new_indices[i] = contained_read_indices.size();
 			contained_read_indices.push_back(i);
 		} else {
-			orig_to_contained_indices[i] = ~size_t(0);
+			new_to_old_indices[old_to_new_indices[i]] = i;
 		}
 	}
 
@@ -69,7 +67,7 @@ int main(int argc, char **argv)
 
 	// Find all overlaps involving each contained read
 	size_t num_contained_overlaps = 0;
-	foreach (const std::set<Overlap> & overlap_set, orig_overlaps) {
+	foreach (std::set<Overlap> & overlap_set, orig_overlaps) {
 		foreach(const Overlap & o, overlap_set) {
 			Overlap::read_idx_t f_idx;
 			Overlap::read_pos_t f_beg;
@@ -91,18 +89,16 @@ int main(int argc, char **argv)
 					idx = std::min(f_idx, g_idx);
 				else
 					idx = f_idx;
-
-				assert(old_to_new_indices[idx] == ~size_t(0));
-				idx = orig_to_contained_indices[idx];
-				assert(idx != ~size_t(0));
-				containing_overlaps[idx].push_back(&o);
-				num_contained_overlaps++;
 			} else if (g_beg == 0 && g_end == g.size() - 1) {
 				idx = g_idx;
-				assert(old_to_new_indices[idx] == ~size_t(0));
-				idx = orig_to_contained_indices[idx];
+			} else {
+				idx = ~size_t(0);
+			}
+			if (idx != ~size_t(0)) {
+				idx = old_to_new_indices[idx];
+				assert(idx < containing_overlaps.size());
 				assert(idx != ~size_t(0));
-				containing_overlaps[idx].push_back(&o);
+				containing_overlaps[idx].push_back(const_cast<Overlap*>(&o));
 				num_contained_overlaps++;
 			}
 		}
@@ -145,8 +141,25 @@ int main(int argc, char **argv)
 			const BaseVec & g = orig_reads[g_idx];
 
 			Overlap::read_pos_t overhang_len;
-			assert(g.length() >= g_end + 1);
-			overhang_len = g.length() - 1 - g_end;
+
+			if (rc) {
+				//
+				//          f
+				//      ---------->
+				//  <-----------------------
+				//     g_end     g_beg
+				//                |overhang|
+				overhang_len = g_beg;
+			} else {
+				//
+				//          f
+				//      ---------->
+				//  ----------------------->
+				//     g_beg     g_end
+				//                |overhang|
+				assert(g.length() >= g_end + 1);
+				overhang_len = g.length() - 1 - g_end;
+			}
 
 			if (overhang_len < overhang_lens[i]) {
 				shortest_overhang_overlaps[i] = o;
@@ -167,14 +180,16 @@ int main(int argc, char **argv)
 		Overlap::read_idx_t f_idx;
 		Overlap::read_idx_t g_idx;
 		o->get_indices(f_idx, g_idx);
-		assert(new_to_old_indices[orig_read_idx] != ~size_t(0));
-		size_t new_read_idx = new_to_old_indices[orig_read_idx];
+
+		assert(old_to_new_indices[orig_read_idx] != ~size_t(0));
+		size_t new_read_idx = old_to_new_indices[orig_read_idx];
+
 		assert(new_to_old_indices[f_idx] != ~size_t(0));
 		assert(new_to_old_indices[g_idx] != ~size_t(0));
 		f_idx = new_to_old_indices[f_idx];
 		g_idx = new_to_old_indices[g_idx];
 		o->set_indices(f_idx, g_idx);
-		graph.map_contained_read(new_read_idx, *o);
+		graph.map_contained_read(new_read_idx, *o, overhang_lens[i]);
 	}
 
 	return 0;

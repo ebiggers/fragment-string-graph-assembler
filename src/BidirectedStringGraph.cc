@@ -296,3 +296,10 @@ void BidirectedStringGraph::print_stats(std::ostream & os) const
 	os << "    Number of edges >---<: " << (dir_histo[0x2]) << std::endl;
 	os << "}" << std::endl;
 }
+
+void BidirectedStringGraph::map_contained_read(size_t contained_read_idx,
+					       const Overlap & o,
+					       size_t overhang_len)
+{
+	unimplemented();
+}

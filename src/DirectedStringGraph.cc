@@ -441,3 +441,50 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	}
 	os << "}" << std::endl;
 }
+
+void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
+					     const Overlap & o,
+					     const size_t overhang_len)
+{
+	Overlap::read_idx_t f_idx;
+	Overlap::read_pos_t f_beg;
+	Overlap::read_pos_t f_end;
+	Overlap::read_idx_t g_idx;
+	Overlap::read_pos_t g_beg;
+	Overlap::read_pos_t g_end;
+	bool rc;
+
+	o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end, rc);
+
+	assert(contained_read_idx < num_vertices());
+	assert(f_idx == contained_read_idx || g_idx == contained_read_idx);
+
+	if (contained_read_idx == g_idx) {
+		std::swap(f_idx, g_idx);
+		std::swap(f_beg, g_beg);
+		std::swap(f_end, g_end);
+	}
+
+	v_idx_t v_idx;
+	v_idx = contained_read_idx * 2;
+
+	if (rc) {
+		assert(overhang_len == g_beg);
+	} else {
+		// overhang_len == g.length() - 1 - g_end;
+		//
+		// but we don't have g here.
+		v_idx++;
+	}
+
+	if (_back_edges.size() == 0) {
+		_back_edges.resize(num_vertices());
+		foreach (const DirectedStringGraphVertex v, _vertices)
+			foreach (edge_idx_t edge_idx, v.edge_indices())
+				_back_edges[_edges[edge_idx].get_v2_idx()].push_back(edge_idx);
+	}
+	assert(_back_edges.size() == num_vertices());
+
+	assert(v_idx < num_vertices());
+	DirectedStringGraphVertex & v = _vertices[v_idx];
+}
