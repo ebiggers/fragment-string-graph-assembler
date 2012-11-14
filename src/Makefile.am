@@ -12,7 +12,8 @@ bin_PROGRAMS =				\
 	print-string-graph		\
 	transitive-reduction		\
 	collapse-unbranched-paths	\
-	digraph-to-bidigraph
+	digraph-to-bidigraph		\
+	map-contained-reads
 
 noinst_LIBRARIES = libassemble.a
 
@@ -45,3 +46,4 @@ print_string_graph_SOURCES            = print-string-graph.cc
 transitive_reduction_SOURCES          = transitive-reduction.cc
 collapse_unbranched_paths_SOURCES     = collapse-unbranched-paths.cc
 digraph_to_bidigraph_SOURCES          = digraph-to-bidigraph.cc
+map_contained_reads_SOURCES           = map-contained-reads.cc

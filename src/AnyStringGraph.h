@@ -4,6 +4,8 @@
 #include "DirectedStringGraph.h"
 #include "BidirectedStringGraph.h"
 
+class Overlap;
+
 //
 // Operate on either a BidirectedStringGraph or a DirectedStringGraph.
 // This probably should be a class with virtual methods...
@@ -67,5 +69,6 @@ public:
 	DISPATCH1(print_stats, std::ostream &);
 	DISPATCH2(print, std::ostream &, bool);
 	DISPATCH2(print_dot, std::ostream &, bool);
+	DISPATCH2(map_contained_read, size_t, const Overlap &);
 	DISPATCH1(write, const char *);
 };

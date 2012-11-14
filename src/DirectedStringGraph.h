@@ -190,6 +190,8 @@ public:
 	void collapse_unbranched_paths();
 	void print_stats(std::ostream & os) const;
 
+	void map_contained_read(size_t contained_read_idx, const Overlap & o);
+
 	// Add a pair of edges produced by an overlap to this directed string
 	// graph.
 	void add_edge_pair(const v_idx_t read_1_idx,

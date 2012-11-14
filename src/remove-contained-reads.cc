@@ -1,5 +1,6 @@
-#include <Overlap.h>
-#include <BaseVecVec.h>
+#include "Overlap.h"
+#include "BaseVecVec.h"
+#include "util.h"
 
 DEFINE_USAGE(
 "Usage: remove-contained-reads READS_FILE UNCONTAINED_READS_FILE\n"

@@ -13,6 +13,12 @@
 
 // Base class for edges of the string graph.
 class StringGraphEdge {
+protected:
+	StringGraphEdge()
+	{
+		mapped_read_count = 1.0;
+	}
+	float mapped_read_count;
 };
 
 // Base class for vertices of the string graph.
