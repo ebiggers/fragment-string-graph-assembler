@@ -15,14 +15,14 @@
 
 The goal of my project is to implement an algorithm that can assemble a genome,
 given a set of reads that came from it.  The key idea in the algorithm I am
-implementing is the construction of a string graph where the edges are labeled
-with DNA sequences and the vertices correspond to reads, and a path through the
+implementing is the construction of a string graph where the vertices correspond
+to reads and the edges are labeled with DNA sequences, and a path through the
 graph corresponds to a set of reads that assemble together consistently.
 
 I have implemented the initial stages of the algorithm.  Each step has been
-implemented as a separate binary program.  This means that the overall assembly
-process will iteratively transform the data (including the graph) on-disk into
-the final assembly.  The main currently implemented programs are:
+implemented as a separate executable program.  This means that the overall
+assembly process will iteratively transform the data (e.g. the string graph)
+on-disk into the final assembly.  The main currently implemented programs are:
 
 \begin{itemize}
 %\item
@@ -42,7 +42,7 @@ the final assembly.  The main currently implemented programs are:
 \item
 	{\tt remove-contained-reads}:
 	Given a set of reads and the overlaps that were computed from them,
-	finds all reads that are fully contained by another read and discard
+	finds all reads that are fully contained by another read and discards
 	them, along with the corresponding overlaps.  If a pair of reads is
 	identical, only one copy of the read is kept.
 
@@ -64,7 +64,7 @@ the final assembly.  The main currently implemented programs are:
 	{\tt transitive-reduction}:
 	Given a string graph, remove edges $v \to x$ where there exist edges $v
 	\to w \to x$, provided that $v \to x$ is labeled by the same sequence as
-	that of $v \to w$ concatenated with $w \to x$. 
+	that of $v \to w$ concatenated with $w \to x$.
 	%This program currently
 	%only works on directed string graphs, but the bidirected case is in
 	%progress.
@@ -75,6 +75,14 @@ the final assembly.  The main currently implemented programs are:
 	and out-degree 1.
 	%This program currently only works on directed string
 	%graphs, but the bidirected case is in progress.
+
+\item
+	{\tt map-contained-reads}:
+	Map the reads that were removed in {\tt remove-contained-reads} back
+	into the string graph to mark edges that are supported by more than one
+	read and therefore are more likely to need to be traversed multiple
+	times.
+
 
 %\item
 	%{\tt digraph-to-bidigraph}:
@@ -87,13 +95,15 @@ is
 %{\tt convert-reads} $\to$
 {\tt compute-overlaps} $\to$ {\tt
 remove-contained-reads} $\to$ {\tt build-directed-string-graph} $\to$ {\tt
-transitive-reduction} $\to$ {\tt collapse-unbranched-paths} $\to$ {\tt digraph-to-bidigraph}, which will produce a
+transitive-reduction} $\to$
+{\tt map-contained-reads} $\to$
+{\tt collapse-unbranched-paths} $\to$ {\tt digraph-to-bidigraph}, which will produce a
 transitively-reduced, collapsed bidirected string graph produced from overlaps
 between non-contained reads.
 
 Even with the final stages not implemented, the algorithm is already very
-effective when used on completely random genomes because, since there are no
-spurious overlaps in a completely random genome with adequate length reads, the
+effective when used on completely random genomes.  Since there are no spurious
+overlaps in a completely random genome with adequate length reads, the
 transitively-reduced string graph is a chain of vertices with no branching,
 which then collapses into a single edge that will be labeled with almost all the
 original sequence.
@@ -101,17 +111,18 @@ original sequence.
 %reads sampled uniformly from either strand with no errors.  (Such a genome
 %takes about 1 minute to assemble with maximum memory usage 1.8 GB, with the
 %main time and memory bottleneck being the {\tt compute-overlaps} program).
+
 However, genomes with repeats will produce tangled graphs that will require the
 network flow and Eulerian path parts of the overall algorithm to be implemented.
 
 What follows is an explanation of the initial stages of the algorithm on a very
-simple case.  The diagram below shows a 64-base-pair ``genome'' that has had
-three 32-base-pair error-free reads taken from it.  Note that the genome is
-two-stranded.  {\tt A} always pairs with {\tt T} and {\tt C} always pairs with
-{\tt G}, but the two strands run in opposite directions.  Reads 1 and 2 come
-from the top (reverse strand), while read 3 comes from the bottom (forward
-strand).  The reads are directed as shown (e.g.  read 1 begins with {\tt ACAGC},
-reading from right to left, not {\tt TGAGC}).
+simple case.  The diagram below shows a 64-base-pair ``genome'' (G.) that has
+had three 32-base-pair error-free reads taken from it (1., 2., and 3.).  Note
+that the genome is two-stranded.  {\tt A} always pairs with {\tt T} and {\tt C}
+always pairs with {\tt G}, but the two strands run in opposite directions.
+Reads 1 and 2 come from the top (``reverse'') strand, while read 3 comes from
+the bottom (``forward'') strand.  The reads are directed as shown (e.g.  read 1
+begins with {\tt ACAGC}, reading from right to left.)
 
 %make out.{bi,}digraph.{pdf,dot} out.reduced.{bi,}digraph.pdf
 %out.reduced.collapsed.{bi,}digraph.pdf SAMPLE_SIZE=64 USE_PIRS=false
@@ -135,20 +146,20 @@ reading from right to left, not {\tt TGAGC}).
 From looking at the above diagram, it is apparent that read 1 overlaps with read
 2 by 20 base pairs, read 2 overlaps with read 3 by 20 base pairs, and read 1
 overlaps with read 3 by 8 base pairs.  The task of the {\tt compute-overlaps}
-program is to determine these overlaps.  Note that an overlap may match either
-the forward or reverse-complement sequence.
+program is to determine these overlaps.  Note that reverse-complement overlaps
+(e.g. reads 2 and 3) are permissible.
 
 Before building the string graph, {\tt remove-contained-reads} is run to remove
 reads that are fully contained by another read.  However, there are no such
 reads in this example.
 
 Given the set of overlaps, the next step is to build the bidirected or directed
-string graph.  Both these graphs are shown on the next page.  In the directed
-graphs, a node $n.B$ means the beginning of read $n$, while a node $n.E$ means
-the end of read $n$.  In the bidirected graphs, node $n$ simply corresponds to
-read $n$.  In both the directed and bidirected graphs, the edges are labeled by
-DNA sequences; however, in the drawings, only the lengths of the sequences are
-shown.
+string graph.  For this example, both these graphs are shown on the next page.
+In the directed graphs, a node $n.B$ means the beginning of read $n$, while a
+node $n.E$ means the end of read $n$.  In the bidirected graphs, node $n$ simply
+corresponds to read $n$.  In both the directed and bidirected graphs, the edges
+are labeled by DNA sequences; however, in the drawings, only the lengths of the
+sequences are shown.
 
 Consider graph (2A), the directed string graph after transitive reduction, and
 consider the walk $1.B \to 2.B \to 3.E$.  This represents a way in which reads
@@ -226,11 +237,13 @@ bidirected string graph to (3A).
 100bp reads uniformly sampled from the first 250000 base pairs of the genome of
 {\it E. coli}, which includes some repetitive sequences.  The network flow
 algorithm must be able to determine how many times each edge should be
-traversed, then an Eulerian path through the bidirected graph must be found to
-produce a possible assembly.  However, in the general case, the final
+traversed, then a generalized Eulerian path through the bidirected graph must be
+found to produce a possible assembly.  In the general case, the final
 reconstruction may have to take the form of a set of paths rather than just one
 path.  }
+\begin{center}
 \includegraphics[scale=0.6]{E_coli-crop.pdf}
+\end{center}
 \end{figure}
 
 \end{document}
