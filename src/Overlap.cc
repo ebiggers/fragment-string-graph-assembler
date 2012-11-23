@@ -54,6 +54,7 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	Overlap::read_pos_t read_2_beg, read_2_end;
 	bool rc;
 	Overlap::read_pos_t maybe_rc_read_2_beg, maybe_rc_read_2_end;
+	Overlap::read_pos_t len_1, len_2;
 
 	o.get(read_1_idx, read_1_beg, read_1_end,
 	      read_2_idx, read_2_beg, read_2_end, rc);
@@ -70,8 +71,6 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	assert(read_1_beg <= read_1_end);
 	assert(read_2_beg <= read_2_end);
 
-
-	Overlap::read_pos_t len_1, len_2;
 	len_1 = read_1_end - read_1_beg + 1;
 	len_2 = read_2_end - read_2_beg + 1;
 	assert(len_1 == len_2);
@@ -81,7 +80,6 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 
 	if (read_1_idx == read_2_idx)
 		assert(read_1_beg != read_2_beg || read_1_end != read_2_end);
-
 
 	if (rc) {
 		maybe_rc_read_2_beg = (bv2.size() - 1) - read_2_end;

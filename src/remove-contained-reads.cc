@@ -5,7 +5,7 @@
 DEFINE_USAGE(
 "Usage: remove-contained-reads READS_FILE UNCONTAINED_READS_FILE\n"
 "                              OVERLAPS_FILE UNCONTAINED_OVERLAPS_FILE\n"
-"                              OLD_NEW_INDICES_MAP\n"
+"                              OLD_TO_NEW_INDICES_FILE\n"
 "\n"
 "Given a set of reads and all overlaps that were computed from them, find all\n"
 "reads that are fully contained by another read and discard them, along with\n"
@@ -23,7 +23,7 @@ DEFINE_USAGE(
 "                                 removed.\n"
 "      UNCONTAINED_OVERLAPS_FILE: The set of overlaps, with overlaps with\n"
 "                                 contained reads removed.\n"
-"      OLD_NEW_INDICES_MAP:       A map from the old read indices to the new\n"
+"      OLD_TO_NEW_INDICES_FILE:   A map from the old read indices to the new\n"
 "                                 read indices.\n"
 );
 
@@ -32,10 +32,10 @@ int main(int argc, char **argv)
 {
 	USAGE_IF(argc != 6);
 	const char *reads_file = argv[1];
-	const char *uncontaired_reads_file = argv[2];
+	const char *uncontained_reads_file = argv[2];
 	const char *overlaps_file = argv[3];
 	const char *uncontained_overlaps_file = argv[4];
-	const char *old_new_indices_map = argv[5];
+	const char *old_to_new_indices_file = argv[5];
 
 	info("Loading reads from \"%s\"", reads_file);
 	BaseVecVec bvv(reads_file);
@@ -74,15 +74,16 @@ int main(int argc, char **argv)
 	}
 
 	info("Computing new read indices");
-	std::vector<size_t> new_indices(bvv.size());
+	std::vector<size_t> old_to_new_indices(bvv.size());
 	BaseVecVec uncontained_bvv;
 	size_t i, j;
 	for (i = 0, j = 0; i < bvv.size(); i++) {
-		if (!read_contained[i]) {
-			new_indices[i] = j++;
-			uncontained_bvv.push_back(bvv[i]);
+		if (read_contained[i]) {
+			old_to_new_indices[i] = std::numeric_limits<size_t>::max();
+			bvv[i].destroy();
 		} else {
-			new_indices[i] = std::numeric_limits<size_t>::max();
+			old_to_new_indices[i] = j++;
+			uncontained_bvv.push_back(bvv[i]);
 		}
 	}
 	info("%zu of %zu reads were contained",
@@ -101,8 +102,8 @@ int main(int argc, char **argv)
 				num_overlaps++;
 				o.get_indices(f_idx, g_idx);
 				if (!read_contained[f_idx] && !read_contained[g_idx]) {
-					f_idx = new_indices[f_idx];
-					g_idx = new_indices[g_idx];
+					f_idx = old_to_new_indices[f_idx];
+					g_idx = old_to_new_indices[g_idx];
 					Overlap new_o(o);
 					new_o.set_indices(f_idx, g_idx);
 					new_set.insert(new_o);
@@ -113,27 +114,26 @@ int main(int argc, char **argv)
 			ovv[j++] = new_set;
 		}
 	}
-	info("Deleted %lu of %lu overlaps",
-	     num_overlaps_deleted, num_overlaps);
+	info("Deleted %lu of %lu overlaps", num_overlaps_deleted, num_overlaps);
 	ovv.resize(j);
 
 	assert(ovv.size() == uncontained_bvv.size());
 
-	info("Writing uncontained reads to \"%s\"", uncontaired_reads_file);
-	uncontained_bvv.write(uncontaired_reads_file);
+	info("Writing uncontained reads to \"%s\"", uncontained_reads_file);
+	uncontained_bvv.write(uncontained_reads_file);
 	info("Writing uncontained overlaps to \"%s\"", uncontained_overlaps_file);
 	ovv.write(uncontained_overlaps_file);
 
 	info("Writing map from old read indices to new read indices to \"%s\"",
-	     old_new_indices_map);
+	     old_to_new_indices_file);
 	{
-		std::ofstream out(old_new_indices_map);
+		std::ofstream out(old_to_new_indices_file);
 		boost::archive::binary_oarchive ar(out);
-		ar << new_indices;
+		ar << old_to_new_indices;
 		out.close();
-		if (out.fail())
+		if (!out)
 			fatal_error_with_errno("Error writing to \"%s\"",
-					       old_new_indices_map);
+					       old_to_new_indices_file);
 	}
 
 	info("Done");
