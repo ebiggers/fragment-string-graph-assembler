@@ -195,22 +195,22 @@ static bool find_overlap(const BaseVecVec & bvv,
 	// The same applies to reads that share the same suffix.
 
 	{
-		Overlap::read_pos_t _read_2_beg, _read_2_end;
+		Overlap::read_pos_t maybe_rc_read_2_beg, maybe_rc_read_2_end;
 		if (is_rc) {
-			_read_2_beg = (bv2.size() - 1) - read_2_end;
-			_read_2_end = (bv2.size() - 1) - read_2_beg;
+			maybe_rc_read_2_beg = (bv2.size() - 1) - read_2_end;
+			maybe_rc_read_2_end = (bv2.size() - 1) - read_2_beg;
 		} else {
-			_read_2_beg = read_2_beg;
-			_read_2_end = read_2_end;
+			maybe_rc_read_2_beg = read_2_beg;
+			maybe_rc_read_2_end = read_2_end;
 		}
 
 		// Shared prefix?
-		if (read_1_beg == 0 && _read_2_beg == 0 && num_extremes < 3)
+		if (read_1_beg == 0 && maybe_rc_read_2_beg == 0 && num_extremes < 3)
 			return false;
 
 		// Shared suffix?
 		if (read_1_end == bv1.size() - 1 &&
-		    _read_2_end == bv2.size() - 1 && num_extremes < 3)
+		    maybe_rc_read_2_end == bv2.size() - 1 && num_extremes < 3)
 			return false;
 	}
 

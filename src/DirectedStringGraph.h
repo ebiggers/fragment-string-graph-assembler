@@ -147,7 +147,7 @@ class DirectedStringGraph : public StringGraph<DirectedStringGraphVertex,
 					       DirectedStringGraph>
 {
 private:
-	std::vector<std::vector<edge_idx_t>> _back_edges;
+	std::vector<std::vector<edge_idx_t> > _back_edges;
 
 	// Add an edge to this directed string graph.
 	void add_edge(const v_idx_t v1_idx,

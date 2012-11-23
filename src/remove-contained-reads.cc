@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	std::vector<bool> read_contained(bvv.size(), false);
 
 	info("Searching for overlaps indicating contained reads");
-	foreach (const std::set<Overlap> & overlap_set, ovv) {
+	foreach (const OverlapVecVec::OverlapSet & overlap_set, ovv) {
 		foreach(const Overlap & o, overlap_set) {
 			Overlap::read_idx_t f_idx;
 			Overlap::read_pos_t f_beg;
@@ -60,21 +60,16 @@ int main(int argc, char **argv)
 			Overlap::read_pos_t g_end;
 			bool rc;
 
-			assert_overlap_valid(o, bvv, 0, 0);
+			assert_overlap_valid(o, bvv, 1, 0);
 
 			o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end, rc);
 			const BaseVec & f = bvv[f_idx];
 			const BaseVec & g = bvv[g_idx];
 
-			if ((f_beg == 0 && f_end == f.size() - 1)) {
-				if (g_beg == 0 && g_end == g.size() - 1) {
-					read_contained[std::min(f_idx, g_idx)] = true;
-				} else {
-					read_contained[f_idx] = true;
-				}
-			} else if (g_beg == 0 && g_end == g.size() - 1) {
+			if ((f_beg == 0 && f_end == f.size() - 1))
+				read_contained[f_idx] = true;
+			else if (g_beg == 0 && g_end == g.size() - 1)
 				read_contained[g_idx] = true;
-			}
 		}
 	}
 

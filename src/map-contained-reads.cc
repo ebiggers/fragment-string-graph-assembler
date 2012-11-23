@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
 	size_t num_contained_reads = contained_read_indices.size();
 
-	std::vector<std::vector<Overlap *>> containing_overlaps(num_contained_reads);
+	std::vector<std::vector<Overlap *> > containing_overlaps(num_contained_reads);
 
 	info("Examining %zu contained reads (%.2f%% of total)",
 	     num_contained_reads,
