@@ -41,7 +41,7 @@ private:
 
 public:
 	static const size_t MAX_READ_IDX = (1 << 24) - 1;
-	static const size_t MAX_READ_LEN = (1 << 12) - 1;
+	static const size_t MAX_READ_POS = (1 << 12) - 1;
 
 	typedef unsigned int read_idx_t;
 	typedef unsigned int read_pos_t;
@@ -54,14 +54,14 @@ public:
 		 const read_pos_t read_2_end,
 		 const bool rc)
 	{
-		assert(read_1_end >= read_1_beg);
-		assert(read_2_end >= read_2_end);
-		assert(read_1_beg < MAX_READ_LEN);
-		assert(read_1_end < MAX_READ_LEN);
-		assert(read_2_beg < MAX_READ_LEN);
-		assert(read_2_end < MAX_READ_LEN);
-		assert(read_1_idx < MAX_READ_IDX);
-		assert(read_2_idx < MAX_READ_IDX);
+		assert2(read_1_end >= read_1_beg);
+		assert2(read_2_end >= read_2_beg);
+		assert2(read_1_beg <= MAX_READ_POS);
+		assert2(read_1_end <= MAX_READ_POS);
+		assert2(read_2_beg <= MAX_READ_POS);
+		assert2(read_2_end <= MAX_READ_POS);
+		assert2(read_1_idx <= MAX_READ_IDX);
+		assert2(read_2_idx <= MAX_READ_IDX);
 
 		_read_1_idx = read_1_idx;
 		_read_1_beg = read_1_beg;
@@ -176,7 +176,7 @@ public:
 		boost::archive::binary_oarchive ar(out);
 		ar << *this;
 		out.close();
-		if (out.bad())
+		if (!out)
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 };
@@ -186,7 +186,7 @@ extern void assert_seed_valid(const BaseVec & bv1,
 			      const Overlap::read_pos_t pos1,
 			      const Overlap::read_pos_t pos2,
 			      const Overlap::read_pos_t len,
-			      const bool is_rc1, const bool is_rc2,
+			      const bool is_rc,
 			      const char *description = "SEED");
 
 extern void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,

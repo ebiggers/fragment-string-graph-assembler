@@ -26,6 +26,9 @@ private:
 	unsigned long _rc	: 1;
 public:
 
+	static const unsigned long long MAX_READ_IDX = ((1ULL << 32) - 1);
+	static const unsigned long long MAX_READ_POS = ((1ULL << 31) - 1);
+
 	KmerOccurrence(unsigned long read_id, unsigned long read_pos, bool rc)
 		: _read_id(read_id), _read_pos(read_pos), _rc(rc)
 	{ }
@@ -67,34 +70,10 @@ static void extend_seed(const BaseVec & bv1,
 			unsigned & pos1,
 			unsigned & pos2,
 			unsigned & len,
-			const bool is_rc_1,
-			const bool is_rc_2)
+			const bool is_rc)
 {
-	assert_seed_valid(bv1, bv2, pos1, pos2, len, is_rc_1, is_rc_2);
-	if (is_rc_1 == is_rc_2) {
-		unsigned max_left_extend = std::min(pos1, pos2);
-		unsigned left_extend = 0;
-		while (left_extend < max_left_extend) {
-			if (bv1[pos1 - (left_extend + 1)] == bv2[pos2 - (left_extend + 1)])
-				left_extend++;
-			else
-				break;
-		}
-		unsigned max_right_extend = std::min(bv1.size() - (pos1 + len),
-						     bv2.size() - (pos2 + len));
-		unsigned right_extend = 0;
-		while (right_extend < max_right_extend) {
-			if (bv1[pos1 + len + right_extend] == bv2[pos2 + len + right_extend])
-				right_extend++;
-			else
-				break;
-		}
-		len += left_extend + right_extend;
-		pos1 -= left_extend;
-		pos2 -= left_extend;
-	} else {
-		assert(!is_rc_1 && is_rc_2);
-
+	assert_seed_valid(bv1, bv2, pos1, pos2, len, is_rc);
+	if (is_rc) {
 		unsigned max_left_extend = std::min(pos1, bv2.size() - (pos2 + len));
 		unsigned left_extend = 0;
 		while (left_extend < max_left_extend) {
@@ -116,6 +95,27 @@ static void extend_seed(const BaseVec & bv1,
 		len += left_extend + right_extend;
 		pos1 -= left_extend;
 		pos2 -= right_extend;
+	} else {
+		unsigned max_left_extend = std::min(pos1, pos2);
+		unsigned left_extend = 0;
+		while (left_extend < max_left_extend) {
+			if (bv1[pos1 - (left_extend + 1)] == bv2[pos2 - (left_extend + 1)])
+				left_extend++;
+			else
+				break;
+		}
+		unsigned max_right_extend = std::min(bv1.size() - (pos1 + len),
+						     bv2.size() - (pos2 + len));
+		unsigned right_extend = 0;
+		while (right_extend < max_right_extend) {
+			if (bv1[pos1 + len + right_extend] == bv2[pos2 + len + right_extend])
+				right_extend++;
+			else
+				break;
+		}
+		len += left_extend + right_extend;
+		pos1 -= left_extend;
+		pos2 -= left_extend;
 	}
 }
 
@@ -132,6 +132,9 @@ static bool find_overlap(const BaseVecVec & bvv,
 			 const unsigned K,
 			 Overlap &o)
 {
+	assert2(occ1.get_read_id() < bvv.size());
+	assert2(occ2.get_read_id() < bvv.size());
+
 	const BaseVec & bv1 = bvv[occ1.get_read_id()];
 	const BaseVec & bv2 = bvv[occ2.get_read_id()];
 	Overlap::read_pos_t pos1 = occ1.get_read_pos();
@@ -145,7 +148,9 @@ static bool find_overlap(const BaseVecVec & bvv,
 	// be switched to (forward, reverse-complement) first.
 	assert(!(is_rc_1 && !is_rc_2));
 
-	extend_seed(bv1, bv2, pos1, pos2, len, is_rc_1, is_rc_2);
+	const bool is_rc = (is_rc_1 ^ is_rc_2);
+
+	extend_seed(bv1, bv2, pos1, pos2, len, is_rc);
 
 	// The overlap must be at least @min_overlap_len base pairs long.
 	if (len < min_overlap_len)
@@ -191,7 +196,7 @@ static bool find_overlap(const BaseVecVec & bvv,
 
 	{
 		Overlap::read_pos_t _read_2_beg, _read_2_end;
-		if (!is_rc_1 && is_rc_2) {
+		if (is_rc) {
 			_read_2_beg = (bv2.size() - 1) - read_2_end;
 			_read_2_end = (bv2.size() - 1) - read_2_beg;
 		} else {
@@ -210,8 +215,7 @@ static bool find_overlap(const BaseVecVec & bvv,
 	}
 
 	o.set(occ1.get_read_id(), read_1_beg, read_1_end,
-	      occ2.get_read_id(), read_2_beg, read_2_end,
-	      (!is_rc_1 && is_rc_2));
+	      occ2.get_read_id(), read_2_beg, read_2_end, is_rc);
 	return true;
 }
 
@@ -310,10 +314,11 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 			fwd_kmer.push_back(bv[j]);
 			rev_kmer.push_front(bv[j] ^ 3);
 
-			for (size_t k = 0; k < K - 1; k++)
-				assert(fwd_kmer[k] == bv[k + j - (K - 1)]);
-			for (size_t k = 0; k < K - 1; k++)
-				assert(rev_kmer[K - 1 - k] == (3 ^ bv[k + j - (K - 1)]));
+			for (size_t k = 0; k < K; k++) {
+				unsigned char bv_base = bv[(j - (K - 1)) + k];
+				assert2(fwd_kmer[k] == bv_base);
+				assert2(rev_kmer[(K - 1) - k] == (3 ^ bv_base));
+			}
 
 			if (fwd_kmer < rev_kmer) {
 				kmer = &fwd_kmer;
@@ -361,17 +366,28 @@ static void compute_overlaps(const BaseVecVec &bvv,
 		unimplemented();
 
 	if (bvv.size() > Overlap::MAX_READ_IDX + 1) {
-		fatal_error("'class Overlap' only supports up to %zu reads",
+		fatal_error("class 'Overlap' only supports up to %zu reads",
 			    Overlap::MAX_READ_IDX + 1);
 	}
+	if (bvv.size() > KmerOccurrence::MAX_READ_IDX + 1) {
+		fatal_error("class 'KmerOccurrence' only supports up to %zu reads",
+			    KmerOccurrence::MAX_READ_IDX + 1);
+	}
+
 	foreach(const BaseVec & bv, bvv) {
-		if (bv.size() > Overlap::MAX_READ_LEN + 1) {
-			fatal_error("'class Overlap' only supports reads up to "
-				    "%zu bp long", Overlap::MAX_READ_LEN + 1);
+		if (bv.size() > Overlap::MAX_READ_POS + 1) {
+			fatal_error("class 'Overlap' only supports reads up to "
+				    "%zu bp long", Overlap::MAX_READ_POS + 1);
+		}
+		if (bv.size() > KmerOccurrence::MAX_READ_POS + 1) {
+			fatal_error("class 'KmerOccurrence' only supports "
+				    "reads up to %zu bp long",
+				    Overlap::MAX_READ_POS + 1);
 		}
 	}
 
-	ovv.clear();
+	assert(ovv.size() == 0);
+
 	ovv.resize(bvv.size());
 
 	KmerOccurrenceMap occ_map;

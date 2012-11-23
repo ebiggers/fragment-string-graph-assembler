@@ -13,7 +13,7 @@ void assert_seed_valid(const BaseVec & bv1,
 		       const Overlap::read_pos_t pos1,
 		       const Overlap::read_pos_t pos2,
 		       const Overlap::read_pos_t len,
-		       const bool is_rc1, const bool is_rc2,
+		       const bool is_rc,
 		       const char *description)
 {
 	unsigned i;
@@ -22,26 +22,21 @@ void assert_seed_valid(const BaseVec & bv1,
 	if (pos2 + len > bv2.size())
 		goto seed_invalid;
 
-	if (is_rc1 == is_rc2) {
-		for (i = 0; i < len; i++)
-			if (bv1[pos1 + i] != bv2[pos2 + i])
-				goto seed_invalid;
-	} else if (is_rc2) {
+	if (is_rc) {
 		for (i = 0; i < len; i++)
 			if (bv1[pos1 + i] != (3 ^ bv2[pos2 + len - 1 - i]))
 				goto seed_invalid;
-	} else if (is_rc1) {
+	} else {
 		for (i = 0; i < len; i++)
-			if (bv1[pos1 + len - 1 - i] != (3 ^ bv2[pos2 + i]))
+			if (bv1[pos1 + i] != bv2[pos2 + i])
 				goto seed_invalid;
 	}
 	return;
 seed_invalid:
 	std::cerr << bv1 << std::endl;
 	std::cerr << bv2 << std::endl;
-	fatal_error("%s INVALID (pos1 = %u, pos2 = %u, len = %u, "
-		    "is_rc1 = %d, is_rc2 = %d)", description,
-		    pos1, pos2, len, is_rc1, is_rc2);
+	fatal_error("%s INVALID (pos1 = %u, pos2 = %u, len = %u, is_rc = %d)",
+		    description, pos1, pos2, len, is_rc);
 }
 
 //
@@ -68,9 +63,9 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 
 	const BaseVec & bv1 = bvv[read_1_idx];
 	const BaseVec & bv2 = bvv[read_2_idx];
-	assert(read_1_beg < bv1.size());
+	assert(read_1_end < bv1.size());
 	assert(read_1_beg <= read_1_end);
-	assert(read_2_beg < bv2.size());
+	assert(read_2_end < bv2.size());
 	assert(read_2_beg <= read_2_end);
 
 	Overlap::read_pos_t len_1, len_2;
@@ -79,5 +74,5 @@ void assert_overlap_valid(const Overlap & o, const BaseVecVec & bvv,
 	assert(len_1 == len_2);
 	assert(len_1 >= min_overlap_len);
 	assert_seed_valid(bv1, bv2, read_1_beg, read_2_beg, len_1,
-			  false, rc, "OVERLAP");
+			  rc, "OVERLAP");
 }

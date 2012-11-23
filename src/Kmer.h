@@ -86,7 +86,8 @@ public:
 	// Changes this k-mer to the complement sequence.
 	void complement()
 	{
-		for (size_type i = 0; i < NUM_STORAGES; i++)
+		_bases[0] ^= PARTIAL_STORAGE_MASK;
+		for (size_type i = 1; i < NUM_STORAGES; i++)
 			_bases[i] ^= std::numeric_limits<size_type>::max();
 	}
 

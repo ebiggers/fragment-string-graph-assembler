@@ -6,7 +6,6 @@
 #include <boost/serialization/split_member.hpp>
 #include <string>
 #include <ostream>
-#include <assert.h>
 #include <string.h>
 
 //
@@ -76,7 +75,7 @@ public:
 	void save(Archive & ar, unsigned version) const
 	{
 		ar << _size;
-		ar.save_binary(_bases, DIV_ROUND_UP(_size, BASES_PER_BYTE));
+		ar.save_binary(_bases, length_bytes());
 	}
 
 	// Deserialize this BaseVec.
@@ -85,7 +84,7 @@ public:
 	{
 		ar >> _size;
 		resize(_size);
-		ar.load_binary(_bases, DIV_ROUND_UP(_size, BASES_PER_BYTE));
+		ar.load_binary(_bases, length_bytes());
 	}
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -94,7 +93,7 @@ public:
 	{
 		_size = size;
 		delete[] _bases;
-		_bases = new storage_type[DIV_ROUND_UP(_size, BASES_PER_STORAGE_TYPE)];
+		_bases = new storage_type[length_bytes()];
 	}
 
 	// Initializes this BaseVec from a text string of A's, T's, C's, and
