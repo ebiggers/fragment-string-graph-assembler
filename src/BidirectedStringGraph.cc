@@ -193,32 +193,30 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
 			const v_idx_t g_idx = f_g.get_v2_idx();
 
-			if (f_idx == g_idx)
-				unimplemented();
-			if (f_idx < g_idx) {
-				const edge_idx_t g_f_edge_idx =
-						digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
+			assert2(f_idx <= g_idx);
 
-				const DirectedStringGraphEdge & g_f =
-						digraph.edges()[g_f_edge_idx];
+			const edge_idx_t g_f_edge_idx =
+					digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
 
-				v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
+			const DirectedStringGraphEdge & g_f =
+					digraph.edges()[g_f_edge_idx];
 
-				BidirectedStringGraphEdge e;
-				const v_idx_t v1_idx = f_idx / 2;
-				const v_idx_t v2_idx = g_idx / 2;
+			v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
 
-				//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
-				//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
-				e.get_seq_1_to_2() = f_g.get_seq();
-				e.get_seq_2_to_1() = g_f.get_seq();
-				e.set_v_indices(v1_idx, v2_idx);
-				e.set_dirs(dirs);
+			BidirectedStringGraphEdge e;
+			const v_idx_t v1_idx = f_idx / 2;
+			const v_idx_t v2_idx = g_idx / 2;
 
-				edge_idx_t edge_idx = this->push_back_edge(e);
-				_vertices[v1_idx].add_edge_idx(edge_idx);
-				_vertices[v2_idx].add_edge_idx(edge_idx);
-			}
+			//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
+			//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
+			e.get_seq_1_to_2() = f_g.get_seq();
+			e.get_seq_2_to_1() = g_f.get_seq();
+			e.set_v_indices(v1_idx, v2_idx);
+			e.set_dirs(dirs);
+
+			edge_idx_t edge_idx = this->push_back_edge(e);
+			_vertices[v1_idx].add_edge_idx(edge_idx);
+			_vertices[v2_idx].add_edge_idx(edge_idx);
 		}
 	}
 	info("Done building bidirected string graph from directed string graph");
@@ -283,7 +281,7 @@ void BidirectedStringGraph::print_stats(std::ostream & os) const
 	os << "    Max in degree: " << max_in_degree
 	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
 	os << "    Max out degree: " << max_out_degree
-	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
+	   << (max_out_degree == 0xff ? '+' : ' ') << std::endl;
 
 	// 11
 	// (v1_outward, v2_inward)

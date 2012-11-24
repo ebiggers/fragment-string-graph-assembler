@@ -86,8 +86,11 @@ int main(int argc, char **argv)
 			uncontained_bvv.push_back(bvv[i]);
 		}
 	}
-	info("%zu of %zu reads were contained",
-	     bvv.size() - uncontained_bvv.size(), bvv.size());
+	size_t num_contained_reads = bvv.size() - uncontained_bvv.size();
+	info("%zu of %zu reads were contained (%.2f%%)",
+	     num_contained_reads, bvv.size(),
+	     TO_PERCENT(num_contained_reads, bvv.size()));
+
 	bvv.clear();
 
 	info("Deleting overlaps for the contained reads");
@@ -114,7 +117,9 @@ int main(int argc, char **argv)
 			ovv[j++] = new_set;
 		}
 	}
-	info("Deleted %lu of %lu overlaps", num_overlaps_deleted, num_overlaps);
+	info("Deleted %lu of %lu overlaps (%.2f%%)",
+	     num_overlaps_deleted, num_overlaps,
+	     TO_PERCENT(num_overlaps_deleted, num_overlaps));
 	ovv.resize(j);
 
 	assert(ovv.size() == uncontained_bvv.size());

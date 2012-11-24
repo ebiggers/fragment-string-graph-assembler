@@ -48,38 +48,20 @@ private:
 public:
 	// Return a reference to the sequence associated with this edge of the
 	// directed string graph.
-	BaseVec & get_seq()
-	{
-		return _seq;
-	}
-
-	// Return a const reference to the sequence associated with this edge of
-	// the directed string graph.
-	const BaseVec & get_seq() const
-	{
-		return _seq;
-	}
+	BaseVec & get_seq() { return _seq; }
+	const BaseVec & get_seq() const { return _seq; }
 
 	// Return the length of the sequence associated with this edge of the
 	// directed string graph.
-	BaseVec::size_type length() const
-	{
-		return _seq.size();
-	}
+	BaseVec::size_type length() const { return _seq.size(); }
 
 	// Return the index of the vertex at the tail of this edge in the
 	// directed string graph.
-	v_idx_t get_v1_idx() const
-	{
-		return _v1_idx;
-	}
+	v_idx_t get_v1_idx() const { return _v1_idx; }
 
 	// Return the index of the vertex at the head of this edge in the
 	// directed string graph.
-	v_idx_t get_v2_idx() const
-	{
-		return _v2_idx;
-	}
+	v_idx_t get_v2_idx() const { return _v2_idx; }
 
 	// Get the vertex indices at the tail (v1_idx) and head (v2_idx) of this
 	// edge in the directed string graph.
@@ -97,26 +79,20 @@ public:
 		_v2_idx = v2_idx;
 	}
 
-	void set_v1_idx(const v_idx_t v1_idx)
-	{
-		_v1_idx = v1_idx;
-	}
+	void set_v1_idx(const v_idx_t v1_idx) { _v1_idx = v1_idx; }
 
-	void set_v2_idx(const v_idx_t v2_idx)
-	{
-		_v2_idx = v2_idx;
-	}
+	void set_v2_idx(const v_idx_t v2_idx) { _v2_idx = v2_idx; }
 
 	// Print this directed string graph edge.
 	void print(std::ostream & os, const v_idx_t v_idx,
 		   const bool print_seqs) const
 	{
-		v_idx_t v1_idx = get_v1_idx();
-		v_idx_t read_1_idx = v1_idx / 2 + 1;
-		char read_1_dir = (v1_idx & 1) ? 'E' : 'B';
-		v_idx_t v2_idx = get_v2_idx();
-		v_idx_t read_2_idx = v2_idx / 2 + 1;
-		char read_2_dir = (v2_idx & 1) ? 'E' : 'B';
+		const v_idx_t read_1_idx = get_v1_idx() / 2 + 1;
+		const v_idx_t read_2_idx = get_v2_idx() / 2 + 1;
+
+		const char read_1_dir = (get_v1_idx() & 1) ? 'E' : 'B';
+		const char read_2_dir = (get_v2_idx() & 1) ? 'E' : 'B';
+
 		os << read_1_idx << '.' << read_1_dir << " -> "
 		   << read_2_idx << '.' << read_2_dir
 		   << '\t';

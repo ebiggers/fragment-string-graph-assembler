@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 	OverlapVecVec ovv(overlaps_file);
 	info("Done loading overlaps");
 
+	assert(ovv.size() == bvv.size());
+
 	DirectedStringGraph graph(bvv.size());
 
 	info("Building directed string graph from overlaps");
@@ -39,8 +41,5 @@ int main(int argc, char *argv[])
 
 	info("Writing directed string graph to \"%s\"", graph_file);
 	graph.write(graph_file);
-
-	assert(ovv.size() == bvv.size());
-
 	info("Done");
 }

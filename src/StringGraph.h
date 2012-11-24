@@ -63,16 +63,17 @@ public:
 		return _edge_indices;
 	}
 
-	edge_idx_t first_edge_idx() const
-	{
-		return _edge_indices[0];
-	}
-
 	// Return a reference to the vertex of edge indices of this string graph
 	// vertex.
 	std::vector<edge_idx_t> & edge_indices()
 	{
 		return _edge_indices;
+	}
+
+	edge_idx_t first_edge_idx() const
+	{
+		assert2(_edge_indices.size() > 0);
+		return _edge_indices[0];
 	}
 
 	// Print the string graph vertex.
@@ -301,6 +302,7 @@ public:
 	// Return the number of vertices in this string graph.
 	v_idx_t num_vertices() const { return _vertices.size(); }
 
+	// Return the index of the edge f -> g, which must exist */
 	edge_idx_t locate_edge(const v_idx_t f_idx, const v_idx_t g_idx) const
 	{
 		assert(f_idx < num_vertices() && g_idx < num_vertices());
@@ -329,9 +331,8 @@ public:
 		char buf[10];
 		in.read(buf, 10);
 		const char * magic = static_cast<IMPL_t*>(this)->magic;
-		if (memcmp(buf, magic, 10) != 0) {
-			throw std::runtime_error("Invalid magic characters in graph file");
-		}
+		if (memcmp(buf, magic, 10) != 0)
+			fatal_error("Invalid magic characters in graph file");
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
 	}
@@ -344,7 +345,7 @@ public:
 		boost::archive::binary_oarchive ar(out);
 		ar << *this;
 		out.close();
-		if (out.bad())
+		if (!out)
 			fatal_error_with_errno("Error writing to \"%s\"", filename);
 	}
 
@@ -388,14 +389,13 @@ public:
 		assert(bvv.size() == ovv.size());
 		foreach(const OverlapVecVec::OverlapSet & overlap_set, ovv) {
 			foreach(const Overlap & o, overlap_set) {
-				assert_overlap_valid(o, bvv, 0, 0);
+				assert_overlap_valid(o, bvv, 1, 0);
 				add_edge_from_overlap(bvv, o);
 			}
 		}
 		info("String graph has %zu vertices and %zu edges",
 		     num_vertices(), num_edges());
-		info("Average of %.2f edges per vertex",
-		     num_vertices() ?
-			double(num_edges()) / double(num_vertices()) : 0);
+		info("Average of %.2f edges per vertex", 
+		     DOUBLE_DIV_NONZERO(num_edges(), num_vertices()));
 	}
 };

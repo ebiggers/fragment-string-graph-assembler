@@ -55,29 +55,11 @@ private:
 public:
 	typedef unsigned int v_idx_t;
 
-	BaseVec & get_seq_1_to_2()
-	{
-		return _seq_1_to_2;
-	}
-	BaseVec & get_seq_2_to_1()
-	{
-		return _seq_2_to_1;
-	}
-
-	const BaseVec & get_seq_1_to_2() const
-	{
-		return _seq_1_to_2;
-	}
-
-	const BaseVec & get_seq_2_to_1() const
-	{
-		return _seq_2_to_1;
-	}
-
-	BaseVec::size_type length() const
-	{
-		return _seq_1_to_2.size();
-	}
+	BaseVec & get_seq_1_to_2() { return _seq_1_to_2; }
+	BaseVec & get_seq_2_to_1() { return _seq_2_to_1; }
+	const BaseVec & get_seq_1_to_2() const { return _seq_1_to_2; }
+	const BaseVec & get_seq_2_to_1() const { return _seq_2_to_1; }
+	BaseVec::size_type length() const { return _seq_1_to_2.size(); }
 
 	v_idx_t get_other_v_idx(v_idx_t this_v_idx) const
 	{
@@ -141,7 +123,7 @@ public:
 		if (this_v_idx == v1_idx) {
 			return v1_outward();
 		} else {
-			assert(this_v_idx == v2_idx);
+			assert2(this_v_idx == v2_idx);
 			return v2_outward();
 		}
 	}
@@ -153,7 +135,7 @@ public:
 		if (this_v_idx == v1_idx) {
 			return v2_outward();
 		} else {
-			assert(this_v_idx == v2_idx);
+			assert2(this_v_idx == v2_idx);
 			return v1_outward();
 		}
 	}
@@ -263,7 +245,7 @@ public:
 	// reads to be inserted
 	BidirectedStringGraph(size_t num_reads)
 	{
-		if (!enough_v_indices(num_reads * 2))
+		if (!enough_v_indices(num_reads))
 			fatal_error("Too many reads (%zu)", num_reads);
 		_vertices.resize(num_reads);
 	}
