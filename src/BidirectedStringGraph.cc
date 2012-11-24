@@ -193,7 +193,7 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
 			const v_idx_t g_idx = f_g.get_v2_idx();
 
-			assert2(f_idx <= g_idx);
+			assert(f_idx <= g_idx);
 
 			const edge_idx_t g_f_edge_idx =
 					digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);

@@ -331,8 +331,10 @@ public:
 		char buf[10];
 		in.read(buf, 10);
 		const char * magic = static_cast<IMPL_t*>(this)->magic;
-		if (memcmp(buf, magic, 10) != 0)
-			fatal_error("Invalid magic characters in graph file");
+		if (memcmp(buf, magic, 10) != 0) {
+			// Need to throw exception because of AnyStringGraph.h
+			throw std::runtime_error("Invalid magic characters in graph file");
+		}
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
 	}
