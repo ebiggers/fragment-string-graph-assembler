@@ -4,7 +4,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-const char DirectedStringGraph::magic[] = 
+const char DirectedStringGraph::magic[] =
 	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
 
 //
@@ -421,7 +421,7 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	os << "    Max out degree: " << max_out_degree
 	   << (max_in_degree == 0xff ? '+' : ' ') << std::endl;
 
-	os << "    Number of edges that one or more contained reads map onto: " 
+	os << "    Number of edges that one or more contained reads map onto: "
 	   << more_than_one_mapped_count << std::endl;
 	os << "    Average number of contained reads that map onto each edge: "
 	   << (num_edges() ? total_mapped_count / num_edges() : 0) << std::endl;

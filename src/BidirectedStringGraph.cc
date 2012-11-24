@@ -88,7 +88,7 @@ void BidirectedStringGraph::transitive_reduction()
 							break;
 						if (e2.this_v_outward(w_idx) == w_tail_outward)
 							continue;
-						const unsigned char mark = 
+						const unsigned char mark =
 							vertex_marks[e2.get_other_v_idx(w_idx)];
 						if ((mark & INPLAY)
 						    && ((mark & INPLAY_OUTWARD)
@@ -180,7 +180,7 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 		//      seq
 		//
 		// find edge g.^?1 -> f.^?2
-		// 
+		//
 		// add bidigraph edge
 		//
 		//   f ?-? g where dirs =
@@ -193,30 +193,38 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
 			const v_idx_t g_idx = f_g.get_v2_idx();
 
-			assert(f_idx <= g_idx);
+			/* Consider only 1 edge in each edge pair.
+			 *
+			 * - If an edge goes between different vertices, we can
+			 *   skip edges where the first vertex has a higher
+			 *   index than the second.
+			 *
+			 * - If an edge is a loop, then the edge pair is v.B ->
+			 *   v.B and v.E -> v.E, so skip the v.B -> v.B edge. */
+			if (f_idx < g_idx || (f_idx == g_idx && (f_idx & 1))) {
+				const edge_idx_t g_f_edge_idx =
+						digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
 
-			const edge_idx_t g_f_edge_idx =
-					digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
+				const DirectedStringGraphEdge & g_f =
+						digraph.edges()[g_f_edge_idx];
 
-			const DirectedStringGraphEdge & g_f =
-					digraph.edges()[g_f_edge_idx];
+				v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
 
-			v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
+				BidirectedStringGraphEdge e;
+				const v_idx_t v1_idx = f_idx / 2;
+				const v_idx_t v2_idx = g_idx / 2;
 
-			BidirectedStringGraphEdge e;
-			const v_idx_t v1_idx = f_idx / 2;
-			const v_idx_t v2_idx = g_idx / 2;
+				//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
+				//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
+				e.get_seq_1_to_2() = f_g.get_seq();
+				e.get_seq_2_to_1() = g_f.get_seq();
+				e.set_v_indices(v1_idx, v2_idx);
+				e.set_dirs(dirs);
 
-			//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
-			//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
-			e.get_seq_1_to_2() = f_g.get_seq();
-			e.get_seq_2_to_1() = g_f.get_seq();
-			e.set_v_indices(v1_idx, v2_idx);
-			e.set_dirs(dirs);
-
-			edge_idx_t edge_idx = this->push_back_edge(e);
-			_vertices[v1_idx].add_edge_idx(edge_idx);
-			_vertices[v2_idx].add_edge_idx(edge_idx);
+				edge_idx_t edge_idx = this->push_back_edge(e);
+				_vertices[v1_idx].add_edge_idx(edge_idx);
+				_vertices[v2_idx].add_edge_idx(edge_idx);
+			}
 		}
 	}
 	info("Done building bidirected string graph from directed string graph");

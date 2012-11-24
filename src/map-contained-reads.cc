@@ -61,9 +61,7 @@ int main(int argc, char **argv)
 	std::vector<std::vector<Overlap *> > containing_overlaps(num_contained_reads);
 
 	info("Examining %zu contained reads (%.2f%% of total)",
-	     num_contained_reads,
-	     orig_reads.size() ?
-	     	num_contained_reads * 100 / double(orig_reads.size()) : 0);
+	     num_contained_reads, TO_PERCENT(orig_reads.size(), num_contained_reads));
 
 	// Find all overlaps involving each contained read
 	size_t num_contained_overlaps = 0;
@@ -105,9 +103,8 @@ int main(int argc, char **argv)
 	}
 
 	info("%zu overlaps are contained (%.2f per contained read on average)",
-	     num_contained_overlaps, 
-	     (num_contained_reads ?
-	     	double(num_contained_overlaps) / num_contained_reads : 0));
+	     num_contained_overlaps,
+	     DOUBLE_DIV_NONZERO(num_contained_overlaps, num_contained_reads));
 
 	std::vector<Overlap *> shortest_overhang_overlaps(num_contained_reads, NULL);
 	std::vector<Overlap::read_pos_t> overhang_lens(num_contained_reads,
