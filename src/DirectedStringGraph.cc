@@ -3,6 +3,7 @@
 #include <ostream>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include "BidirectedStringGraph.h"
 
 const char DirectedStringGraph::magic[] =
 	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
@@ -546,5 +547,17 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 			assert(mapped_edges[i] < num_edges());
 			_edges[mapped_edges[i]].increment_mapped_read_count(div);
 		}
+	}
+}
+
+void DirectedStringGraph::build_from_bidigraph(const BidirectedStringGraph & bidigraph)
+{
+	assert(num_vertices() == bidigraph.num_vertices() * 2);
+	foreach (const BidirectedStringGraphEdge & e, bidigraph.edges()) {
+		add_edge_pair(e.get_v1_idx(),
+			      e.get_v2_idx(),
+			      e.get_dirs(),
+			      e.get_seq_1_to_2(), 0, e.length() - 1, false,
+			      e.get_seq_2_to_1(), 0, e.length() - 1, false);
 	}
 }

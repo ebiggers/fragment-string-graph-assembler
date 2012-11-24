@@ -24,10 +24,10 @@ const char BidirectedStringGraph::magic[]
 // In addition, in the directed case, there can be at most one edge v -> w
 // (although there may be an edge w -> v as well).  But in the bidirected case,
 // there can be up to 4 edges between v and w:
-// 	v >--> w
-// 	v <--< w
-// 	v >--< w
-// 	v <--> w
+// 	v >--> w  (v.E -> w.E, w.B -> v.E)
+// 	v >--< w  (v.E -> w.B, w.E -> v.B)
+// 	v <--< w  (v.B -> w.B, w.E -> v.E)
+// 	v <--> w  (v.B -> w.E, w.B -> v.E)
 void BidirectedStringGraph::transitive_reduction()
 {
 	info("Performing transitive reduction on bidirected string graph with "

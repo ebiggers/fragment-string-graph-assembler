@@ -5,6 +5,8 @@
 #include <ostream>
 #include <inttypes.h>
 
+class BidirectedStringGraph;
+
 // A vertex of a directed string graph.
 class DirectedStringGraphVertex : public StringGraphVertex {
 public:
@@ -171,6 +173,8 @@ public:
 
 	void map_contained_read(size_t contained_read_idx, const Overlap & o,
 				size_t overhang_len);
+
+	void build_from_bidigraph(const BidirectedStringGraph & bidigraph);
 
 	// Add a pair of edges produced by an overlap to this directed string
 	// graph.
