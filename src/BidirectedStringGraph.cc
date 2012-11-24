@@ -303,9 +303,9 @@ void BidirectedStringGraph::print_stats(std::ostream & os) const
 	os << "}" << std::endl;
 }
 
-void BidirectedStringGraph::map_contained_read(size_t contained_read_idx,
-					       const Overlap & o,
-					       size_t overhang_len)
+void BidirectedStringGraph::map_contained_read(const v_idx_t downstream_read_idx,
+					       const v_idx_t downstream_read_dir,
+					       const BaseVec::size_type overhang_len)
 {
 	unimplemented();
 }

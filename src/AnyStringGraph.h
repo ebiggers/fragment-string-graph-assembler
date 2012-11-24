@@ -78,5 +78,5 @@ public:
 	DISPATCH1(write, const char *);
 	DISPATCH2(print, std::ostream &, bool);
 	DISPATCH2(print_dot, std::ostream &, bool);
-	DISPATCH3(map_contained_read, size_t, const Overlap &, size_t);
+	DISPATCH3(map_contained_read, size_t, size_t, size_t);
 };

@@ -103,6 +103,8 @@ public:
 		read_2_idx = _read_2_idx;
 	}
 
+	bool is_rc() const { return (_rc != 0); }
+
 	bool longer_than(const Overlap & other) const 
 	{
 		return (_read_1_end - _read_1_beg) >

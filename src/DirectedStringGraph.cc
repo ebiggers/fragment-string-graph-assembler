@@ -452,6 +452,52 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	os << "}" << std::endl;
 }
 
+//
+// Consider a read f contained in another read g:
+//
+//
+//                  f.B ---------> f.E
+//          g.B ------------------------> g.E
+//
+// where the relevant portion of the actual graph might look like:
+//
+// 	v1.? -> v2.? -> v3.? -> g.E
+//
+// Or:
+//
+//                  f.B ---------> f.E
+//          g.E <------------------------ g.B
+//
+//  where the relevant portion of the actual graph might look like:
+//
+//            v1.? -> v2.? -> v3.? -> g.B
+//
+// In reality, there are no vertices f.B and f.E because they were removed from
+// the graph.  The goal here is to start at vertex g.E (or g.B) and walk
+// backwards (e.g. towards the v?.? shown above) to find all possible edges into
+// which the f.E vertex would be located, so that the number of reads that map
+// onto those edges can be incremented.  Ideally, there would be only 1 such
+// edge--- but due to branching, there may be many.  At most 100 mapped edges
+// are considered before throwing away this contained read.
+//
+// @v_idx:
+// 	Next branchpoint vertex.  (initially: g.E for forward case; g.B for
+// 	reverse-complement case).
+//
+// @overhang_len:
+// 	Number of bp of uncontained read remaining after threading the contained
+// 	read all the way to the vertex of index @v_idx.
+//
+// @mapped_edges:
+// 	Array of indices of edges onto which the contained read would map.
+//
+// @num_mapped_edges:
+// 	Number of filled members of @mapped_edges.
+//
+// @max_mapped_edges:
+// 	Size of max_mapped_edges.  The search is terminated when
+// 	@num_mapped_edges reaches @max_mapped_edges.
+//
 void DirectedStringGraph::walk_back_edges(const v_idx_t v_idx,
 					  size_t overhang_len,
 					  edge_idx_t mapped_edges[],
@@ -460,6 +506,8 @@ void DirectedStringGraph::walk_back_edges(const v_idx_t v_idx,
 {
 	assert(_back_edges.size() == _vertices.size());
 
+	// Map the read onto any edges that go into the current vertex with
+	// length less than the remaining read length.
 	foreach (edge_idx_t edge_idx, _back_edges[v_idx]) {
 		const DirectedStringGraphEdge & e = _edges[edge_idx];
 		assert(e.get_v2_idx() == v_idx);
@@ -470,6 +518,13 @@ void DirectedStringGraph::walk_back_edges(const v_idx_t v_idx,
 		}
 	}
 
+	// For each edge going into the current vertex with length greater than
+	// or equal to the remaining read length, recursively call this
+	// procedure on them with the remaining read length decremented by the
+	// legnth of the edge.
+	//
+	// If upon return of the recursive call, the number of mapped edges has
+	// reached the maximum, return early.
 	foreach (edge_idx_t edge_idx, _back_edges[v_idx]) {
 		const DirectedStringGraphEdge & e = _edges[edge_idx];
 		if (overhang_len >= e.length()) {
@@ -484,60 +539,40 @@ void DirectedStringGraph::walk_back_edges(const v_idx_t v_idx,
 	}
 }
 
-void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
-					     const Overlap & o,
-					     const size_t overhang_len)
+//
+//
+void DirectedStringGraph::map_contained_read(const v_idx_t downstream_read_idx,
+					     const v_idx_t downstream_read_dir,
+					     const BaseVec::size_type overhang_len)
 {
-	Overlap::read_idx_t f_idx;
-	Overlap::read_pos_t f_beg;
-	Overlap::read_pos_t f_end;
-	Overlap::read_idx_t g_idx;
-	Overlap::read_pos_t g_beg;
-	Overlap::read_pos_t g_end;
-	bool rc;
+	assert(downstream_read_idx < num_vertices() / 2);
+	assert(downstream_read_dir < 2);
 
-	o.get(f_idx, f_beg, f_end, g_idx, g_beg, g_end, rc);
+	const v_idx_t downstream_v_idx = downstream_read_idx * 2 + downstream_read_dir;
 
-	assert(contained_read_idx < num_vertices());
-
-	if (contained_read_idx == g_idx) {
-		std::swap(f_idx, g_idx);
-		std::swap(f_beg, g_beg);
-		std::swap(f_end, g_end);
-	} else {
-		assert(contained_read_idx == f_idx);
-	}
-
-	assert(f_idx * 2 + 1 < num_vertices());
-	assert(g_idx * 2 + 1 < num_vertices());
-
-	v_idx_t v_idx = contained_read_idx * 2;
-
-	if (rc) {
-		assert(overhang_len == g_beg);
-	} else {
-		// overhang_len == g.length() - 1 - g_end;
-		//
-		// but we don't have g here.
-		v_idx++;
-	}
-
+	// We need to be able to walk the graph in the opposite direction that
+	// the edges are going--- so index the back edges, so that it's possible
+	// to get a list of edges entering a vertex, given the vertex index.
 	if (_back_edges.size() == 0) {
 		info("Indexing back edges (num_vertices = %zu, num_edges = %zu)",
 				num_vertices(), num_edges());
 		_back_edges.resize(num_vertices());
-		foreach (const DirectedStringGraphVertex v, _vertices)
-			foreach (edge_idx_t edge_idx, v.edge_indices())
+		foreach (const DirectedStringGraphVertex & v, _vertices)
+			foreach (const edge_idx_t edge_idx, v.edge_indices())
 				_back_edges[_edges[edge_idx].get_v2_idx()].push_back(edge_idx);
 	}
-	assert(_back_edges.size() == num_vertices());
 
-	assert(v_idx < num_vertices());
-
+	// Walk the tree backwards starting at vertex @downstream_v_idx to get a
+	// list of edge indices into which the end of the contained read maps.
 	edge_idx_t mapped_edges[100];
 	size_t num_mapped_edges = 0;
-	walk_back_edges(v_idx, overhang_len, mapped_edges, num_mapped_edges, 100);
+	walk_back_edges(downstream_v_idx, overhang_len,
+			mapped_edges, num_mapped_edges, 100);
 
+	// If there was at least one mapped edge but the maximum was not
+	// reached, increment the mapped read count on the corresponding edges,
+	// but divide by the number of mapped locations to weight the mapping
+	// appropriately.
 	if (num_mapped_edges < 100 && num_mapped_edges > 0) {
 		double div = 1.0f / double(num_mapped_edges);
 		for (size_t i = 0; i < num_mapped_edges; i++) {
@@ -547,9 +582,16 @@ void DirectedStringGraph::map_contained_read(size_t contained_read_idx,
 	}
 }
 
+//
+// Given a bidirected string graph, build the corresponding directed string
+// graph.
+//
 void DirectedStringGraph::build_from_bidigraph(const BidirectedStringGraph & bidigraph)
 {
 	assert(num_vertices() == bidigraph.num_vertices() * 2);
+
+	// Go through each bidirected edge in the bidirected string graph and
+	// add the corresponding 2 directed edges to the directed string graph.
 	foreach (const BidirectedStringGraphEdge & e, bidigraph.edges()) {
 		add_edge_pair(e.get_v1_idx(),
 			      e.get_v2_idx(),
