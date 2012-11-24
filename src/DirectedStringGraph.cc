@@ -430,7 +430,6 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 	std::vector<bool> visited(num_vertices(), false);
 	std::vector<v_idx_t> component_sizes;
 
-	v_idx_t num_components = 0;
 	for (v_idx_t v_idx = 0; v_idx < num_vertices(); v_idx++) {
 		if (!visited[v_idx] && in_degrees[v_idx] == 0) {
 			v_idx_t component_size = 0;
@@ -446,7 +445,7 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 		}
 	}
 	std::sort(component_sizes.begin(), component_sizes.end());
-	os << "    Number of components: " << num_components << std::endl;
+	os << "    Number of components: " << component_sizes.size() << std::endl;
 	os << "    Component sizes:" << std::endl;
 	foreach (v_idx_t component_size, component_sizes) {
 		os << "        " << component_size << ' '
