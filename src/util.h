@@ -61,11 +61,11 @@ extern long long parse_long(const char *optstr, const char *argument,
 #define MODULO_NONZERO(numerator, denominator) \
 	(((numerator) % (denominator)) ? ((numerator) % (denominator)) : (denominator))
 
-#define DOUBLE_DIV_NONZERO(numerator, denominator) \
-	(((denominator) == 0) ? 0 : (double(numerator) / double(denominator)))
-
 #define DIV_NONZERO(numerator, denominator) \
 	(((denominator) == 0) ? 0 : ((numerator) / (denominator)))
+
+#define DOUBLE_DIV_NONZERO(numerator, denominator) \
+	DIV_NONZERO(double(numerator), double(denominator))
 
 #define TO_PERCENT(numerator, denominator) \
 	(100.0 * DOUBLE_DIV_NONZERO(numerator, denominator))

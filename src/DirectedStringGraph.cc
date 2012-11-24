@@ -197,25 +197,21 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 	v_idx_t vi_idx = e.get_v2_idx();
 	assert(v_inner[vi_idx]);
 
-	//size_t path_len = 1;
-	//info("v1 = %zu", e.get_v1_idx());
-	//info("v2 = %zu", e.get_v2_idx());
 	// Found beginning of unbranched path.  Walk along it until
 	// the end to get the total sequence length.
 	do {
 		const DirectedStringGraphVertex &vi = _vertices[vi_idx];
 		assert(vi.out_degree() == 1);
-		//path_len++;
 		const DirectedStringGraphEdge &ei_i1 = _edges[vi.first_edge_idx()];
 		if (new_seq_len + ei_i1.length() < new_seq_len)
 			fatal_error("Edge too long");
 		new_seq_len += ei_i1.length();
 		vi_idx = ei_i1.get_v2_idx();
-		//info("vi = %zu", vi_idx);
 	} while (v_inner[vi_idx]);
 
-	//info("path_len = %zu", path_len);
-
+	// Now build the new sequence, update the first edge in the path to skip
+	// to the last vertex in the path, and mark the other edges for removal
+	// in the @remove_edge array.
 	BaseVec & new_seq = e.get_seq();
 	BaseVec::size_type seq_idx = new_seq.length();
 	new_seq.resize(new_seq_len);
@@ -243,7 +239,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	const edge_idx_t n_edges = num_edges();
 
 	info("Collapsing unbranched paths in directed string graph");
-	info("Original graph has %u vertices and %u edges", n_verts, n_edges);
+	info("Original graph has %zu vertices and %zu edges", n_verts, n_edges);
 
 	size_t num_inner_vertices = 0;
 	// Find whether each vertex is inner or not.  A vertex is inner iff it
@@ -252,17 +248,14 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	{
 		std::vector<unsigned char> v_in_degrees(n_verts, 0);
 		std::vector<unsigned char> v_out_degrees(n_verts, 0);
-		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
-			const DirectedStringGraphVertex & v = _vertices[v_idx];
-			foreach(edge_idx_t edge_idx, v.edge_indices()) {
-				const DirectedStringGraphEdge & e = _edges[edge_idx];
-				v_idx_t v1_idx, v2_idx;
-				e.get_v_indices(v1_idx, v2_idx);
-				if (v_out_degrees[v1_idx] < 2)
-					v_out_degrees[v1_idx]++;
-				if (v_in_degrees[v2_idx] < 2)
-					v_in_degrees[v2_idx]++;
-			}
+
+		foreach (const DirectedStringGraphEdge & e, _edges) {
+			v_idx_t v1_idx, v2_idx;
+			e.get_v_indices(v1_idx, v2_idx);
+			if (v_out_degrees[v1_idx] < 2)
+				v_out_degrees[v1_idx]++;
+			if (v_in_degrees[v2_idx] < 2)
+				v_in_degrees[v2_idx]++;
 		}
 		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 			if (v_in_degrees[v_idx] == 1 && v_out_degrees[v_idx] == 1) {
@@ -272,9 +265,8 @@ void DirectedStringGraph::collapse_unbranched_paths()
 		}
 	}
 
-	info("Found %zu inner vertices (%f%% of all vertices)",
-	     num_inner_vertices,
-	     (n_verts ? 100 * double(num_inner_vertices) / n_verts : 0));
+	info("Found %zu inner vertices (%.2f%% of all vertices)",
+	     num_inner_vertices, TO_PERCENT(num_inner_vertices, n_verts));
 
 	// Go through each non-inner vertex and look for any neighboring inner
 	// vertices.  These are the starts of unbranched paths that will be
@@ -283,6 +275,9 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	// the concatenation of the labels of all the edges in the unbranched
 	// path, then make the first edge point directly to the last vertex in
 	// the path and mark the other edges for deletion.
+	//
+	// Note: smooth rings are not collapsed yet.
+	//
 	size_t num_unbranched_paths = 0;
 	std::vector<bool> remove_edge(n_edges, false);
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
@@ -301,29 +296,32 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	info("Found %zu unbranched paths", num_unbranched_paths);
 
 	// Compute the new vertex indices.
-	std::vector<v_idx_t> new_v_indices(n_verts);
+	std::vector<v_idx_t> old_to_new_v_indices(n_verts,
+						  std::numeric_limits<v_idx_t>::max());
 	v_idx_t new_v_idx = 0;
-	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++)
-		if (v_inner[v_idx])
-			new_v_indices[v_idx] = std::numeric_limits<v_idx_t>::max();
-		else
-			new_v_indices[v_idx] = new_v_idx++;
+	for (v_idx_t old_v_idx = 0; old_v_idx < n_verts; old_v_idx++)
+		if (!v_inner[old_v_idx])
+			old_to_new_v_indices[old_v_idx] = new_v_idx++;
 
 	info("Updated vertices are indexed [0, %lu)", new_v_idx);
 
 	info("Updating edges");
 	// Compute the new edge indices, set the new vertex indices in each edge,
 	// and move the edges
-	std::vector<edge_idx_t> new_edge_indices(n_edges);
+	std::vector<edge_idx_t> old_to_new_edge_indices(n_edges,
+							std::numeric_limits<edge_idx_t>::max());
 	edge_idx_t new_edge_idx = 0;
-	for (edge_idx_t edge_idx = 0; edge_idx < n_edges; edge_idx++) {
-		if (!remove_edge[edge_idx]) {
-			DirectedStringGraphEdge & e = _edges[edge_idx];
-			new_edge_indices[edge_idx] = new_edge_idx;
+	for (edge_idx_t old_edge_idx = 0; old_edge_idx < n_edges; old_edge_idx++) {
+		if (!remove_edge[old_edge_idx]) {
+			DirectedStringGraphEdge & e = _edges[old_edge_idx];
+			old_to_new_edge_indices[old_edge_idx] = new_edge_idx;
 			v_idx_t v1_idx, v2_idx;
 			e.get_v_indices(v1_idx, v2_idx);
-			e.set_v_indices(new_v_indices[v1_idx], new_v_indices[v2_idx]);
-			_edges[new_edge_idx++] = _edges[edge_idx];
+			e.set_v_indices(old_to_new_v_indices[v1_idx],
+					old_to_new_v_indices[v2_idx]);
+			assert2(e.get_v1_idx() != std::numeric_limits<v_idx_t>::max() &&
+				e.get_v2_idx() != std::numeric_limits<v_idx_t>::max());
+			_edges[new_edge_idx++] = _edges[old_edge_idx];
 		}
 	}
 	info("Updated edges are indexed [0, %lu)", new_edge_idx);
@@ -336,18 +334,18 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	info("Updating vertices");
 	// Set new edge indices in each vertex and move the vertices
 	new_v_idx = 0;
-	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
-		if (!v_inner[v_idx]) {
-			DirectedStringGraphVertex & v = _vertices[v_idx];
+	for (v_idx_t old_v_idx = 0; old_v_idx < n_verts; old_v_idx++) {
+		if (!v_inner[old_v_idx]) {
+			DirectedStringGraphVertex & v = _vertices[old_v_idx];
 			std::vector<edge_idx_t> & edge_indices = v.edge_indices();
 			for (size_t i = 0; i < v.out_degree(); i++) {
-				edge_idx_t edge_idx = edge_indices[i];
-				edge_idx_t new_edge_idx = new_edge_indices[edge_idx];
-				edge_indices[i] = new_edge_idx;
+				edge_indices[i] = old_to_new_edge_indices[edge_indices[i]];
+				assert2(edge_indices[i] != std::numeric_limits<edge_idx_t>::max());
 			}
-			_vertices[new_v_idx++] = _vertices[v_idx];
+			_vertices[new_v_idx++] = _vertices[old_v_idx];
 		}
 	}
+	assert(new_v_idx == n_verts - num_inner_vertices);
 	_vertices.resize(new_v_idx);
 	info("Done collapsing unbranched paths in directed string graph");
 }
