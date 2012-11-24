@@ -164,12 +164,12 @@ void DirectedStringGraph::transitive_reduction()
 	}
 	const size_t num_original_edges = edges.size();
 	const size_t num_removed_edges = num_original_edges - j;
-	edges.resize(j);
+	const size_t num_remaining_edges = j;
+	edges.resize(num_remaining_edges);
 
 	info("Removing %zu of %zu edges (%.2f%%)",
 	     num_removed_edges, num_original_edges,
-	     (num_original_edges ?
-		100 * double(num_removed_edges) / num_original_edges : 0.0));
+	     TO_PERCENT(num_removed_edges, num_original_edges));
 
 	// Re-number the edge indices list of each vertex, and remove any
 	// indices that correspond to edges that were removed.
