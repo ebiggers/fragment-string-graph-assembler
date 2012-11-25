@@ -225,7 +225,7 @@ private:
 			     edge_idx_t mapped_edges[],
 			     size_t & num_mapped_edges,
 			     size_t max_mapped_edges);
-	
+
 public:
 	void assert_graph_valid() const
 	{

@@ -105,7 +105,7 @@ public:
 
 	bool is_rc() const { return (_rc != 0); }
 
-	bool longer_than(const Overlap & other) const 
+	bool longer_than(const Overlap & other) const
 	{
 		return (_read_1_end - _read_1_beg) >
 			(other._read_1_end - other._read_1_end);
@@ -133,11 +133,10 @@ public:
 	friend bool operator<(const Overlap & o1, const Overlap & o2)
 	{
 		if (o1._read_1_idx == o2._read_1_idx) {
-			if (o1._read_2_idx == o2._read_2_idx) {
+			if (o1._read_2_idx == o2._read_2_idx)
 				return o1.type() < o2.type();
-			} else {
+			else
 				return o1._read_2_idx < o2._read_2_idx;
-			}
 		} else {
 			return o1._read_1_idx < o2._read_1_idx;
 		}

@@ -15,7 +15,7 @@
 template <unsigned _K>
 struct Kmer {
 public:
-	typedef unsigned storage_type;
+	typedef unsigned long storage_type;
 	typedef unsigned size_type;
 private:
 	static const size_type BITS_PER_BASE = 2;
@@ -148,17 +148,6 @@ public:
 		return (kmer_1 < kmer_2) ? kmer_1 : kmer_2;
 	}
 
-	bool is_canonical() const {
-		unsigned i;
-		for (i = 0; i < _K; i++)
-			if ((*this)[i] != (3 ^ (*this)[_K - 1 - i]))
-				break;
-		if (i == _K)
-			return true;
-		else
-			return ((*this)[i] < (3 ^ (*this)[_K - 1 - i]));
-	}
-
 	struct hash_functor
 	{
 		size_t operator()(const Kmer<_K> & kmer) const
@@ -170,7 +159,6 @@ public:
 	// Hashes a k-mer from its bases.
 	size_t hash() const
 	{
-		assert(is_canonical());
 		//static const uint64_t GOLDEN_RATIO_PRIME_64 = 0x9e37fffffffc0001UL;
 		assert((_bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
 		size_t h = 14695981039346656037ul;

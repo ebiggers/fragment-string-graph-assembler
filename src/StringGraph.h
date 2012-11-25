@@ -399,7 +399,7 @@ public:
 		}
 		info("String graph has %zu vertices and %zu edges",
 		     num_vertices(), num_edges());
-		info("Average of %.2f edges per vertex", 
+		info("Average of %.2f edges per vertex",
 		     DOUBLE_DIV_NONZERO(num_edges(), num_vertices()));
 	}
 };

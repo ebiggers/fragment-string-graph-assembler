@@ -71,7 +71,6 @@ void DirectedStringGraph::transitive_reduction()
 			       std::numeric_limits<edge_idx_t>::max());
 			v_idx_to_back_edge_idx[w_idx] = edge_idx;
 
-			std::cout << "Mark INPLAY " << e << std::endl;
 			vertex_marks[w_idx] = INPLAY;
 		}
 
@@ -86,15 +85,8 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 
-
-			std::cout << "---------------" << std::endl;
-			std::cout << "v -> w " << e << std::endl;
-
-			if (vertex_marks[w_idx] != INPLAY) {
-				std::cout << "w not INPLAY" << std::endl;
+			if (vertex_marks[w_idx] != INPLAY)
 				continue;
-			}
-			std::cout << "w INPLAY" << std::endl;
 
 			// The edge v -> w must be an irreducible edge if w is
 			// still marked INPLAY at this point, since all shorter
@@ -109,14 +101,12 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphVertex & w = vertices[w_idx];
 			foreach(const edge_idx_t w_edge_idx, w.edge_indices()) {
 				const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
-				std::cout << "w -> x " << e2 << std::endl;
 				if (e.length() + e2.length() > longest)
 					break;
+
 				const v_idx_t x_idx = e2.get_v2_idx();
-				if (vertex_marks[x_idx] != INPLAY) {
-					std::cout << x_idx << " already !INPLAY" << std::endl;
+				if (vertex_marks[x_idx] != INPLAY)
 					continue;
-				}
 
 				const edge_idx_t back_edge_idx =
 						v_idx_to_back_edge_idx[x_idx];
@@ -130,25 +120,18 @@ void DirectedStringGraph::transitive_reduction()
 				assert(back_edge.get_v1_idx() == v_idx);
 				assert(back_edge.get_v2_idx() == x_idx);
 
-				assert (e.length() + e2.length() == back_edge.length());
 
 				if (e.length() + e2.length() != back_edge.length())
 					continue;
 
 				for (BaseVec::size_type i = 0; i < e.length(); i++)
-					if (e.get_seq()[i] != back_edge.get_seq()[i]) {
-						assert(0);
+					if (e.get_seq()[i] != back_edge.get_seq()[i])
 						goto next_edge;
-					}
 
 				for (BaseVec::size_type i = 0; i < e2.length(); i++)
 					if (e2.get_seq()[i] !=
-					    back_edge.get_seq()[i + e.length()]) {
-						assert(0);
+					    back_edge.get_seq()[i + e.length()])
 						goto next_edge;
-					}
-
-				std::cout << "ELIMINATE " << x_idx << std::endl;
 
 				vertex_marks[x_idx] = ELIMINATED;
 				next_edge:

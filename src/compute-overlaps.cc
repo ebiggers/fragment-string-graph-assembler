@@ -253,9 +253,6 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			if (occ1.get_read_id() > occ2.get_read_id())
 				occ1.swap_reads(occ2);
 
-			info("i = %zu, j = %zu, read1id=%zu,read2id=%zu",
-			     i,j,occ1.get_read_id(), occ2.get_read_id());
-
 			// If one occurrence is reverse-complement and the other
 			// is not, always consider the first occurrence to the
 			// forward and the second occurrence to be
@@ -335,9 +332,6 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 				kmer = &rev_kmer;
 				is_rc = true;
 			}
-			assert(kmer->is_canonical());
-			std::cout << "read " << (i+1) << " rc=" << is_rc << ":  " 
-				<<*kmer << std::endl;
 			occ_map[*kmer].push_back(KmerOccurrence(i, j - (K - 1), is_rc));
 			num_kmer_occurrences++;
 		}
@@ -410,13 +404,6 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	unsigned long num_pairs_considered = 0;
 
 	typename KmerOccurrenceMap::const_iterator it;
-	for (it = occ_map.begin(); it != occ_map.end(); it++) {
-		std::cout << it->first << std::endl;
-		foreach (const KmerOccurrence & occ,  it->second) {
-			std::cout << occ << std::endl;
-		}
-	}
-
 	for (it = occ_map.begin(); it != occ_map.end(); it++) {
 		overlaps_from_kmer_seed<K>(it->second, bvv,
 					   min_overlap_len, max_edits,
