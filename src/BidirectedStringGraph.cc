@@ -30,6 +30,8 @@ const char BidirectedStringGraph::magic[]
 // 	v <--> w  (v.B -> w.E, w.B -> v.E)
 void BidirectedStringGraph::transitive_reduction()
 {
+	unimplemented();
+
 	info("Performing transitive reduction on bidirected string graph with "
 	     "%zu vertices and %zu edges", this->num_vertices(), this->num_edges());
 
@@ -173,25 +175,25 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 	assert(digraph.num_vertices() % 2 == 0);
 	assert(num_vertices() == digraph.num_vertices() / 2);
 	assert(num_edges() == 0);
-	for (v_idx_t f_idx = 0; f_idx < digraph.num_vertices(); f_idx++) {
+	for (v_idx_t v_idx = 0; v_idx < digraph.num_vertices(); v_idx++) {
 		//
 		// digraph edge
-		// f.?1 -> g.?2   such that f_idx <= g_idx
+		// v.?1 -> w.?2   such that v_idx <= w_idx
 		//      seq
 		//
-		// find edge g.^?1 -> f.^?2
+		// find edge w.^?1 -> v.^?2
 		//
 		// add bidigraph edge
 		//
-		//   f ?-? g where dirs =
+		//   v ?-? w where dirs =
 		//   (?1 == E ? TAG_F_E : TAG_F_B) | (?2 == E ? TAG_G_E : TAG_G_B)
 		//
 		//   seq
 		//
-		foreach(const edge_idx_t f_g_edge_idx, digraph.vertices()[f_idx].edge_indices())
-		{
-			const DirectedStringGraphEdge & f_g = digraph.edges()[f_g_edge_idx];
-			const v_idx_t g_idx = f_g.get_v2_idx();
+		const DirectedStringGraphVertex & v = digraph.vertices()[v_idx];
+		foreach(const edge_idx_t v_w_edge_idx, v.edge_indices()) {
+			const DirectedStringGraphEdge & v_w = digraph.edges()[v_w_edge_idx];
+			const v_idx_t w_idx = v_w.get_v2_idx();
 
 			/* Consider only 1 edge in each edge pair.
 			 *
@@ -201,23 +203,23 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 			 *
 			 * - If an edge is a loop, then the edge pair is v.B ->
 			 *   v.B and v.E -> v.E, so skip the v.B -> v.B edge. */
-			if (f_idx < g_idx || (f_idx == g_idx && (f_idx & 1))) {
-				const edge_idx_t g_f_edge_idx =
-						digraph.locate_edge(g_idx ^ 1, f_idx ^ 1);
+			if (v_idx < w_idx || (v_idx == w_idx && (v_idx & 1))) {
+				const edge_idx_t w_v_edge_idx =
+						digraph.locate_edge(w_idx ^ 1, v_idx ^ 1);
 
-				const DirectedStringGraphEdge & g_f =
-						digraph.edges()[g_f_edge_idx];
+				const DirectedStringGraphEdge & w_v =
+						digraph.edges()[w_v_edge_idx];
 
-				v_idx_t dirs = ((f_idx & 1) << 1) | (g_idx & 1);
+				v_idx_t dirs = ((v_idx & 1) << 1) | (w_idx & 1);
 
 				BidirectedStringGraphEdge e;
-				const v_idx_t v1_idx = f_idx / 2;
-				const v_idx_t v2_idx = g_idx / 2;
+				const v_idx_t v1_idx = v_idx / 2;
+				const v_idx_t v2_idx = w_idx / 2;
 
-				//e.get_seq_1_to_2().set_from_bv(f_g.get_seq());
-				//e.get_seq_2_to_1().set_from_bv(g_f.get_seq());
-				e.get_seq_1_to_2() = f_g.get_seq();
-				e.get_seq_2_to_1() = g_f.get_seq();
+				//e.get_seq_1_to_2().set_from_bv(v_g.get_seq());
+				//e.get_seq_2_to_1().set_from_bv(w_f.get_seq());
+				e.get_seq_1_to_2() = v_w.get_seq();
+				e.get_seq_2_to_1() = w_v.get_seq();
 				e.set_v_indices(v1_idx, v2_idx);
 				e.set_dirs(dirs);
 

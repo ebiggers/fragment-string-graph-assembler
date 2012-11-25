@@ -86,8 +86,8 @@ public:
 	void set_v2_idx(const v_idx_t v2_idx) { _v2_idx = v2_idx; }
 
 	// Print this directed string graph edge.
-	void print(std::ostream & os, const v_idx_t v_idx,
-		   const bool print_seqs) const
+	void print(std::ostream & os = std::cout, const v_idx_t v_idx = 0,
+		   const bool print_seqs = true) const
 	{
 		const v_idx_t read_1_idx = get_v1_idx() / 2 + 1;
 		const v_idx_t read_2_idx = get_v2_idx() / 2 + 1;
@@ -102,6 +102,13 @@ public:
 			os << _seq;
 		else
 			os << _seq.length();
+	}
+
+	friend std::ostream & operator<<(std::ostream & os,
+					 const DirectedStringGraphEdge & e)
+	{
+		e.print(os);
+		return os;
 	}
 
 	// Print this directed string graph edge in DOT format.
@@ -198,10 +205,10 @@ public:
 
 		assert((dirs & 3) == dirs);
 
-		add_edge(v1_idx + f_dir, v2_idx + g_dir,
+		add_edge(v1_idx ^ f_dir, v2_idx ^ g_dir,
 			 bv1, beg_1, end_1, bv1_rc);
 
-		add_edge(v2_idx + (g_dir ^ 1), v1_idx + (f_dir ^ 1),
+		add_edge(v2_idx ^ g_dir ^ 1, v1_idx ^ f_dir ^ 1,
 			 bv2, beg_2, end_2, bv2_rc);
 	}
 
@@ -218,5 +225,22 @@ private:
 			     edge_idx_t mapped_edges[],
 			     size_t & num_mapped_edges,
 			     size_t max_mapped_edges);
+	
+public:
+	void assert_graph_valid() const
+	{
+		for (size_t i = 0; i < num_edges(); i++) {
+			const DirectedStringGraphEdge & e = _edges[i];
+
+			assert(e.get_v1_idx() < num_vertices());
+			assert(e.get_v2_idx() < num_vertices());
+
+			edge_idx_t j = locate_edge(e.get_v2_idx() ^ 1, e.get_v1_idx() ^ 1);
+			assert(j < num_edges());
+			const DirectedStringGraphEdge & e_X = _edges[j];
+			assert((e_X.get_v1_idx() ^ 1) == e.get_v2_idx());
+			assert((e_X.get_v2_idx() ^ 1) == e.get_v1_idx());
+		}
+	}
 
 };

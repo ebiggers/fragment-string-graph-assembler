@@ -3,6 +3,9 @@
 #include "BaseUtils.h"
 #include "util.h"
 
+#include <iostream>
+#include <BaseUtils.h>
+
 //
 // A sequence of _K bases, stored in binary format (2 bits per base).
 //
@@ -12,7 +15,7 @@
 template <unsigned _K>
 struct Kmer {
 public:
-	typedef unsigned long storage_type;
+	typedef unsigned storage_type;
 	typedef unsigned size_type;
 private:
 	static const size_type BITS_PER_BASE = 2;
@@ -118,7 +121,9 @@ public:
 	// Return true iff two k-mers are equal base-for-base.
 	friend bool operator==(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
-		for (size_type i = 0; i < Kmer<_K>::NUM_STORAGES; i++)
+		assert2((kmer_1._bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
+		assert2((kmer_2._bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
+		for (size_type i = 0; i < NUM_STORAGES; i++)
 			if (kmer_1._bases[i] != kmer_2._bases[i])
 				return false;
 		return true;
@@ -128,9 +133,11 @@ public:
 	// second k-mer.
 	friend bool operator<(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
+		assert2((kmer_1._bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
+		assert2((kmer_2._bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
 		for (size_type i = 0; i < NUM_STORAGES; i++)
-			if (kmer_1._bases[i] < kmer_2._bases[i])
-				return true;
+			if (kmer_1._bases[i] != kmer_2._bases[i])
+				return kmer_1._bases[i] < kmer_2._bases[i];
 		return false;
 	}
 
@@ -139,6 +146,17 @@ public:
 	canonical_kmer(const Kmer<_K> & kmer_1, const Kmer<_K> & kmer_2)
 	{
 		return (kmer_1 < kmer_2) ? kmer_1 : kmer_2;
+	}
+
+	bool is_canonical() const {
+		unsigned i;
+		for (i = 0; i < _K; i++)
+			if ((*this)[i] != (3 ^ (*this)[_K - 1 - i]))
+				break;
+		if (i == _K)
+			return true;
+		else
+			return ((*this)[i] < (3 ^ (*this)[_K - 1 - i]));
 	}
 
 	struct hash_functor
@@ -152,10 +170,19 @@ public:
 	// Hashes a k-mer from its bases.
 	size_t hash() const
 	{
+		assert(is_canonical());
 		//static const uint64_t GOLDEN_RATIO_PRIME_64 = 0x9e37fffffffc0001UL;
+		assert((_bases[0] & ~PARTIAL_STORAGE_MASK) == 0);
 		size_t h = 14695981039346656037ul;
 		for (size_type i = 0; i < NUM_STORAGES; i++)
 			h = 1099511628211ul * (h ^ _bases[i]);
 		return h;
+	}
+
+	friend std::ostream & operator<<(std::ostream & os, const Kmer<_K> & kmer)
+	{
+		for (unsigned i = 0; i < _K; i++)
+			os << BaseUtils::bin_to_ascii(kmer[i]);
+		return os;
 	}
 };

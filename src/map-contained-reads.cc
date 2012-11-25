@@ -197,6 +197,8 @@ int main(int argc, char **argv)
 	info("Reading string graph from \"%s\"", graph_file);
 	AnyStringGraph graph(graph_file);
 
+	info("Mapping %zu contained reads into the string graph", num_contained_reads);
+
 	// Map the contained reads into the graph, given the overlap to use to
 	// map each contained read.
 	for (size_t i = 0; i < num_contained_reads; i++) {
@@ -231,10 +233,6 @@ int main(int argc, char **argv)
 		assert(uncontained_read_new_idx < num_uncontained_reads);
 
 		uncontained_read_dir = (o->is_rc() ? 1 : 0);
-
-		info("Mapping read %zu of %zu: overlap with %zu (rc = %d)",
-		     i + 1, num_contained_reads, uncontained_read_new_idx,
-		     o->is_rc());
 
 		graph.map_contained_read(uncontained_read_new_idx,
 					 uncontained_read_dir,

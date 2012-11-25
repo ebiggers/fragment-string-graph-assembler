@@ -7,6 +7,7 @@ USE_PIRS        ?= true
 MIN_OVERLAP_LEN ?= 25
 GENOME          ?= random_genome.fa
 BIDIGRAPH_OPS   ?= false
+COVERAGE        ?= 50
 
 ifeq ($(GENOME),random_genome.fa)
 genome.fa.$(SAMPLE_SIZE):
@@ -18,7 +19,7 @@ endif
 
 ifeq ($(USE_PIRS),true)
 pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
-	pirs simulate -x 30 --no-gc-bias --no-subst-errors --no-indels \
+	pirs simulate -x $(COVERAGE) --no-gc-bias --no-subst-errors --no-indels \
 			--random-seed=1 --threads=1 $+
 else
 reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl

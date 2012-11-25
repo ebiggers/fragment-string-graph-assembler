@@ -61,7 +61,7 @@ void DirectedStringGraph::transitive_reduction()
 			continue;
 
 		// Mark each vertex adjacent to @v as INPLAY, and initialize the
-		// map from the adjacent vertices' indices to the back edges
+		// map from the adjacent vertices' indices to the back edges'
 		// indices.
 		foreach(const edge_idx_t edge_idx, v.edge_indices()) {
 			const DirectedStringGraphEdge & e = edges[edge_idx];
@@ -70,6 +70,8 @@ void DirectedStringGraph::transitive_reduction()
 			assert(v_idx_to_back_edge_idx[w_idx] ==
 			       std::numeric_limits<edge_idx_t>::max());
 			v_idx_to_back_edge_idx[w_idx] = edge_idx;
+
+			std::cout << "Mark INPLAY " << e << std::endl;
 			vertex_marks[w_idx] = INPLAY;
 		}
 
@@ -84,8 +86,15 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphEdge & e = edges[edge_idx];
 			const v_idx_t w_idx = e.get_v2_idx();
 
-			if (vertex_marks[w_idx] != INPLAY)
+
+			std::cout << "---------------" << std::endl;
+			std::cout << "v -> w " << e << std::endl;
+
+			if (vertex_marks[w_idx] != INPLAY) {
+				std::cout << "w not INPLAY" << std::endl;
 				continue;
+			}
+			std::cout << "w INPLAY" << std::endl;
 
 			// The edge v -> w must be an irreducible edge if w is
 			// still marked INPLAY at this point, since all shorter
@@ -100,11 +109,14 @@ void DirectedStringGraph::transitive_reduction()
 			const DirectedStringGraphVertex & w = vertices[w_idx];
 			foreach(const edge_idx_t w_edge_idx, w.edge_indices()) {
 				const DirectedStringGraphEdge & e2 = edges[w_edge_idx];
+				std::cout << "w -> x " << e2 << std::endl;
 				if (e.length() + e2.length() > longest)
 					break;
 				const v_idx_t x_idx = e2.get_v2_idx();
-				if (vertex_marks[x_idx] != INPLAY)
+				if (vertex_marks[x_idx] != INPLAY) {
+					std::cout << x_idx << " already !INPLAY" << std::endl;
 					continue;
+				}
 
 				const edge_idx_t back_edge_idx =
 						v_idx_to_back_edge_idx[x_idx];
@@ -115,17 +127,28 @@ void DirectedStringGraph::transitive_reduction()
 				const DirectedStringGraphEdge & back_edge =
 					edges[back_edge_idx];
 
+				assert(back_edge.get_v1_idx() == v_idx);
+				assert(back_edge.get_v2_idx() == x_idx);
+
+				assert (e.length() + e2.length() == back_edge.length());
+
 				if (e.length() + e2.length() != back_edge.length())
 					continue;
 
 				for (BaseVec::size_type i = 0; i < e.length(); i++)
-					if (e.get_seq()[i] != back_edge.get_seq()[i])
+					if (e.get_seq()[i] != back_edge.get_seq()[i]) {
+						assert(0);
 						goto next_edge;
+					}
 
 				for (BaseVec::size_type i = 0; i < e2.length(); i++)
 					if (e2.get_seq()[i] !=
-					    back_edge.get_seq()[i + e.length()])
+					    back_edge.get_seq()[i + e.length()]) {
+						assert(0);
 						goto next_edge;
+					}
+
+				std::cout << "ELIMINATE " << x_idx << std::endl;
 
 				vertex_marks[x_idx] = ELIMINATED;
 				next_edge:
@@ -148,6 +171,22 @@ void DirectedStringGraph::transitive_reduction()
 	}
 
 	info("Transitive reduction algorithm complete.  Now updating the string graph");
+
+	for (size_t i = 0; i < edges.size(); i++) {
+		if (reduce_edge[i]) {
+			const DirectedStringGraphEdge & e = _edges[i];
+			const edge_idx_t j = locate_edge(e.get_v2_idx() ^ 1,
+							 e.get_v1_idx() ^ 1);
+			if (!reduce_edge[j]) {
+				std::cout << "The following 2 edges are opposites "
+					<< "but were not both reduced:" << std::endl;
+				e.print(std::cout, 0, true);
+				std::cout << std::endl;
+				_edges[j].print(std::cout, 0, true);
+				std::cout << std::endl;
+			}
+		}
+	}
 
 	// Update the directed string graph to remove the edges marked %true in
 	// the @reduce_edge array.
@@ -185,6 +224,7 @@ void DirectedStringGraph::transitive_reduction()
 		}
 		edge_indices.resize(j);
 	}
+
 
 	info("Done removing transitive edges");
 }

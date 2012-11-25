@@ -205,13 +205,18 @@ static bool find_overlap(const BaseVecVec & bvv,
 		}
 
 		// Shared prefix?
-		if (read_1_beg == 0 && maybe_rc_read_2_beg == 0 && num_extremes < 3)
+		if (read_1_beg == 0 && maybe_rc_read_2_beg == 0 && num_extremes < 3) {
+			//info("SPURIOUS %lu %lu", occ1.get_read_id() + 1, occ2.get_read_id() + 1);
 			return false;
+		}
 
 		// Shared suffix?
 		if (read_1_end == bv1.size() - 1 &&
 		    maybe_rc_read_2_end == bv2.size() - 1 && num_extremes < 3)
+		{
+			//info("SPURIOUS %lu %lu", occ1.get_read_id() + 1, occ2.get_read_id() + 1);
 			return false;
+		}
 	}
 
 	o.set(occ1.get_read_id(), read_1_beg, read_1_end,
@@ -247,6 +252,9 @@ overlaps_from_kmer_seed(const std::vector<KmerOccurrence> & occs,
 			// lower read ID.
 			if (occ1.get_read_id() > occ2.get_read_id())
 				occ1.swap_reads(occ2);
+
+			info("i = %zu, j = %zu, read1id=%zu,read2id=%zu",
+			     i,j,occ1.get_read_id(), occ2.get_read_id());
 
 			// If one occurrence is reverse-complement and the other
 			// is not, always consider the first occurrence to the
@@ -327,6 +335,9 @@ static void load_kmer_occurrences(const BaseVecVec &bvv,
 				kmer = &rev_kmer;
 				is_rc = true;
 			}
+			assert(kmer->is_canonical());
+			std::cout << "read " << (i+1) << " rc=" << is_rc << ":  " 
+				<<*kmer << std::endl;
 			occ_map[*kmer].push_back(KmerOccurrence(i, j - (K - 1), is_rc));
 			num_kmer_occurrences++;
 		}
@@ -399,6 +410,13 @@ static void compute_overlaps(const BaseVecVec &bvv,
 	unsigned long num_pairs_considered = 0;
 
 	typename KmerOccurrenceMap::const_iterator it;
+	for (it = occ_map.begin(); it != occ_map.end(); it++) {
+		std::cout << it->first << std::endl;
+		foreach (const KmerOccurrence & occ,  it->second) {
+			std::cout << occ << std::endl;
+		}
+	}
+
 	for (it = occ_map.begin(); it != occ_map.end(); it++) {
 		overlaps_from_kmer_seed<K>(it->second, bvv,
 					   min_overlap_len, max_edits,

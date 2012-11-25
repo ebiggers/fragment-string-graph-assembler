@@ -337,11 +337,13 @@ public:
 		}
 		boost::archive::binary_iarchive ar(in);
 		ar >> *this;
+		static_cast<const IMPL_t*>(this)->assert_graph_valid();
 	}
 
 	// Write this string graph to a file.
 	void write(const char *filename) const
 	{
+		static_cast<const IMPL_t*>(this)->assert_graph_valid();
 		std::ofstream out(filename);
 		out.write(static_cast<const IMPL_t*>(this)->magic, 10);
 		boost::archive::binary_oarchive ar(out);

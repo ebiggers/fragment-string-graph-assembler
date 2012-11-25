@@ -300,4 +300,9 @@ public:
 		_vertices[v1_idx].add_edge_idx(edge_idx);
 		_vertices[v2_idx].add_edge_idx(edge_idx);
 	}
+
+public:
+	void assert_graph_valid() const
+	{
+	}
 };
