@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 		shortest_overhang_lens(num_contained_reads,
 				       std::numeric_limits<Overlap::read_pos_t>::max());
 
-	foreach (std::set<Overlap> & overlap_set, orig_overlaps) {
+	foreach (const OverlapVecVec::OverlapSet & overlap_set, orig_overlaps) {
 		foreach(const Overlap & o, overlap_set) {
 			Overlap::read_idx_t f_idx;
 			Overlap::read_pos_t f_beg;
@@ -126,11 +126,7 @@ int main(int argc, char **argv)
 
 			size_t contained_read_orig_idx = ~size_t(0);
 			if (f_beg == 0 && f_end == f.size() - 1) {
-
 				// Read f is contained
-				assert(old_to_new_indices[f_idx] == ~size_t(0));
-				assert(old_to_contained_indices[f_idx] != ~size_t(0));
-
 				// ... but only count this overlap if g is NOT
 				// contained
 				if (old_to_new_indices[g_idx] != ~size_t(0)) {
@@ -142,9 +138,6 @@ int main(int argc, char **argv)
 				}
 			} else if (g_beg == 0 && g_end == g.size() - 1) {
 				// Read g is contained
-				assert(old_to_new_indices[g_idx] == ~size_t(0));
-				assert(old_to_contained_indices[g_idx] != ~size_t(0));
-
 				// ... but only count this overlap is f is NOT
 				// contained
 				if (old_to_new_indices[f_idx] != ~size_t(0)) {
@@ -157,10 +150,14 @@ int main(int argc, char **argv)
 			}
 
 			if (contained_read_orig_idx != ~size_t(0)) {
-				Overlap::read_pos_t overhang_len;
+				assert(old_to_new_indices[contained_read_orig_idx] ==
+				       ~size_t(0));
+				assert(old_to_contained_indices[contained_read_orig_idx] !=
+				       ~size_t(0));
 				// This is a containing overlap, and the read
 				// with original index @contained_read_orig_idx
 				// is contained.  Compute the overhang length.
+				Overlap::read_pos_t overhang_len;
 				if (rc) {
 					//
 					//
@@ -211,7 +208,7 @@ int main(int argc, char **argv)
 		// contained read to its containing read is the shortest
 		const Overlap *o = shortest_overhang_overlaps[i];
 
-		// Original read index must be valid, and the read must be
+		// Original read index must be valid, the read must be
 		// contained, and it must have at least 1 overlap with an
 		// uncontained read.
 		assert(contained_read_orig_idx < num_orig_reads);
@@ -224,17 +221,20 @@ int main(int argc, char **argv)
 
 		o->get_indices(f_idx, g_idx);
 
-		if (f_idx == contained_read_orig_idx)
+		if (f_idx == contained_read_orig_idx) {
 			uncontained_read_new_idx = old_to_new_indices[g_idx];
-		else
+		} else {
+			assert(g_idx == contained_read_orig_idx);
 			uncontained_read_new_idx = old_to_new_indices[f_idx];
+		}
 
 		assert(uncontained_read_new_idx < num_uncontained_reads);
 
 		uncontained_read_dir = (o->is_rc() ? 1 : 0);
 
-		info("Mapping read %zu of %zu (rc = %d)",
-		     i + 1, num_contained_reads, o->is_rc());
+		info("Mapping read %zu of %zu: overlap with %zu (rc = %d)",
+		     i + 1, num_contained_reads, uncontained_read_new_idx,
+		     o->is_rc());
 
 		graph.map_contained_read(uncontained_read_new_idx,
 					 uncontained_read_dir,

@@ -1,4 +1,4 @@
-all:out.reduced.collapsed.digraph out.reduced.collapsed.bidigraph
+all:out.reduced.mapped.collapsed.digraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf
 
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
@@ -18,7 +18,7 @@ endif
 
 ifeq ($(USE_PIRS),true)
 pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
-	pirs simulate -x 20 --no-gc-bias --no-subst-errors --no-indels \
+	pirs simulate -x 30 --no-gc-bias --no-subst-errors --no-indels \
 			--random-seed=1 --threads=1 $+
 else
 reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl
@@ -44,8 +44,8 @@ out.overlaps:reads.bvv
 	touch .remove-contained-reads
 
 reads.uncontained.bvv:.remove-contained-reads
-
 out.uncontained.overlaps:.remove-contained-reads
+out.indices_map:.remove-contained-reads
 
 %.bidigraph.dot:%.bidigraph
 	print-string-graph --dot $+ > $@
@@ -67,6 +67,10 @@ out.digraph:reads.uncontained.bvv out.uncontained.overlaps
 
 out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
 	build-bidirected-string-graph $+ $@
+
+out.reduced.mapped.digraph:reads.bvv out.overlaps out.indices_map out.reduced.digraph
+	map-contained-reads reads.bvv out.overlaps out.indices_map \
+			    out.reduced.digraph out.reduced.mapped.digraph
 
 %.reduced.digraph:%.digraph
 	transitive-reduction $+ $@
