@@ -16,12 +16,22 @@
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{frametitle}[default][center]
 
+\newcommand{\ReadArrowType}{latex}
+
+\newcommand{\BidirectedEdgeForward}[2]{
+		\tikz[>=triangle 45,baseline]
+		\draw[>->,thin] (0,0.1) node[anchor=east] {#1} --
+					    (0.8,0.1) node[anchor=west] {#2};}
+
+\newcommand{\LengthVar}{L}
+
 \begin{document}
 \title{A Bidirected String Graph Model of Genome Assembly}
 \author{Eric Biggers}
 \institute{Macalester College}
 \date{December 5, 2012}
 %\titlegraphic{\includegraphics[width=\textwidth,clip=true,trim=0 300 0 500]{puzzle.jpg}}
+
 
 \frame{\titlepage}
 
@@ -125,6 +135,46 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]{Details of assembler input}
+	\begin{itemize}
+		\item The reads given to an assembler (my code, as well as most
+		other assemblers) as input can be in a simple plain-text format:
+	\end{itemize}
+	\begin{verbatim}
+	>read_1
+	AAATCGGCGCGTAAACAGGCAGCCAGCACCGCAGCA
+	>read_2
+	GAGTAGTCGGAACCGTTGCGTCCAAGCATTAGTGTA
+	>read_3
+	TAGCGGCCAGGATGCTTTACCCAATATCAGCGATGC
+	...
+	\end{verbatim}
+	\begin{itemize}
+		\item The assembler may use other DNA sequence representations
+		(e.g. a binary representation with 2 bits per base) internally.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Details of assembler output}
+	\begin{itemize}
+		\item Most assemblers can generate output in the same plain-text
+		format.
+		\item A {\bf contig} is a continuous sequence of DNA that was
+		assembled.  Ideally, each contig should be much longer than the
+		original reads.
+	\end{itemize}
+	\begin{verbatim}
+	>contig_1
+	GTTGCGAGATTTGGACGGACGTTGACGGGGTCTATACCTGCGACCCGCGTCA
+	GGTGCCCGATGCGAGGTTGTTGAAGTCGATGTCCTACCAGGAAGCGATGGAG
+	CTTTCCTACTTCGGCGCTAAAGTTCTTCACCCCCGCACCATTACCCCCATCG
+	CCCAGTTCCAGATCCCTTGCCTGATTAAAAATACCGGAAATCCTCAAGCACC
+	AGGTACGCTCATTGGTGCCAGCCGTGATGAAGACGAATTACCGGTCAAGGGC
+	ATTTCCAATCTGAATAACATGGCAATGTTCAGCGTTTCTGGTCCGGGGATGA
+	...
+	\end{verbatim}
+\end{frame}
+
 \begin{frame}{Genome assembly vs Shortest Common Substring}
 	Genome assembly is superficially similar to the shortest common superstring
 	(SCS) problem, which is to find the shortest string that contains all strings
@@ -152,18 +202,18 @@
 \end{frame}
 
 \begin{frame}{Overlaps between reads}
-	Consider two reads, $f$ and $g$, and their reverse complements $f'$ and $g'$.
+	Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and $g'$.
 	The reads $f$ and $g$ are said to {\bf exactly overlap} by some length
-	$\ell$ iff at least one of the following is true:
+	$\LengthVar$ iff at least one of the following is true:
 	\begin{itemize}
-		\item The last $\ell$ bp of $f$ exactly match the first $\ell$ bp of
-		$g$.
-		\item The last $\ell$ bp of $f$ exactly match the first $\ell$ bp of
-		$g'$.
-		\item The last $\ell$ bp of $f'$ exactly match the first $\ell$ bp of
-		$g$.
-		\item The last $\ell$ bp of $f'$ exactly match the first $\ell$ bp of
-		$g'$.
+		\item The last $\LengthVar$ bp of $f$ exactly match the first
+		$\LengthVar$ bp of $g$.
+		\item The last $\LengthVar$ bp of $f$ exactly match the first
+		$\LengthVar$ bp of $g'$.
+		\item The last $\LengthVar$ bp of $f'$ exactly match the first
+		$\LengthVar$ bp of $g$.
+		\item The last $\LengthVar$ bp of $f'$ exactly match the first
+		$\LengthVar$ bp of $g'$.
 	\end{itemize}
 	An exact overlap $o$ is fully described by the tuple $(f, g, f_{beg},
 	g_{beg}, len, rc)$.
@@ -179,9 +229,10 @@
 	\item Two reads that overlap are likely to come from adjacent positions on the genome.
 	\end{itemize}
 
-	{\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$ ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
-	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-		$\rightarrow$ \textcolor{red}{GCTGGTTACTT}TGATAGATA $\rightarrow$ } \\
+	{\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
+		ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
+	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\rightarrow$
+		\textcolor{red}{GCTGGTTACTT}TGATAGATA $\rightarrow$ } \\
 	{\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 
 	\begin{itemize}
@@ -189,10 +240,10 @@
 	overlapped regions are reverse-complement from each other.
 	\end{itemize}
 
-	{\tt Read 1: \ \ \ \ \ \ \ \ \ 
-			$\rightarrow$ ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
-	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-			$\leftarrow$ \textcolor{red}{CGACCAATGAA}ACTATCTAT $\leftarrow$ } \\
+	{\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
+		ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
+	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\leftarrow$
+		\textcolor{red}{CGACCAATGAA}ACTATCTAT $\leftarrow$ } \\
 	{\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 \end{frame}
 
@@ -200,7 +251,8 @@
 	\begin{enumerate}
 		\item ``Normal'' overlap
 			\begin{center}
-				\begin{tikzpicture}
+				\vspace{-0.5cm}
+				\begin{tikzpicture}[>=\ReadArrowType]
 					\draw[->,style=thick] (0,0) -- (2,0);
 					\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
 				\end{tikzpicture}
@@ -209,18 +261,24 @@
 				or (symmetrically)
 				\vspace{3mm}
 
-				\begin{tikzpicture}
+				\begin{tikzpicture}[>=\ReadArrowType]
 					\draw[->,style=thick] (2,0) -- (0,0);
 					\draw[->,style=thick] (3.0,0.3) -- (1.0,0.3);
 				\end{tikzpicture}
 			\end{center}
+		\vspace{0.5cm}
 		\item ``Innie'' overlap
-			\begin{center} \begin{tikzpicture}
+			\begin{center}
+				\vspace{-0.5cm}
+				\begin{tikzpicture}[>=\ReadArrowType]
 					\draw[->,style=thick] (0,0) -- (2,0);
 					\draw[->,style=thick] (3,0.3) -- (1,0.3);
 			\end{tikzpicture} \end{center}
-		\item ``Outtie'' overlap
-			\begin{center} \begin{tikzpicture}
+		\vspace{0.5cm}
+		\item ``Outie'' overlap
+			\begin{center}
+			\vspace{-0.5cm}
+			\begin{tikzpicture}[>=\ReadArrowType]
 					\draw[->,style=thick] (2,0) -- (0,0);
 					\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
 			\end{tikzpicture} \end{center}
@@ -230,12 +288,13 @@
 
 \begin{frame}{Computing overlaps}
 	\begin{itemize}
-		\item Goal: compute all pairwise overlaps of some minimum length $\ell$
-		among the reads.
+		\item Goal: compute all pairwise overlaps of some minimum length
+		$\LengthVar$ among the reads.
 		\item Naive algorithm compares every read with every other read ($N$
 		reads: $N^2$ time)
 		\item A faster algorithm indexes the reads by short subsequences, then
-		only compares reads that share a subsequence ("seed-and-extend").
+		only compares reads that share a subsequence
+		(``seed-and-extend'').
 		\item Overlaps may be exact, or they may allow for differences up to a
 		certain threshold.
 	\end{itemize}
@@ -246,7 +305,7 @@
 		\item Implementation: {\tt compute-overlaps}
 			\begin{itemize}
 				\item {\bf Input}:  A set of reads and the minimum overlap
-				length $\ell$
+				length $\LengthVar$
 				\item {\bf Output}:  All exact pairwise overlaps between reads,
 				including reverse-complement overlaps
 				\item {\bf Algorithm}:  Seed-and-extend
@@ -266,7 +325,7 @@
 				%%\ENDFOR
 			%%\ENDFOR
 			%%\FORALL{posList $\in h$}
-				%%\FORALL{$k$-mer pairs $k1$, $k2$ in 
+				%%\FORALL{$k$-mer pairs $k1$, $k2$ in
 			%%\ENDFOR
 		%\end{algorithmic}
 	%\end{algorithm}
@@ -274,7 +333,7 @@
 
 \begin{frame}{Build the fragment string assembly graph}
 	\begin{itemize}
-		
+
 		\item Use the overlaps to construct a graph modeling how the reads could
 		be put together
 		\item Make each read be a vertex
@@ -294,12 +353,12 @@
 		\item At this stage, we don't know which strands the reads are from!
 
 		\begin{center}
-			\begin{tikzpicture}
+			\begin{tikzpicture}[>=\ReadArrowType]
 				\draw[->,style=thick] (0,0) -- (2,0);
 				\draw[->,style=thick] (3,0.3) -- (1,0.3);
 			\end{tikzpicture}
 			\hspace{5mm}or\hspace{5mm}
-			\begin{tikzpicture}
+			\begin{tikzpicture}[>=\ReadArrowType]
 				\draw[->,style=thick] (0,0.3) -- (2,0.3);
 				\draw[->,style=thick] (3, 0) -- (1, 0);
 			\end{tikzpicture}
@@ -327,43 +386,43 @@
 		\begin{center}
 			\begin{tabular}{p{1cm}cccc}
 				{\footnotesize Overlap} &
-				\begin{tikzpicture}[scale=0.6]
+				\begin{tikzpicture}[scale=0.6,>=\ReadArrowType]
 						\draw[->,style=thick] (2,0) -- (0,0);
 						\draw[->,style=thick] (1,0.3) -- (3,0.3);
-				\end{tikzpicture} 
-				& 
-				\begin{tikzpicture}[scale=0.6]
-						\draw[->,style=thick] (0,0) -- (2,0);
-						\draw[->,style=thick] (3,0.3) -- (1,0.3);
-				\end{tikzpicture} 
-				& 
-				\begin{tikzpicture}[scale=0.6]
-						\draw[->,style=thick] (0,0) -- (2,0);
-						\draw[->,style=thick] (1,0.3) -- (3,0.3);
-				\end{tikzpicture} 
+				\end{tikzpicture}
 				&
-				\begin{tikzpicture}[scale=0.6]
+				\begin{tikzpicture}[scale=0.6,>=\ReadArrowType]
+						\draw[->,style=thick] (0,0) -- (2,0);
+						\draw[->,style=thick] (3,0.3) -- (1,0.3);
+				\end{tikzpicture}
+				&
+				\begin{tikzpicture}[scale=0.6,>=\ReadArrowType]
+						\draw[->,style=thick] (0,0) -- (2,0);
+						\draw[->,style=thick] (1,0.3) -- (3,0.3);
+				\end{tikzpicture}
+				&
+				\begin{tikzpicture}[scale=0.6,>=\ReadArrowType]
 						\draw[->,style=thick] (2,0) -- (0,0);
 						\draw[->,style=thick] (3,0.3) -- (1,0.3);
-				\end{tikzpicture} 
+				\end{tikzpicture}
 				\\
 				&$\downarrow$ & $\downarrow$& $\downarrow$& $\downarrow$ \\
 				{\footnotesize Bidirected edge} &
 				\begin{tikzpicture}[scale=0.6,>=triangle 45]
 						\draw[<->,style=thick] (0,0) -- (2,0);
-				\end{tikzpicture} 
-				& 
+				\end{tikzpicture}
+				&
 				\begin{tikzpicture}[scale=0.6,>=triangle 45]
 						\draw[>-<,style=thick] (0,0) -- (2,0);
-				\end{tikzpicture} 
-				& 
+				\end{tikzpicture}
+				&
 				\begin{tikzpicture}[scale=0.6,>=triangle 45]
 						\draw[>->,style=thick] (0,0) -- (2,0);
-				\end{tikzpicture} 
+				\end{tikzpicture}
 				&
 				\begin{tikzpicture}[scale=0.6,>=triangle 45]
 						\draw[<-<,style=thick] (0,0) -- (2,0);
-				\end{tikzpicture} 
+				\end{tikzpicture}
 			\end{tabular}
 		\end{center}
 
@@ -382,7 +441,8 @@
 		path), and vice versa.
 		\item A bidirected edge may be traversed in opposite directions during
 		the same walk.
-		\item The reverse of a walk in a directed graph is also a bidirected walk.
+		\item The reverse of a walk in a bidirected graph is also a
+		valid walk.
 		\item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
 		walks in the bidirected graph below.
 	\end{itemize}
@@ -414,9 +474,9 @@
 		\begin{tikzpicture}[>=triangle 45]
 			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
 			\node (1) at (0.00, 0) {1};
-			\node (2) at (1.75, 0) {2};
-			\node (3) at (3.50, 0) {3};
-			\node (4) at (5.25, 0) {4};
+			\node (2) at (2.0, 0) {2};
+			\node (3) at (4.0, 0) {3};
+			\node (4) at (6.0, 0) {4};
 			\draw[<->,very thick] (1) edge (2);
 			\draw[>-<,very thick] (2) edge (3);
 			\draw[<-<,very thick] (3) edge (4);
@@ -424,11 +484,11 @@
 
 		\vspace{2.5mm}
 
-		\begin{tikzpicture}
-				\draw[<-,style=very thick] (0.0, 0.0) -- (3.0, 0.0);
-				\draw[<-,style=very thick] (0.8, -0.3) -- (3.8, -0.3);
-				\draw[->,style=very thick] (1.6, -0.6) -- (4.6, -0.6);
-				\draw[<-,style=very thick] (2.4, -0.9) -- (5.4, -0.9);
+		\begin{tikzpicture}[>=\ReadArrowType]
+				\draw[<-,style=very thick] (0.0, 0.0) -- (4.0, 0.0);
+				\draw[<-,style=very thick] (1.2, -0.3) -- (5.2, -0.3);
+				\draw[->,style=very thick] (2.4, -0.6) -- (6.4, -0.6);
+				\draw[<-,style=very thick] (3.6, -0.9) -- (7.6, -0.9);
 				\draw (-0.3, 0.0) node {1.};
 				\draw (-0.3, -0.3) node {2.};
 				\draw (-0.3, -0.6) node {3.};
@@ -439,10 +499,6 @@
 	\end{figure}
 \end{frame}
 
-\newcommand{\BidirectedEdgeForward}[2]{
-		\tikz[>=triangle 45,baseline]
-		\draw[>->,thin] (0,0.1) node[anchor=east] {#1} --
-					    (0.8,0.1) node[anchor=west] {#2};}
 
 \begin{frame}{Transitive reduction}
 	\begin{itemize}
@@ -454,14 +510,14 @@
 		\begin{center}
 			\begin{tikzpicture}
 				\draw[->,style=very thick] (0,0) node[anchor=east] {f} -- (2,0);
-				\draw[->,style=very thick] (0.5,0.25) node[anchor=east] {g} -- (2.5,0.25);
-				\draw[->,style=very thick] (1.0,0.5) node[anchor=east] {h} -- (3,0.5);
+				\draw[->,style=very thick] (0.6,0.25) node[anchor=east] {g} -- (2.6,0.25);
+				\draw[->,style=very thick] (1.2,0.5) node[anchor=east] {h} -- (3.2,0.5);
 			\end{tikzpicture}
 			\begin{tikzpicture}[>=triangle 45]
 				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
 				\node (f) at (0, 0) {f};
-				\node (g) at (1.5, 0) {g};
-				\node (h) at (3, 0) {h};
+				\node (g) at (1.7, 0) {g};
+				\node (h) at (3.4, 0) {h};
 				\draw[>->,style=very thick] (f) edge (g);
 				\draw[>->,style=very thick] (g) edge (h);
 				\draw[>->,style=very thick,bend left] (f) edge (h);
@@ -469,7 +525,7 @@
 		\end{center}
 
 		\item Walks visiting more vertices are preferred because they are
-		supported by more reads, and the overlaps tend to be longer.  So, we
+		supported by more reads and the overlaps tend to be longer.  So, we
 		would like to throw away \BidirectedEdgeForward{$f$}{$h$} but keep
 		\BidirectedEdgeForward{$f$}{$g$} and \BidirectedEdgeForward{$g$}{$h$}.
 
@@ -479,15 +535,15 @@
 \end{frame}
 
 \begin{frame}{Transitive reduction (cont.)}
-		Transitive reduction algorithm:  Go through each vertex and examine
-		neighbors up to 2 steps away to identify all transitive edges leaving this
-		vertex.
+		Transitive reduction algorithm:  Go through each vertex $v$ and
+		examine vertices up to 2 edges away from $v$ to identify all
+		transitive edges leaving $v$.
 	\begin{algorithm}[H]
 		\caption{{\sc TransitiveReduction}($G$)}
 	{\footnotesize
 		\begin{algorithmic}
 			\FOR{{\bf each} vertex $v \in G$}
-				\STATE{Mark all neighbors of $v$ as {\tt INPLAY}.}
+				\STATE{Mark all neighbors of $v$ as {\tt INPLAY}}
 				\STATE{Set {\tt longest} $\gets$ length of the longest edge leaving $v$}
 				\FOR{{\bf each} edge $v \to w$ in order of length}
 					\FOR{{\bf each} edge $w \to x$ in order of length}
@@ -502,7 +558,7 @@
 				\ENDFOR
 				\STATE{Mark as transitive all edges $v \to x$ where $x$ is marked {\tt ELIMINATED}}
 			\ENDFOR
-			\STATE{Eliminate all edges marked transitive.}
+			\STATE{Eliminate all edges marked transitive}
 		\end{algorithmic}
 	}
 	\end{algorithm}
@@ -633,9 +689,9 @@ becomes:
 		%Bidirected string graph built from E. coli (4,639,675 bp) with uniformly sampled
 		%250bp reads with 125bp minimum overlap length.  (Graph shown after transitive
 		%reduction and collapsing unbranched paths)
-		
 
-		
+
+
 		%}
 	%\includegraphics{E_coli_full.pdf}
 	%\end{figure}
