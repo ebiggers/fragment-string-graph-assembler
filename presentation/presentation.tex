@@ -40,7 +40,7 @@
 	{\tt $\rightarrow$ CAACGATATTTATGCCCAGTACCATAAAATCATGGC $\rightarrow$}
 	\end{center}
 	\begin{itemize}
-		\item Each letter in the genome is called {\bf base pair} \\(abbreviation:
+		\item Each letter in the genome is called a {\bf base pair} \\(abbreviation:
 		{\bf bp})
 	\end{itemize}
 	\begin{table}[H]
@@ -96,7 +96,7 @@
 	\end{itemize}
 		{\scriptsize
 			{\tt 1.}
-			{\tt \color{red} $\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACA$\leftarrow$ }\\
+			\hspace*{-0.03cm}{\tt\color{red}$\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACA$\leftarrow$ }\\
 			{\tt 2.}
 			\hspace*{1.76cm}{\tt \color{red} $\leftarrow$TTATCTATCTTCAGACGACTATTATAGCGCGG$\leftarrow$}\\
 			{\tt G.}
@@ -152,9 +152,9 @@
 \end{frame}
 
 \begin{frame}{Overlaps between reads}
-	Consider two reads $f$ and $g$, and their reverse complements $f'$ and $g'$.
+	Consider two reads, $f$ and $g$, and their reverse complements $f'$ and $g'$.
 	The reads $f$ and $g$ are said to {\bf exactly overlap} by some length
-	$\ell$ if and only if at least one of the following is true:
+	$\ell$ iff at least one of the following is true:
 	\begin{itemize}
 		\item The last $\ell$ bp of $f$ exactly match the first $\ell$ bp of
 		$g$.
@@ -234,8 +234,8 @@
 		among the reads.
 		\item Naive algorithm compares every read with every other read ($N$
 		reads: $N^2$ time)
-		\item A faster algorithm indexes the reads by short subsequences, then only
-		compares reads that share a subsequence ("seed-and-extend").
+		\item A faster algorithm indexes the reads by short subsequences, then
+		only compares reads that share a subsequence ("seed-and-extend").
 		\item Overlaps may be exact, or they may allow for differences up to a
 		certain threshold.
 	\end{itemize}
@@ -374,22 +374,69 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Walking through the bidirected string graph}
+\begin{frame}{Walks on a bidirected graph}
 	\begin{itemize}
 		\item A {\bf walk on a bidirected graph} is a continuous sequence of
 		edges such that if any vertex $v$ is entered through a head inwards, it
 		is left on a head outwards (unless it is the end of the path), and vice
 		versa.
-
 		\item A bidirected edge may be traversed in opposite directions during
 		the same walk.
-
 		\item The reverse of a walk in a directed graph is also a bidirected walk.
-
-		\item Interpretation: one direction of the walk spells out the {\bf
-		forward sequence}.  The other direction spells out the {\bf reverse
-		complement sequence.}
+		\item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
+		walks in the bidirected graph below.
 	\end{itemize}
+		\begin{center} {\small
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (1) at (0.00, 0) {1};
+			\node (2) at (1.75, 0) {2};
+			\node (3) at (3.50, 0) {3};
+			\node (4) at (5.25, 0) {4};
+			\draw[<->,very thick] (1) edge (2);
+			\draw[>-<,very thick] (2) edge (3);
+			\draw[<-<,very thick] (3) edge (4);
+		\end{tikzpicture} } \end{center}
+\end{frame}
+
+\begin{frame}{Walking through the bidirected string graph}
+	\begin{itemize}
+		\item A walk through a bidirected string graph constructed from read
+		overlaps models a way in which the reads can be assembled together
+		consistently.
+
+		\item Each read may be used in forward or reverse-complement
+		orientation, depending on the orientation of the arrow head when the
+		corresponding vertex is entered.
+	\end{itemize}
+	\begin{figure}[H]
+		{\small
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (1) at (0.00, 0) {1};
+			\node (2) at (1.75, 0) {2};
+			\node (3) at (3.50, 0) {3};
+			\node (4) at (5.25, 0) {4};
+			\draw[<->,very thick] (1) edge (2);
+			\draw[>-<,very thick] (2) edge (3);
+			\draw[<-<,very thick] (3) edge (4);
+		\end{tikzpicture} }
+
+		\vspace{2.5mm}
+
+		\begin{tikzpicture}
+				\draw[<-,style=very thick] (0.0, 0.0) -- (3.0, 0.0);
+				\draw[<-,style=very thick] (0.8, -0.3) -- (3.8, -0.3);
+				\draw[->,style=very thick] (1.6, -0.6) -- (4.6, -0.6);
+				\draw[<-,style=very thick] (2.4, -0.9) -- (5.4, -0.9);
+				\draw (-0.3, 0.0) node {1.};
+				\draw (-0.3, -0.3) node {2.};
+				\draw (-0.3, -0.6) node {3.};
+				\draw (-0.3, -0.9) node {4.};
+		\end{tikzpicture}
+		\caption{A bidirected graph and the implied assembly of the
+		corresponding reads}
+	\end{figure}
 \end{frame}
 
 \newcommand{\BidirectedEdgeForward}[2]{
@@ -399,9 +446,10 @@
 
 \begin{frame}{Transitive reduction}
 	\begin{itemize}
-		\item Very commonly, given three adjacent reads $f$, $g$, and $h$, $f$ will overlap
-		$h$ as well as $g$.  This is redundant information because we can equivalently
-		walk $f$ to $g$ to $h$ (or $h$ to $g$ to $f$, if going the other way).
+		\item Very commonly, given three adjacent reads $f$, $g$, and $h$, $f$
+		will overlap $h$ as well as $g$.  This is redundant because we can,
+		equivalently, walk $f$ to $g$ to $h$ rather than directly walking from
+		$f$ to $h$.
 
 		\begin{center}
 			\begin{tikzpicture}
@@ -452,9 +500,9 @@
 						\STATE{Mark $x$ as {\tt ELIMINATED}}
 					\ENDFOR
 				\ENDFOR
-				\STATE{Eliminate all edges $v \to w$ where $w$ is marked {\tt ELIMINATED}}
+				\STATE{Mark as transitive all edges $v \to x$ where $x$ is marked {\tt ELIMINATED}}
 			\ENDFOR
-			\STATE{Eliminate all edges marked {\tt ELIMINATED}}
+			\STATE{Eliminate all edges marked transitive.}
 		\end{algorithmic}
 	}
 	\end{algorithm}
@@ -508,8 +556,8 @@ becomes:
 
 \begin{frame}{Current state of the graph}
 	\begin{itemize}
-		\item Non-repetitive genomes and/or long reads: The assembly probably is
-		already complete!
+		\item Non-repetitive genomes and/or long reads: The assembly is already
+		complete!
 	\end{itemize}
 
 	\vspace{1cm}
@@ -534,9 +582,10 @@ becomes:
 	\begin{itemize}
 		\item Repetitive genomes and/or short reads: The graph will still be
 		very complicated.
-		\item Swap out that 4,600,000 with {\it E. coli}'s genome, which
-		contains some repeats, and we get a complicated graph, {\bf even after
-		increasing the read length to 1000bp}:
+		\item Swap out the 4.6 Mbp random genome with {\it E. coli}'s genome,
+		which is the same size but contains some repeats, and we get a
+		complicated graph, {\bf even after increasing the read length to
+		1000bp}:
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{E_coli.pdf}
@@ -552,11 +601,11 @@ becomes:
 		\item Solution: Identify edges that may need to be traversed more than
 		once, then solve a minimum-cost network flow problem to find the minimum
 		number of edges that need to be traversed multiple times in order to
-		find
+		make an Eulerian path.
 		\item This is also similar to the Chinese Postman Problem, but this is a
 		{\it bidirected graph}, and we are also okay with the final
 		reconstruction of the genome still being discontinuous, rather than a
-		single path.
+		single path (if necessary).
 	\end{itemize}
 \end{frame}
 
