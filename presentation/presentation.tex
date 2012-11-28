@@ -198,7 +198,7 @@
 
 \begin{frame}{Three types of overlaps}
 	\begin{enumerate}
-		\item ``normal'' overlap
+		\item ``Normal'' overlap
 			\begin{center}
 				\begin{tikzpicture}
 					\draw[->,style=thick] (0,0) -- (2,0);
@@ -214,12 +214,12 @@
 					\draw[->,style=thick] (3.0,0.3) -- (1.0,0.3);
 				\end{tikzpicture}
 			\end{center}
-		\item ``innie'' overlap
+		\item ``Innie'' overlap
 			\begin{center} \begin{tikzpicture}
 					\draw[->,style=thick] (0,0) -- (2,0);
 					\draw[->,style=thick] (3,0.3) -- (1,0.3);
 			\end{tikzpicture} \end{center}
-		\item ``outtie'' overlap
+		\item ``Outtie'' overlap
 			\begin{center} \begin{tikzpicture}
 					\draw[->,style=thick] (2,0) -- (0,0);
 					\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
@@ -250,10 +250,10 @@
 				\item {\bf Output}:  All exact pairwise overlaps between reads,
 				including reverse-complement overlaps
 				\item {\bf Algorithm}:  Seed-and-extend
-				\item {\bf Running time}: Linear with regards to genome length for
-				non-repetitive genomes; quadratic with regards to read density;
-				quadratic with regards to the number of times a sequence of DNA
-				is repeated in the genome
+				\item {\bf Running time}: Linear with respect to genome length
+				for non-repetitive genomes; quadratic with respect to read
+					density; quadratic with respect to the number of times a
+					sequence of DNA is repeated in the genome
 			\end{itemize}
 	\end{itemize}
 	%\begin{algorithm}[H]
@@ -311,7 +311,7 @@
 		\item Therefore, we must allow the edges to be traversed in either
 		direction.
 		\item However, each read must still be used in a consistent way within
-		any single reconstruction.
+		any single assembly.
 		\item Solution: use a {\bf bidirected graph}.
 	\end{itemize}
 \end{frame}
@@ -374,12 +374,12 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Walks on a bidirected graph}
+\begin{frame}{Walks in a bidirected graph}
 	\begin{itemize}
-		\item A {\bf walk on a bidirected graph} is a continuous sequence of
-		edges such that if any vertex $v$ is entered through a head inwards, it
-		is left on a head outwards (unless it is the end of the path), and vice
-		versa.
+		\item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
+		edges in $G$ such that if any vertex $v$ is entered through a head
+		inwards, it is left on a head outwards (unless it is the end of the
+		path), and vice versa.
 		\item A bidirected edge may be traversed in opposite directions during
 		the same walk.
 		\item The reverse of a walk in a directed graph is also a bidirected walk.
@@ -494,7 +494,7 @@
 						\IF{$x$ is not marked {\tt INPLAY}}
 							\STATE{\bf continue}
 						\ENDIF
-						\IF{$len(v \to w) + len(w \to x) \ge$ {\tt longest}}
+						\IF{$len(v \to w) + len(w \to x) > $ {\tt longest}}
 							\STATE{\bf break}
 						\ENDIF
 						\STATE{Mark $x$ as {\tt ELIMINATED}}
@@ -572,7 +572,7 @@ becomes:
 			\end{tikzpicture} }
 		\end{tikzpicture}
 		\caption{
-			Bidirected string graph for reads uniformly sampled from a 4.6 Mb
+			Bidirected string graph for reads uniformly sampled from a 4.6 Mbp
 			random genome after transitive reduction and path collapsing.  (Edge
 			labeled with length of sequence)}
 	\end{figure}
