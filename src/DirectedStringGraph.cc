@@ -214,6 +214,7 @@ void DirectedStringGraph::transitive_reduction()
 
 void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 						 std::vector<bool> & remove_edge,
+						 std::vector<bool> & remove_vertex,
 						 const std::vector<bool> & v_inner)
 {
 	BaseVecVec::size_type new_seq_len = e.length();
@@ -250,6 +251,7 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 		}
 		e.increment_mapped_read_count(ei_i1.get_mapped_count());
 		remove_edge[ei_i1_idx] = true;
+		remove_vertex[vi_idx] = true;
 		vi_idx = ei_i1.get_v2_idx();
 	} while (v_inner[vi_idx]);
 	assert(new_seq_len == seq_idx);
@@ -303,6 +305,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	//
 	size_t num_unbranched_paths = 0;
 	std::vector<bool> remove_edge(n_edges, false);
+	std::vector<bool> remove_vertex(n_verts, false);
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 		if (!v_inner[v_idx]) {
 			const DirectedStringGraphVertex & v = _vertices[v_idx];
@@ -310,7 +313,8 @@ void DirectedStringGraph::collapse_unbranched_paths()
 				DirectedStringGraphEdge & e = _edges[edge_idx];
 				if (v_inner[e.get_v2_idx()]) {
 					num_unbranched_paths++;
-					follow_unbranched_path(e, remove_edge, v_inner);
+					follow_unbranched_path(e, remove_edge,
+							       remove_vertex, v_inner);
 				}
 			}
 		}
@@ -323,7 +327,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 						  std::numeric_limits<v_idx_t>::max());
 	v_idx_t new_v_idx = 0;
 	for (v_idx_t old_v_idx = 0; old_v_idx < n_verts; old_v_idx++)
-		if (!v_inner[old_v_idx])
+		if (!remove_vertex[old_v_idx])
 			old_to_new_v_indices[old_v_idx] = new_v_idx++;
 
 	info("Updated vertices are indexed [0, %lu)", new_v_idx);
@@ -349,8 +353,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	}
 	info("Updated edges are indexed [0, %lu)", new_edge_idx);
 	info("%zu edges were removed (%f%% of total)",
-	     _edges.size() - new_edge_idx,
-	     (_edges.size() ? 100.0 * (_edges.size() - new_edge_idx) / _edges.size() : 0));
+	     TO_PERCENT(_edges.size() - new_edge_idx, _edges.size()));
 
 	_edges.resize(new_edge_idx);
 

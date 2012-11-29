@@ -215,6 +215,7 @@ public:
 private:
 	void follow_unbranched_path(DirectedStringGraphEdge & e,
 				    std::vector<bool> & remove_edge,
+				    std::vector<bool> & remove_vertex,
 				    const std::vector<bool> & v_inner);
 	void mark_component(const v_idx_t v_idx,
 			    std::vector<bool> & visited,
