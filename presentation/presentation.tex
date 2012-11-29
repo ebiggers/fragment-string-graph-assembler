@@ -216,8 +216,8 @@
 		\item The last $\LengthVar$ bp of $f'$ exactly match the first
 		$\LengthVar$ bp of $g'$.
 	\end{itemize}
-	An exact overlap $o$ is fully described by the tuple $(f, g, f_{begin},
-	g_{begin}, L, rc)$.
+	An overlap $o$ is fully described by the 7-tuple $(f, g, f_{begin}, f_{end},
+	g_{begin}, g_{end}, rc)$.
 	%there $f$ and $g$ are the reads of the overlap,
 	%$f_{beg}$ and $g_{beg}$ and the starting position of the overlap on each
 	%read, $len$ is the length of the overlap, and $rc$ indicates whether the
@@ -376,7 +376,7 @@
 			\end{itemize}
 		\end{multicols}
 	\end{itemize}
-	\begin{tabular}{ccp{3.3cm}}
+	\begin{tabular}{ccp{3.4cm}}
 		{\small Undirected graph?}
 			&
 			\begin{tikzpicture}[>=triangle 45]
@@ -389,8 +389,8 @@
 				\draw[-,style=very thick,bend left] (f) edge (h);
 			\end{tikzpicture}
 			& 
-			\vspace{-0.8cm}
-			{\footnotesize No; nothing indicates we can't walk \mbox{$g \to h \to
+			\vspace{-1.1cm}
+			{\footnotesize Not what we want; nothing indicates we can't walk \mbox{$g \to h \to
 			f$}.}
 			\\
 		{\small Directed graph?}
@@ -407,7 +407,7 @@
 			&
 			\vspace{-0.8cm}
 			{\footnotesize
-				No; this doesn't allow the walks $h \to g \to f$ and $h \to f$.}
+				Not what we want; this doesn't allow the walks $h \to g \to f$ and $h \to f$.}
 			\\
 	\end{tabular}
 \end{frame}
@@ -576,11 +576,45 @@
 	\end{figure}
 \end{frame}
 
-%\begin{frame}{Walking through the bidirected string graph (cont.)}
-	%\begin{minipage}{0.5\textwidth}
-		%\begin{tikz
-	%\end{minipage}
-%\end{frame}
+\begin{frame}{Walking through the bidirected string graph (cont.)}
+	\vspace{-0.7cm}
+	\begin{center}
+		\begin{tabular}{p{3.4cm}c}
+			\vspace{-0.4cm}
+			{\small a.) A bidirected string graph fragment} &
+			\begin{tikzpicture}[>=triangle 45,scale=1.5]
+				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+				\node (f) at (0, 0) {f};
+				\node (g) at (1.7, 0) {g};
+				\draw[>->,style=very thick] (f) edge (g);
+			\end{tikzpicture}
+			\\
+			\vspace{-1.5cm}
+			{\small b.) The corresponding overlap (labeled)} &
+			\begin{tikzpicture}[>=\ReadArrowType,scale=0.8]
+				\draw[->,very thick] (0, 0) node[anchor=east] {$f.B$}
+						-> (4, 0) node[anchor=west] {$f.E$};
+				\draw[->,very thick] (2, -0.7) node[anchor=east] {$g.B$}
+						-> (6, -0.7) node[anchor=west] {$g.E$};
+				\draw (2, -1.05) node[anchor=north] {$o.g_{begin}$}
+						-- (2, 0.35) node[anchor=south] {$o.f_{begin}$};
+				\draw (4, -1.05) node[anchor=north] {$o.g_{end}$}
+						-- (4, 0.35) node[anchor=south] {$o.f_{end}$};
+			\end{tikzpicture}
+		\end{tabular}
+	\end{center}
+	\begin{tabular}{c|c}
+		walk & interpretation \\ \hline
+		$f \to g$ & $f.E \to g.E$ with sequence $g[o.g_{end} + 1 \dots ${\tt
+		length}$(g)]$ \\
+		$g \to f$ & $g.B \to f.B$ with sequence $f[o.g_{begin} - 1 \dots 0]$ \\
+	\end{tabular}
+	\vspace{0.5cm}
+	\begin{itemize}
+		\item If we take {\bf each end} of {\bf each read} as a vertex, we can
+		make a directed graph equivalent to the bidirected graph.
+	\end{itemize}
+\end{frame}
 
 \begin{frame}{Transitive reduction}
 	\begin{itemize}
