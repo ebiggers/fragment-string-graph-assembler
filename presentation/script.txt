@@ -6,20 +6,20 @@ to genome assembly.
 == Genomes ==
 
 So first of all, what is a genome?  Biologically, a genome is the genetic
-material of an organism, almost always encoded in DNA molecules.  But for our
-purposes, a genome is simply a long string of four possible letters: A, C, G,
-and T.
+material of an organism, and it's almost always encoded in DNA molecules.  For
+our purposes, a genome is a long string of four possible letters: A, C, G, and
+T, which represent the four nucleotides of DNA.
 
-DNA is a dual-stranded molecule, and unfortunately this is not something that
-can be ignored, so we must actually consider a genome to be a dual-stranded
-string.  The letter A always pairs with the letter T on the opposite strand, and
-the letter C always pairs with the letter G on the opposite strand.  Also, each
-strand has a direction, and the directions of the two strands are opposite one
-another.
+However, DNA is also a dual-stranded molecule, and unfortunately this is not
+something that can be ignored, so we must actually consider a genome to be a
+dual-stranded string.  The letter A always pairs with the letter T on the
+opposite strand, and the letter C always pairs with the letter G on the opposite
+strand.  Also, each strand has a direction, and the directions of the two
+strands are opposite one another.
 
-Each letter in the genome is called a base pair.  This term is used even if only
-one strand is being looked at, since there is always an implied base on the
-other strand.
+Each letter in the genome is called a base pair.  This term is often used even
+if only one strand is being looked at, since there is always an implied base on
+the other strand.  
 
 With regards to the size of these strings, bacterial genomes tend to be several
 million base pairs long, while plant and animal genomes tend to be several
@@ -56,11 +56,12 @@ read 3 is taken from the lower strand and is directed left to right.
 
 == Genome assembler ==
 
-A genome assembler is a program or algorithm that can take in a set of reads,
-usually 35 to 5000 bp long, and produce as output the reconstructed genome.
-Ideally, the genome would output the entire original genome, but in reality,
-this may be impossible, so in this case the output should take the form of a set
-of substrings of the original genome that are as long as possible.
+Genome assembly is done by a program called an assembler, which  is a program or
+algorithm that can take in a set of reads, usually 35 to 5000 bp long, and
+produce as output the reconstructed genome.  Ideally, the assembler would output
+the entire original genome as one continuous sequence, but in reality, this may
+be impossible, so in this case the output should take the form of a set of
+substrings of the original genome that are as long as possible.
 
 == Details of assembler input ==
 
@@ -73,7 +74,7 @@ only 2 bits are needed to represent each base pair.
 == Details of assembler output ==
 
 An assembler is expected to generate output in a similar format to the input,
-but the sequences will be contigs, with are assembled, contiguous sequences of
+but the sequences will be contigs, which are assembled, contiguous sequences of
 DNA that are believed to exist in the original genome.  Each contig should be as
 long as possible.
 
@@ -104,10 +105,10 @@ enough to need entirely new algorithms to solve.
 
 == An algorithm for genome assembly ==
 
-I will be focusing this presentation on one assembly algorithm that provides a
-good overview of some of the techniques that are used in genome assembly.  This
-algorithm was published in 2005, although it uses many ideas that already
-existed before then.
+For this presentation, I will be focusing on one assembly algorithm that
+provides a good overview of some of the techniques that are used in genome
+assembly.  This algorithm was published in 2005, although it uses a number of
+ideas that already existed before then.
 
 Here I've condensed the overall algorithm into three steps.  The first step is
 to use overlaps between reads to build a graph that models the assembly problem.
@@ -118,10 +119,10 @@ graph need to be found to reconstruct the original sequence.
 
 As mentioned, the algorithm uses the idea of overlaps between reads.  If we
 consider two reads, f and g, and their reverse-complements f' and g', the reads
-exactly overlap by some length if and only of
-	the last L base pairs of f exactly match the first L base pairs of g,
-	the last L base pairs of f exactly match the first L base pairs of g',
-	the last L base pairs of f' exactly match the first L base pairs of g,
+are said to exactly overlap by some length L if and only of
+	the last L base pairs of f exactly match the first L base pairs of g, or
+	the last L base pairs of f exactly match the first L base pairs of g', or
+	the last L base pairs of f' exactly match the first L base pairs of g, or
 	the last L base pairs of f' exactly match the first L base pairs of g'
 
 The reason there are four cases is because of the possibility of the overlaps
@@ -133,6 +134,9 @@ start of the overlapped region, g beg is the position in read g of the start of
 the overlapped region, len is the length of the overlap, and rc is a boolean
 that indicates whether the overlap is reverse-complement or not.
 
+It is possible, although rare, for a read to overlap with itself.  This can
+happen if the prefix of the read is the same as the suffix of the read.
+
 == Overlaps between the reads ==
 
 The reason that overlaps are important is that two reads that overlap are likely
@@ -141,4 +145,153 @@ reads and the implied possible genome.
 
 Overlapping reads may be from different strands, in which case the overlapped
 regions are reverse-complement from each other.
+
+== Three types of overlaps ==
+
+If we consider all the cases, there are 3 different types of overlaps.  In a
+normal overlap, the two reads overlap when they are arranged in the same
+direction.  In an "innie" overlap, the two reads overlap when they are arranged
+pointing inwards.  And in an "outie" overlap, the two reads overlap when they
+are arranged pointing outwards.
+
+== Computing overlaps ==
+
+Now that we've formalized the idea of an overlap, we would like to compute *all*
+the pairwise overlaps of some minimum length L among all the reads that were
+given to the assembler as input.
+
+The easy way to do this is to take every read and compare it to every other read
+to check for each of the three types of overlaps.  Unfortunately, this algorithm
+is very naive because if there are N reads, then N squared over 2 read pairs
+need to be considered, which is simply too slow if we have millions of reads.
+
+A faster algorithm is to index the reads by short subsequences less than the
+required overlap length L, then only compare reads that share a subsequence.
+More specifically, each shared subsequence is called a seed, and it may be
+either forward or reverse-complement.  Given two reads and a seed shared by
+both, the seed can be extended on both ends to find a maximal shared subsequence
+of the two reads.  If the maximal shared subsequence meets the definition of an
+overlap and the same overlap was not already found, it is added to the set of
+overlaps.
+
+And finally, so far I have only been talking about exact overlaps, but it is
+also possible to compute approximate overlaps, where the overlapped region may
+have differences up to a certain threshold, such as 2%.  This is designed to
+accomodate errors in the DNA sequencing.
+
+== Computing overlaps ==
+
+So as one of the first parts of my project, I implemented a program to compute
+overlaps.  It takes as input a set of reads and the desired minimum overlap
+length L.  It produces as output all exact pairwise overlaps of length L or
+greater between reads, including self-overlaps and reverse-complement overlaps.
+
+The algorithm used is the seed-and-extend algorithm, which makes the running
+time linear with regard to genome size for non-repetitive genomes, but other
+variables such as the read density and repetitiveness of the genome still can
+cause the running time to rise quadratically.
+
+== Build the fragment string assembly graph ==
+
+So now we have a set of reads together with all the overlaps between them.  The
+next step in the algorithm is to use these overlaps to build a graph that models
+the different ways in which the reads can be put together when the overlaps are
+used as evidence.
+
+To do this, define a graph in which each vertex is a read, and each edge is an
+overlap.  Two reads are connected by an edge if and only if they share an
+overlap.  The edges are also labeled with appropriate DNA sequences based on the
+overlaps.  Since each edge is labeled with a string, this makes the graph a
+string graph.
+
+Now, there's still an essential point that needs to be addressed to fully
+specify the graph, and that is whether the edges are directed or undirected ---
+or something else.
+
+== Build the fragment string assembly graph (cont.) ==
+
+Well, in order to decide what type of edges we need, we need to think about what
+the edges really represent here.  An edge represents an overlap between two
+reads--- but we do NOT know which strands the reads are from.  Based on an
+overlap, we may know that two reads are probably from the same strand or
+probably from opposite strands, but at this point in the assembly process we
+cannot say in absolute terms which strand in the original genome each read is
+from.
+
+Therefore, we must allow each read to be used in either the forward or
+reverse-complement direction, each of which corresponds to one of the directions
+in which the edge will be traversed.  So it needs to be possible to traverse
+each edge in either direction.  At the same time, it needs to be guaranteed that
+an edge leaving the vertex for some read f that uses f with an implied
+reverse-complement direction cannot be taken directly after an edge that arrives
+at f using it with an implied forward direction, or vice versa.  Such a path
+would use the read f inconsistently in the assembly, and such a path would not
+actually be supported by the underlying reads.
+
+The solution to this problem is to use a graph that has bidirected edges.
+
+== Bidirected graph ==
+
+A bidirected graph is a graph where a directed head is attached to both ends of
+each edge.
+
+There are 3 types of bidirected edges (or 4 if you count the two symmetrical
+edges as distinct).  They follow directly from the types of overlaps.  On the
+far left, on outie overlap produces a corresponding outie bidirected edge.
+Center left, an innie overlap produces a corresponding innie bidirected edge.
+And to the right, the normal overlaps produce bidirected edges with both arrow
+heads pointed the same way.
+
+== Walks in a bidirected graph ==
+
+To get any farther, we also need to formalize the notion of a walk in a
+bidirected graph.  A walk in a bidirected graph G is a continuous sequence of
+edges in G such that if an inner vertex on the path is entered through a head
+inwards, it is left on a head outwards, and vice versa.  To see what I mean by
+this, consider the graph shown at the bottom of the slide, and consider the
+possible walk 1 2 3 4.  To determine if this walk is valid or not, consider all
+vertices of the walk except the first and last, for each such vertex, examine
+the two heads adjacent to it that are used in the corresponding part of the
+walk.  If those two heads are pointed in the same direction *on the walk*, or
+equivalently in opposite directions *relative to the vertex they're adjacent
+to*, that part of the walk is allowed.
+
+In this graph, the red circles show two pairs of heads that each must be
+consistent in order for the walk to be valid.  In this particular example, this
+is a valid walk.  In addition, nothing in this definition depends on the actual
+direction of the walk itself--- so 4 3 2 1 is also a valid walk.  The reverse of
+a bidirected walk will always be a valid bidirected walk.
+
+/*and consider a walk*/
+/*starting at vertex 1.  Since this is the first vertex in the walk, we can walk*/
+/*along any adjacent edge no matter what the directions of the two heads of the*/
+/*edge are.  After we've arrived at vertex 2, note that it was entered through an*/
+/*inward head.  This is referring to the head on the edge between 1 and 2 that is*/
+/*directly adjacent to 2.  This inward head places a restriction on the edges we*/
+/*can follow leaving 2; the walk can only be continued by following an edge that*/
+/*begins with a head pointed away from vertex 2.  The edge between 2 and 3 meets*/
+/*this requirement, so we can walk to 3.  Then, notice that vertex 3 was entered*/
+/*through an outward head, so it can only be left through an inward head.  The*/
+/*edge between 3 and 4 meets this requirement, so the walk can proceed to 4.*/
+
+== Walking through the bidirected string graph ==
+
+Remember that we want to make each vertex in the graph correspond to a read, and
+each edge correspond to an overlap between two reads.  Given the
+dual-strandedness of the DNA, the mapping to a bidirected graph works very
+nicely.  A walk, as defined previously, through such a bidirected graph
+represents a way in which a set of reads can be assembled together consistently.
+Within any such assembly, each read may be used in either forward or
+reverse-complement orientation, depending on the orientation of the arrow head
+when the corresponding vertex is entered or left.
+
+As an example, consider the graph shown, which is the same as the graph on the
+previous slide.  If we do a walk 1 2 3 4, we leave vertex 1 through an inward
+head, indicating that it is being used in reverse-complement orientation.  We
+then pass through vertex 2 with the arrow heads in the direction of the path,
+indicating it's used in a forward orientation.  Vertex 3 is passed through with
+the arrow heads in the opposite direction of the path, indicating that the
+corresponding read is used in the reverse-complement orientation.  Finally,
+vertex 4 is entered through an outward hea
+
 

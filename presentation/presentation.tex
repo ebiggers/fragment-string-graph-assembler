@@ -175,7 +175,7 @@
 	\end{verbatim}
 \end{frame}
 
-\begin{frame}{Genome assembly vs Shortest Common Substring}
+\begin{frame}{Genome assembly vs Shortest Common Superstring}
 	Genome assembly is superficially similar to the shortest common superstring
 	(SCS) problem, which is to find the shortest string that contains all strings
 	from a given set.
@@ -215,8 +215,8 @@
 		\item The last $\LengthVar$ bp of $f'$ exactly match the first
 		$\LengthVar$ bp of $g'$.
 	\end{itemize}
-	An exact overlap $o$ is fully described by the tuple $(f, g, f_{beg},
-	g_{beg}, len, rc)$.
+	An exact overlap $o$ is fully described by the tuple $(f, g, f_{begin},
+	g_{begin}, L, rc)$.
 	%there $f$ and $g$ are the reads of the overlap,
 	%$f_{beg}$ and $g_{beg}$ and the starting position of the overlap on each
 	%read, $len$ is the length of the overlap, and $rc$ indicates whether the
@@ -339,7 +339,8 @@
 		\item Make each read be a vertex
 		\item Make each edge be an overlap
 		\begin{itemize}
-			\item Two reads are connected with an edge iff they share an overlap.
+			\item Two vertices are connected with an edge iff the
+			corresponding reads share an overlap.
 		\end{itemize}
 		\item Label each edge with an appropriate DNA sequence; this makes the
 		graph a {\bf string graph}.
@@ -439,31 +440,34 @@
 		edges in $G$ such that if any vertex $v$ is entered through a head
 		inwards, it is left on a head outwards (unless it is the end of the
 		path), and vice versa.
-		\item A bidirected edge may be traversed in opposite directions during
-		the same walk.
+		\item A bidirected edge may be traversed in both directions
+		(possibly even during the same walk).
 		\item The reverse of a walk in a bidirected graph is also a
 		valid walk.
 		\item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
-		walks in the bidirected graph below.
+		walks in the bidirected graph below.  (Check circled pairs of
+		heads.)
 	\end{itemize}
 		\begin{center} {\small
 		\begin{tikzpicture}[>=triangle 45]
 			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
 			\node (1) at (0.00, 0) {1};
-			\node (2) at (1.75, 0) {2};
-			\node (3) at (3.50, 0) {3};
-			\node (4) at (5.25, 0) {4};
+			\node (2) at (2.00, 0) {2};
+			\node (3) at (4.00, 0) {3};
+			\node (4) at (6.00, 0) {4};
 			\draw[<->,very thick] (1) edge (2);
 			\draw[>-<,very thick] (2) edge (3);
 			\draw[<-<,very thick] (3) edge (4);
+			\draw[color=red,thick] (2.00, 0) circle (0.8);
+			\draw[color=red,thick] (4.00, 0) circle (0.8);
 		\end{tikzpicture} } \end{center}
 \end{frame}
 
 \begin{frame}{Walking through the bidirected string graph}
 	\begin{itemize}
-		\item A walk through a bidirected string graph constructed from read
-		overlaps models a way in which the reads can be assembled together
-		consistently.
+		\item A walk through a bidirected string graph constructed from
+		reads and overlaps models a way in which the reads can be
+		assembled together consistently.
 
 		\item Each read may be used in forward or reverse-complement
 		orientation, depending on the orientation of the arrow head when the
@@ -486,8 +490,8 @@
 
 		\begin{tikzpicture}[>=\ReadArrowType]
 				\draw[<-,style=very thick] (0.0, 0.0) -- (4.0, 0.0);
-				\draw[<-,style=very thick] (1.2, -0.3) -- (5.2, -0.3);
-				\draw[->,style=very thick] (2.4, -0.6) -- (6.4, -0.6);
+				\draw[->,style=very thick] (1.2, -0.3) -- (5.2, -0.3);
+				\draw[<-,style=very thick] (2.4, -0.6) -- (6.4, -0.6);
 				\draw[<-,style=very thick] (3.6, -0.9) -- (7.6, -0.9);
 				\draw (-0.3, 0.0) node {1.};
 				\draw (-0.3, -0.3) node {2.};
