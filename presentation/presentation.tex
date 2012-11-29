@@ -8,6 +8,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 \usepackage{multicol}
+\usepackage{grffile}
 
 \usetikzlibrary{arrows}
 
@@ -764,6 +765,33 @@ becomes:
 	\end{center}
 \end{frame}
 
+%make -B SAMPLE_SIZE=450 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf GENOME=rep.fa COVERAGE=5
+
+\begin{frame}{Another example}
+	\begin{figure}[H]
+		\includegraphics[scale=0.25]{example.bidigraph-crop.pdf}	
+		\caption{Bidirected string graph built from 100 bp reads sampled
+		randomly at 5 $\times$ coverage from a 450 bp genome, using minimum 25
+		bp overlaps.  Note: edges are labeled with their lengths, not DNA
+		sequences.}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Another example (cont.)}
+	\begin{figure}[H]
+		\includegraphics[scale=0.7]{example.reduced.mapped.bidigraph-crop.pdf}	
+		\caption{The bidirected string graph from the previous slide, after
+		transitive reduction.}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Another example (cont.)}
+	\begin{figure}[H]
+		\includegraphics[scale=0.7]{example.reduced.mapped.collapsed.bidigraph-crop.pdf}	
+		\caption{The bidirected string graph from the previous slide, after
+		collapsing unbranched paths.}
+	\end{figure}
+\end{frame}
 
 \begin{frame}{Next steps}
 	\begin{itemize}
