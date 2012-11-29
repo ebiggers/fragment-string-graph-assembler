@@ -76,6 +76,7 @@ public:
 	DISPATCH0(collapse_unbranched_paths);
 	DISPATCH1(print_stats, std::ostream &);
 	DISPATCH1(write, const char *);
+	DISPATCH1(extract_edge_seqs, BaseVecVec &);
 	DISPATCH2(print, std::ostream &, bool);
 	DISPATCH2(print_dot, std::ostream &, bool);
 	DISPATCH3(map_contained_read, size_t, size_t, size_t);

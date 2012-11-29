@@ -244,4 +244,10 @@ public:
 		}
 	}
 
+	void extract_edge_seqs(BaseVecVec & bvv)
+	{
+		foreach (DirectedStringGraphEdge & e, _edges) {
+			bvv.push_back(e.get_seq());
+		}
+	}
 };

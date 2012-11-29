@@ -301,8 +301,15 @@ public:
 		_vertices[v2_idx].add_edge_idx(edge_idx);
 	}
 
-public:
 	void assert_graph_valid() const
 	{
+	}
+
+	void extract_edge_seqs(BaseVecVec & bvv)
+	{
+		foreach (BidirectedStringGraphEdge & e, _edges) {
+			bvv.push_back(e.get_seq_1_to_2());
+			bvv.push_back(e.get_seq_2_to_1());
+		}
 	}
 };

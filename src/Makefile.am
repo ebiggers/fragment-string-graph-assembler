@@ -10,6 +10,7 @@ bin_PROGRAMS =				\
 	compute-overlaps		\
 	convert-reads			\
 	digraph-to-bidigraph		\
+	extract-edge-seqs		\
 	map-contained-reads		\
 	print-overlaps			\
 	print-string-graph		\
@@ -44,6 +45,7 @@ collapse_unbranched_paths_SOURCES     = collapse-unbranched-paths.cc
 compute_overlaps_SOURCES              = compute-overlaps.cc
 convert_reads_SOURCES                 = convert-reads.cc
 digraph_to_bidigraph_SOURCES          = digraph-to-bidigraph.cc
+extract_edge_seqs_SOURCES             = extract-edge-seqs.cc
 map_contained_reads_SOURCES           = map-contained-reads.cc
 print_overlaps_SOURCES                = print-overlaps.cc
 print_string_graph_SOURCES            = print-string-graph.cc
