@@ -224,6 +224,8 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 				e.set_dirs(dirs);
 				e.set_mapped_read_count((w_v.get_mapped_read_count() +
 							 v_w.get_mapped_read_count()) / 2);
+				e.set_A_statistic((w_v.get_A_statistic() +
+						   v_w.get_A_statistic()) / 2);
 				assert(w_v.get_num_inner_vertices() ==
 				       v_w.get_num_inner_vertices());
 				e.set_num_inner_vertices(w_v.get_num_inner_vertices());
