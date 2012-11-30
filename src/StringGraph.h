@@ -16,11 +16,22 @@ class StringGraphEdge {
 protected:
 	float _mapped_read_count;
 	unsigned _num_inner_vertices;
+	float _A_statistic;
 
 	StringGraphEdge()
 	{
 		_mapped_read_count = 1.0;
 		_num_inner_vertices = 0;
+		_A_statistic = 0.0;
+	}
+
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive & ar, unsigned version)
+	{
+		ar & _mapped_read_count;
+		ar & _num_inner_vertices;
+		ar & _A_statistic;
 	}
 public:
 	void increment_mapped_read_count(float n) { _mapped_read_count += n; }
@@ -30,6 +41,9 @@ public:
 	void increment_num_inner_vertices() { _num_inner_vertices++; }
 	unsigned get_num_inner_vertices() const { return _num_inner_vertices; }
 	void set_num_inner_vertices(unsigned n) { _num_inner_vertices = n; }
+
+	float get_A_statistic() const { return _A_statistic; }
+	void set_A_statistic(float f) { _A_statistic = f; }
 };
 
 // Base class for vertices of the string graph.
@@ -236,6 +250,8 @@ protected:
 	// Vector of the graph's edges.
 	std::vector<EDGE_t> _edges;
 
+	size_t _orig_num_reads;
+
 	// Serialize or deserialize this string graph to/from a stream.
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -243,6 +259,7 @@ protected:
 	{
 		ar & _vertices;
 		ar & _edges;
+		ar & _orig_num_reads;
 	}
 
 	// Constructor is protected--- use DirectedStringGraph or

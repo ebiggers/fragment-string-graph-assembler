@@ -4,11 +4,19 @@
 #include "BaseVec.h"
 #include <ostream>
 #include <inttypes.h>
+#include <boost/serialization/base_object.hpp>
 
 class BidirectedStringGraph;
 
 // A vertex of a directed string graph.
 class DirectedStringGraphVertex : public StringGraphVertex {
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive & ar, unsigned version)
+	{
+		ar & boost::serialization::base_object<StringGraphVertex>(*this);
+	}
 public:
 	size_t out_degree() const
 	{
@@ -42,7 +50,7 @@ private:
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
-		ar & _mapped_read_count;
+		ar & boost::serialization::base_object<StringGraphEdge>(*this);
 		ar & _v1_idx;
 		ar & _v2_idx;
 		ar & _seq;
@@ -158,6 +166,7 @@ public:
 		if (!enough_v_indices(num_reads * 2))
 			fatal_error("Too many reads (%zu)", num_reads);
 		_vertices.resize(num_reads * 2);
+		_orig_num_reads = num_reads;
 	}
 
 	// Read this directed string graph from a file.

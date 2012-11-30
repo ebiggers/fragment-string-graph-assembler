@@ -3,11 +3,35 @@
 #include "StringGraph.h"
 #include "BaseVec.h"
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
 #include <ostream>
 #include <inttypes.h>
 #include <math.h>
 
 class DirectedStringGraph;
+
+// A vertex of a bidirected string graph.
+class BidirectedStringGraphVertex : public StringGraphVertex {
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive & ar, unsigned version)
+	{
+		ar & boost::serialization::base_object<StringGraphVertex>(*this);
+	}
+public:
+	size_t out_degree() const
+	{
+		unimplemented();
+	}
+
+	// Print a bidirected string graph vertex in DOT format
+	void print_dot(std::ostream & os, size_t v_idx) const
+	{
+		os << "\tv" << v_idx
+		   << " [ label = \"" << (v_idx + 1) << "\" ];\n";
+	}
+};
 
 // An edge of a bidirected string graph.
 //
@@ -48,6 +72,7 @@ private:
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
 	{
+		ar & boost::serialization::base_object<StringGraphEdge>(*this);
 		ar & _data;
 		ar & _seq_1_to_2;
 		ar & _seq_2_to_1;
@@ -218,23 +243,6 @@ public:
 	}
 };
 
-
-// A vertex of a bidirected string graph.
-class BidirectedStringGraphVertex : public StringGraphVertex {
-public:
-	size_t out_degree() const
-	{
-		unimplemented();
-	}
-
-	// Print a bidirected string graph vertex in DOT format
-	void print_dot(std::ostream & os, size_t v_idx) const
-	{
-		os << "\tv" << v_idx
-		   << " [ label = \"" << (v_idx + 1) << "\" ];\n";
-	}
-};
-
 // A bidirected string graph.
 class BidirectedStringGraph : public StringGraph<BidirectedStringGraphVertex,
 						 BidirectedStringGraphEdge,
@@ -248,6 +256,7 @@ public:
 		if (!enough_v_indices(num_reads))
 			fatal_error("Too many reads (%zu)", num_reads);
 		_vertices.resize(num_reads);
+		_orig_num_reads = num_reads;
 	}
 
 	// Read a bidirected string graph from a file

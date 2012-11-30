@@ -4,6 +4,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include "BidirectedStringGraph.h"
+#include <math.h>
 
 const char DirectedStringGraph::magic[] =
 	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
@@ -631,5 +632,48 @@ void DirectedStringGraph::build_from_bidigraph(const BidirectedStringGraph & bid
 
 void DirectedStringGraph::calculate_A_statistics()
 {
-	unimplemented();
+	size_t num_reads = _orig_num_reads;
+	size_t genome_len;
+
+	size_t bootstrap_genome_len = 0;
+	size_t bootstrap_num_reads = num_reads;
+	size_t n_edges = num_edges();
+	size_t i = 0;
+	while (i < n_edges) {
+		bootstrap_genome_len += _edges[i].length();
+		i += 2;
+	}
+	float global_arrival_rate = FLOAT_DIV_NONZERO(bootstrap_num_reads,
+						      bootstrap_genome_len);
+
+	info("Bootstrapping with bootstream_genome_len = %zu, "
+	     "bootstrap_num_reads = %zu, global_arrival_rate = %f",
+	     bootstrap_genome_len, bootstrap_num_reads, global_arrival_rate);
+
+	const size_t NUM_BOOTSTRAP_ITERATIONS = 10;
+	const float SINGLE_COPY_THRESHOLD = 17.0;
+
+	for (size_t i = 0; i < NUM_BOOTSTRAP_ITERATIONS; i++) {
+		bootstrap_genome_len = 0;
+		bootstrap_num_reads = 0;
+		for (size_t j = 0; j < n_edges; j++) {
+			DirectedStringGraphEdge & e = _edges[j];
+			size_t edge_len = _edges[j].length();
+			unsigned edge_reads = _edges[j].get_num_inner_vertices();
+			float A_statistic = (global_arrival_rate * edge_len) -
+					     (edge_reads * M_LN2);
+			e.set_A_statistic(A_statistic);
+			info("edge_len = %zu, edge_reads = %u, A_statistic = %f",
+			     edge_len, edge_reads, A_statistic);
+			if (A_statistic >= SINGLE_COPY_THRESHOLD) {
+				bootstrap_genome_len += edge_len;
+				bootstrap_num_reads += edge_reads;
+			}
+		}
+		global_arrival_rate = FLOAT_DIV_NONZERO(bootstrap_num_reads,
+							bootstrap_genome_len);
+		genome_len = DIV_NONZERO(num_reads, global_arrival_rate);
+		info("Iteration %zu of %zu:  Estimated genome length "
+		     "%zu", i, NUM_BOOTSTRAP_ITERATIONS, genome_len);
+	}
 }

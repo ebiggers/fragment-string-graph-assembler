@@ -67,5 +67,8 @@ extern long long parse_long(const char *optstr, const char *argument,
 #define DOUBLE_DIV_NONZERO(numerator, denominator) \
 	DIV_NONZERO(double(numerator), double(denominator))
 
+#define FLOAT_DIV_NONZERO(numerator, denominator) \
+	DIV_NONZERO(float(numerator), float(denominator))
+
 #define TO_PERCENT(numerator, denominator) \
 	(100.0 * DOUBLE_DIV_NONZERO(numerator, denominator))
