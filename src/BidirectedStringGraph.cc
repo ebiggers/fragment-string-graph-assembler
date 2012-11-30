@@ -222,6 +222,11 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 				e.get_seq_2_to_1() = w_v.get_seq();
 				e.set_v_indices(v1_idx, v2_idx);
 				e.set_dirs(dirs);
+				e.set_mapped_read_count((w_v.get_mapped_read_count() +
+							 v_w.get_mapped_read_count()) / 2);
+				assert(w_v.get_num_inner_vertices() ==
+				       v_w.get_num_inner_vertices());
+				e.set_num_inner_vertices(w_v.get_num_inner_vertices());
 
 				edge_idx_t edge_idx = this->push_back_edge(e);
 				_vertices[v1_idx].add_edge_idx(edge_idx);

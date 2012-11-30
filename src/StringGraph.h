@@ -14,19 +14,22 @@
 // Base class for edges of the string graph.
 class StringGraphEdge {
 protected:
+	float _mapped_read_count;
+	unsigned _num_inner_vertices;
+
 	StringGraphEdge()
 	{
 		_mapped_read_count = 1.0;
+		_num_inner_vertices = 0;
 	}
-	float _mapped_read_count;
 public:
-	void increment_mapped_read_count(const float n)
-	{
-		_mapped_read_count += n;
-	}
-	float get_mapped_count() const {
-		return _mapped_read_count;
-	}
+	void increment_mapped_read_count(float n) { _mapped_read_count += n; }
+	float get_mapped_read_count() const { return _mapped_read_count; }
+	void set_mapped_read_count(float n) { _mapped_read_count = n; }
+
+	void increment_num_inner_vertices() { _num_inner_vertices++; }
+	unsigned get_num_inner_vertices() const { return _num_inner_vertices; }
+	void set_num_inner_vertices(unsigned n) { _num_inner_vertices = n; }
 };
 
 // Base class for vertices of the string graph.

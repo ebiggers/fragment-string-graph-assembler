@@ -249,7 +249,8 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 			assert2(seq_idx < new_seq_len);
 			new_seq.set(seq_idx++, ei_i1_seq[i]);
 		}
-		e.increment_mapped_read_count(ei_i1.get_mapped_count());
+		e.increment_mapped_read_count(ei_i1.get_mapped_read_count());
+		e.increment_num_inner_vertices();
 		remove_edge[ei_i1_idx] = true;
 		remove_vertex[vi_idx] = true;
 		vi_idx = ei_i1.get_v2_idx();
@@ -408,9 +409,9 @@ void DirectedStringGraph::print_stats(std::ostream & os) const
 		if (in_degrees[e.get_v2_idx()] + 1 != 0) {
 			in_degrees[e.get_v2_idx()]++;
 		}
-		assert(e.get_mapped_count() >= 1.0);
-		total_mapped_count += e.get_mapped_count();
-		if (e.get_mapped_count() > 1.0)
+		assert(e.get_mapped_read_count() >= 1.0);
+		total_mapped_count += e.get_mapped_read_count();
+		if (e.get_mapped_read_count() > 1.0)
 			more_than_one_mapped_count++;
 	}
 	std::vector<v_idx_t> out_degree_hist(0xff, 0);
