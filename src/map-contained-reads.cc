@@ -96,9 +96,16 @@ int main(int argc, char **argv)
 	std::vector<const Overlap *>
 		shortest_overhang_overlaps(num_contained_reads, NULL);
 
+	std::vector<const Overlap *>
+		shortest_underhang_overlaps(num_contained_reads, NULL);
+
 	std::vector<Overlap::read_pos_t>
 		shortest_overhang_lens(num_contained_reads,
 				       std::numeric_limits<Overlap::read_pos_t>::max());
+
+	std::vector<Overlap::read_pos_t>
+		shortest_underhang_lens(num_contained_reads,
+					std::numeric_limits<Overlap::read_pos_t>::max());
 
 	foreach (const OverlapVecVec::OverlapSet & overlap_set, orig_overlaps) {
 		foreach(const Overlap & o, overlap_set) {
@@ -158,6 +165,7 @@ int main(int argc, char **argv)
 				// with original index @contained_read_orig_idx
 				// is contained.  Compute the overhang length.
 				Overlap::read_pos_t overhang_len;
+				Overlap::read_pos_t underhang_len;
 				if (rc) {
 					//
 					//
@@ -166,6 +174,8 @@ int main(int argc, char **argv)
 					//
 					//                 |overhang|
 					overhang_len = uncontained_read_overlap_beg;
+					underhang_len = uncontained_read->length() -
+							(uncontained_read_overlap_end + 1);
 				} else {
 					//
 					//
@@ -177,6 +187,7 @@ int main(int argc, char **argv)
 					       uncontained_read_overlap_end + 1);
 					overhang_len = uncontained_read->length() -
 						       (uncontained_read_overlap_end + 1);
+					underhang_len = uncontained_read_overlap_beg;
 				}
 
 				// Index of this contained read in the
@@ -189,6 +200,11 @@ int main(int argc, char **argv)
 				if (overhang_len < shortest_overhang_lens[contained_idx]) {
 					shortest_overhang_overlaps[contained_idx] = &o;
 					shortest_overhang_lens[contained_idx] = overhang_len;
+				}
+
+				if (underhang_len < shortest_underhang_lens[contained_idx]) {
+					shortest_underhang_overlaps[contained_idx] = &o;
+					shortest_underhang_lens[contained_idx] = underhang_len;
 				}
 			}
 		}
@@ -204,36 +220,50 @@ int main(int argc, char **argv)
 	for (size_t i = 0; i < num_contained_reads; i++) {
 
 		// Original index of this contained read
-		size_t contained_read_orig_idx = contained_to_old_indices[i];
+		size_t contained_read_orig_idx;
 
 		// The overlap in which the overhang from the end of this
 		// contained read to its containing read is the shortest
-		const Overlap *o = shortest_overhang_overlaps[i];
+		const Overlap *o;
 
+		Overlap::read_idx_t f_idx, g_idx;
+		Overlap::read_idx_t uncontained_read_dir;
+		Overlap::read_idx_t uncontained_read_new_idx;
+
+		// Map the overhang
+		contained_read_orig_idx = contained_to_old_indices[i];
+		o = shortest_overhang_overlaps[i];
 		// Original read index must be valid, the read must be
 		// contained, and it must have at least 1 overlap with an
 		// uncontained read.
 		assert(contained_read_orig_idx < num_orig_reads);
 		assert(old_to_new_indices[contained_read_orig_idx] == ~size_t(0));
 		assert(o != NULL);
-
-		Overlap::read_idx_t f_idx, g_idx;
-		Overlap::read_idx_t uncontained_read_dir;
-		Overlap::read_idx_t uncontained_read_new_idx;
-
 		o->get_indices(f_idx, g_idx);
-
 		if (f_idx == contained_read_orig_idx) {
 			uncontained_read_new_idx = old_to_new_indices[g_idx];
 		} else {
 			assert(g_idx == contained_read_orig_idx);
 			uncontained_read_new_idx = old_to_new_indices[f_idx];
 		}
-
 		assert(uncontained_read_new_idx < num_uncontained_reads);
-
 		uncontained_read_dir = (o->is_rc() ? 1 : 0);
+		graph.map_contained_read(uncontained_read_new_idx,
+					 uncontained_read_dir,
+					 shortest_overhang_lens[i]);
 
+		// Map the underhang
+		o = shortest_underhang_overlaps[i];
+		assert(o != NULL);
+		o->get_indices(f_idx, g_idx);
+		if (f_idx == contained_read_orig_idx) {
+			uncontained_read_new_idx = old_to_new_indices[g_idx];
+		} else {
+			assert(g_idx == contained_read_orig_idx);
+			uncontained_read_new_idx = old_to_new_indices[f_idx];
+		}
+		assert(uncontained_read_new_idx < num_uncontained_reads);
+		uncontained_read_dir = (o->is_rc() ? 0 : 1);
 		graph.map_contained_read(uncontained_read_new_idx,
 					 uncontained_read_dir,
 					 shortest_overhang_lens[i]);
