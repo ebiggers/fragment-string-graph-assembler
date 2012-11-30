@@ -354,6 +354,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	}
 	info("Updated edges are indexed [0, %lu)", new_edge_idx);
 	info("%zu edges were removed (%f%% of total)",
+	     _edges.size() - new_edge_idx,
 	     TO_PERCENT(_edges.size() - new_edge_idx, _edges.size()));
 
 	_edges.resize(new_edge_idx);
