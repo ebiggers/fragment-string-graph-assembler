@@ -234,6 +234,7 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 			}
 		}
 	}
+	_orig_num_reads = digraph._orig_num_reads;
 	info("Done building bidirected string graph from directed string graph");
 }
 

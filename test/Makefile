@@ -1,4 +1,4 @@
-all:out.reduced.mapped.collapsed.digraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf
+all:out.reduced.mapped.collapsed.calc.digraph.pdf out.reduced.mapped.collapsed.calc.bidigraph.pdf
 
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
@@ -72,6 +72,9 @@ out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
 out.reduced.mapped.digraph:reads.bvv out.overlaps out.indices_map out.reduced.digraph
 	map-contained-reads reads.bvv out.overlaps out.indices_map \
 			    out.reduced.digraph out.reduced.mapped.digraph
+
+%.calc.digraph:%.digraph
+	calculate-A-statistics $+ $@
 
 %.reduced.digraph:%.digraph
 	transitive-reduction $+ $@

@@ -250,7 +250,9 @@ protected:
 	// Vector of the graph's edges.
 	std::vector<EDGE_t> _edges;
 
+public:
 	size_t _orig_num_reads;
+protected:
 
 	// Serialize or deserialize this string graph to/from a stream.
 	friend class boost::serialization::access;

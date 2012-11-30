@@ -628,6 +628,7 @@ void DirectedStringGraph::build_from_bidigraph(const BidirectedStringGraph & bid
 			      e.get_seq_1_to_2(), 0, e.length() - 1, false,
 			      e.get_seq_2_to_1(), 0, e.length() - 1, false);
 	}
+	_orig_num_reads = bidigraph._orig_num_reads;
 }
 
 void DirectedStringGraph::calculate_A_statistics()
@@ -638,11 +639,10 @@ void DirectedStringGraph::calculate_A_statistics()
 	size_t bootstrap_genome_len = 0;
 	size_t bootstrap_num_reads = num_reads;
 	size_t n_edges = num_edges();
-	size_t i = 0;
-	while (i < n_edges) {
-		bootstrap_genome_len += _edges[i].length();
-		i += 2;
-	}
+	for (size_t i = 0; i < n_edges; i++)
+		if (_edges[i].get_v1_idx() & 1)
+			bootstrap_genome_len += _edges[i].length();
+
 	float global_arrival_rate = FLOAT_DIV_NONZERO(bootstrap_num_reads,
 						      bootstrap_genome_len);
 
@@ -650,10 +650,14 @@ void DirectedStringGraph::calculate_A_statistics()
 	     "bootstrap_num_reads = %zu, global_arrival_rate = %f",
 	     bootstrap_genome_len, bootstrap_num_reads, global_arrival_rate);
 
-	const size_t NUM_BOOTSTRAP_ITERATIONS = 10;
+	const size_t NUM_BOOTSTRAP_ITERATIONS = 3;
 	const float SINGLE_COPY_THRESHOLD = 17.0;
 
 	for (size_t i = 0; i < NUM_BOOTSTRAP_ITERATIONS; i++) {
+		size_t num_unique_edges = 0;
+		size_t num_optional_edges = 0;
+		size_t num_required_edges = 0;
+
 		bootstrap_genome_len = 0;
 		bootstrap_num_reads = 0;
 		for (size_t j = 0; j < n_edges; j++) {
@@ -663,11 +667,16 @@ void DirectedStringGraph::calculate_A_statistics()
 			float A_statistic = (global_arrival_rate * edge_len) -
 					     (edge_reads * M_LN2);
 			e.set_A_statistic(A_statistic);
-			info("edge_len = %zu, edge_reads = %u, A_statistic = %f",
-			     edge_len, edge_reads, A_statistic);
+			//info("edge_len = %zu, edge_reads = %u, A_statistic = %f",
+			     //edge_len, edge_reads, A_statistic);
 			if (A_statistic >= SINGLE_COPY_THRESHOLD) {
 				bootstrap_genome_len += edge_len;
 				bootstrap_num_reads += edge_reads;
+				num_unique_edges++;
+			} else if (edge_reads == 0) {
+				num_optional_edges++;
+			} else {
+				num_required_edges++;
 			}
 		}
 		global_arrival_rate = FLOAT_DIV_NONZERO(bootstrap_num_reads,
@@ -675,5 +684,8 @@ void DirectedStringGraph::calculate_A_statistics()
 		genome_len = DIV_NONZERO(num_reads, global_arrival_rate);
 		info("Iteration %zu of %zu:  Estimated genome length "
 		     "%zu", i, NUM_BOOTSTRAP_ITERATIONS, genome_len);
+		info("num_unique_edges = %zu", num_unique_edges);
+		info("num_optional_edges = %zu", num_optional_edges);
+		info("num_required_edges = %zu", num_required_edges);
 	}
 }
