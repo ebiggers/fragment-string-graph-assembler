@@ -181,12 +181,13 @@ public:
 		char head_2 = v2_inward() ? '>' : '<';
 		if (read_1_idx != v_idx) {
 			std::swap(read_1_idx, read_2_idx);
-			head_1 = (head_1 == '>') ? '<' : '>';
-			head_2 = (head_2 == '>') ? '<' : '>';
+			head_1 = (head_2 == '>') ? '<' : '>';
+			head_2 = (head_1 == '>') ? '<' : '>';
 		}
 		os << (read_1_idx + 1) << ' ' << head_1 << "---------"
 		   << head_2 << ' ' << (read_2_idx + 1)
 		   << '\t';
+		StringGraphEdge::print(os);
 		if (print_seqs)
 			os << _seq_1_to_2;
 		else

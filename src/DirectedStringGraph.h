@@ -106,6 +106,7 @@ public:
 		os << read_1_idx << '.' << read_1_dir << " -> "
 		   << read_2_idx << '.' << read_2_dir
 		   << '\t';
+		StringGraphEdge::print(os);
 		if (print_seqs)
 			os << _seq;
 		else

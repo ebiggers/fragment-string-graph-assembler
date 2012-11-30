@@ -25,6 +25,11 @@ protected:
 		_A_statistic = 0.0;
 	}
 
+	void print(std::ostream & os) const {
+		os << "_num_inner_vertices=" << _num_inner_vertices << '\t';
+		os << "_A_statistic=" << _A_statistic << '\t';
+	}
+
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, unsigned version)
