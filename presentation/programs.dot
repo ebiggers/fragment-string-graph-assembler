@@ -9,7 +9,7 @@ digraph {
 	digraph_to_bidigraph [label="digraph-to-bidigraph"];
 	remove_contained_reads [label="remove-contained-reads"];
 	map_contained_reads [label="map-contained-reads"];
-	calculate_a_statistic [label="calculate-A-statistic",style=filled,fillcolor=yellow];
+	calculate_a_statistics [label="calculate-A-statistics",style=filled,fillcolor=yellow];
 	bidigraph_network_flow [label="bidigraph-network-flow",style=filled,fillcolor=yellow];
 	bidigraph_eulerian_path [label="bidigraph-eulerian-path",style=filled,fillcolor=yellow];
 	transitive_reduction [label="transitive-reduction"];
@@ -31,8 +31,8 @@ digraph {
 	build_bidirected_string_graph -> transitive_reduction
 	transitive_reduction -> map_contained_reads //[ label="out.reduced.digraph"];
 	map_contained_reads -> collapse_unbranched_paths //[ label="out.reduced.mapped.digraph"];
-	collapse_unbranched_paths -> calculate_a_statistic //[ label="out.reduced.mapped.collapsed.digraph"];
-	calculate_a_statistic -> digraph_to_bidigraph //[ label="out.reduced.mapped.collapsed.calc.digraph"];
+	collapse_unbranched_paths -> calculate_a_statistics //[ label="out.reduced.mapped.collapsed.digraph"];
+	calculate_a_statistics -> digraph_to_bidigraph //[ label="out.reduced.mapped.collapsed.calc.digraph"];
 	digraph_to_bidigraph -> bidigraph_network_flow
 	bidigraph_network_flow -> bidigraph_eulerian_path //[ label="out.reduced.mapped.collapsed.calc.digraph"];
 

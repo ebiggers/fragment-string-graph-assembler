@@ -316,3 +316,8 @@ void BidirectedStringGraph::map_contained_read(const v_idx_t downstream_read_idx
 {
 	unimplemented();
 }
+
+void BidirectedStringGraph::calculate_A_statistics()
+{
+	unimplemented();
+}

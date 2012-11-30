@@ -176,6 +176,7 @@ public:
 
 	void transitive_reduction();
 	void collapse_unbranched_paths();
+	void calculate_A_statistics();
 	void print_stats(std::ostream & os) const;
 
 	void map_contained_read(const v_idx_t downstream_read_idx,

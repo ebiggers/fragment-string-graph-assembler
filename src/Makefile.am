@@ -6,6 +6,7 @@ bin_PROGRAMS =				\
 	bidigraph-to-digraph		\
 	build-bidirected-string-graph	\
 	build-directed-string-graph	\
+	calculate-A-statistics		\
 	collapse-unbranched-paths	\
 	compute-overlaps		\
 	convert-reads			\
@@ -41,6 +42,7 @@ libassemble_a_SOURCES =			\
 bidigraph_to_digraph_SOURCES          = bidigraph-to-digraph.cc
 build_bidirected_string_graph_SOURCES = build-bidirected-string-graph.cc
 build_directed_string_graph_SOURCES   = build-directed-string-graph.cc
+calculate_A_statistics_SOURCES        = calculate-A-statistics.cc
 collapse_unbranched_paths_SOURCES     = collapse-unbranched-paths.cc
 compute_overlaps_SOURCES              = compute-overlaps.cc
 convert_reads_SOURCES                 = convert-reads.cc

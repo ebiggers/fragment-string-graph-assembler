@@ -73,6 +73,7 @@ public:
 	}
 
 	DISPATCH0(transitive_reduction);
+	DISPATCH0(calculate_A_statistics);
 	DISPATCH0(collapse_unbranched_paths);
 	DISPATCH1(print_stats, std::ostream &);
 	DISPATCH1(write, const char *);

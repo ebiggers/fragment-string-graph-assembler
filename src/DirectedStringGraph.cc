@@ -627,3 +627,8 @@ void DirectedStringGraph::build_from_bidigraph(const BidirectedStringGraph & bid
 			      e.get_seq_2_to_1(), 0, e.length() - 1, false);
 	}
 }
+
+void DirectedStringGraph::calculate_A_statistics()
+{
+	unimplemented();
+}
