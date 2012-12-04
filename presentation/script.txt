@@ -1,62 +1,68 @@
 == A bidirected string graph model of genome assembly ==
 
-Hi, my name is Eric and I will be talking about the application of graph theory
-to genome assembly.
+Hi, my name is Eric and I'll be talking about genome assembly, more specifically
+the way in which a special kind of graph called a bidirected string graph can be
+used to model the genome assembly problem.
 
 == Genomes ==
 
-So first of all, what is a genome?  Biologically, a genome is the genetic
-material of an organism, and it's almost always encoded in DNA molecules.  For
-our purposes, a genome is a long string of four possible letters: A, C, G, and
-T, which represent the four nucleotides of DNA.
+So first of all, what is a genome?  Biologically, a genome is the entirety of an
+organism's hereditary information, which usually consists of a number of long
+DNA molecules.  For our purposes we will consider a genome to be a long string
+of A's, C's, G's, and T's, which correspond to the four nucleotides of DNA.
 
-However, DNA is also a dual-stranded molecule, and unfortunately this is not
-something that can be ignored, so we must actually consider a genome to be a
-dual-stranded string.  The letter A always pairs with the letter T on the
-opposite strand, and the letter C always pairs with the letter G on the opposite
-strand.  Also, each strand has a direction, and the directions of the two
-strands are opposite one another.
+However, DNA is a dual-stranded molecule, so we must consider genomes to be
+dual-stranded as well.  The way this works is that the letter A always pairs
+with the letter T on the opposite strand, and the letter C always pairs with the
+letter G on the opposite strand.  In addition, each strand has a direction, and
+the directions of the two strands of a DNA molecule run opposite one another.
 
-Each letter in the genome is called a base pair.  This term is often used even
-if only one strand is being looked at, since there is always an implied base on
-the other strand.  
+Another bit of terminology is that each letter in the genome is called a base
+pair.  This term is often used even we are only talking about 1 strand, because
+there almost always is an implied second strand.
 
-With regards to the size of these strings, bacterial genomes tend to be several
-million base pairs long, while plant and animal genomes tend to be several
-hundred million or several billion base pairs long.
+With regards to the sizes of genomes in the real world, bacterial genomes tend
+to be several million base pairs long, while more complicated genomes, such as
+many plant and animal genomes, can be several hundred million or even several
+billion base pairs long.
 
 == Genome Sequencing ===
 
 The goal of genome sequencing is to determine the precise sequence of an
-organism's genome.  Essentially, this is very difficult to do, because DNA is a
-molecule, and each base pair is very, very small.  To sequence a piece of DNA,
-specialized laboratory techniques must be used.  However, these techniques can
-currently only sequence short pieces of DNA ranging from several dozen to
-several thousand base pairs long, depending on the technique.  Therefore, to
-sequence an *entire* genome, we need to take the DNA, break it up into very
-small fragments, sequence those fragments, then reconstruct the original genome
-from the sequences of the fragments.  This last step, the reconstruction of the
-full sequence of the original genome from very short subsequences, is called
-genome assembly, and this is what I will be focusing on today.
+organism's genome.
+
+Essentially, this is very difficult to do, because DNA is an actual molecule,
+and this means that each base pair is very, very small, making it almost
+impossible to directly observe a DNA sequence. 
+
+Therefore, indirect laboratory techniques must be used to sequence DNA
+molecules.  However, these techinques currently have a number of limitations.
+In particular, these techniques can currently only sequence short pieces of DNA
+ranging from several dozen to several thousand base pairs long, depending on the
+technique.  This means that in order to sequence an *entire* genome, which may
+be millions of base pairs long, we need to take the DNA sample from the whole
+genome, break it up into mucher small fragments, and sequence those fragments.
+
+The final step is to use computers to reconstruct the original genome, given the
+sequences of these much smaller fragments.  This final step, is called genome
+assembly, and this is what I will be focusing on today.
 
 == Reads ==
 
-Each of these short subsequences that is provided to the assembler as input is
-called a read.  Reads may come from any location on the genome, from either
-strand.  As I mentioned earlier, each strand in the genome has a direction, and
-the reads are always directed along the direction of the genome.  But, the two
-strands are directed opposite each other.  This means that if we take two reads
-from the same position on the genome but opposite strands, the two reads will
-contain the complement sequence from each other, but going in the other
-direction.  These two reads are said to be reverse-complements of each other.
+As I mentioned, laboratory techniques can currently only sequence short pieces
+of DNA.  Each of these short sequences is called a read, and each read may come
+from any location on the genome, from either strand.
 
-In this example, you can see three reads taken from a sample genome.  Reads 1
-and 2 are both taken from the upper strand and directed right to left, while
-read 3 is taken from the lower strand and is directed left to right.
+As I mentioned earlier, the two strands of a genome run in opposite directions
+from each other.  Because of this, reads from different strands will be oriented
+in opposite directions.  Furthermore, if we consider 2 reads that came from
+exactly the same location on the genome but from opposite strands, the reads
+will contain the complement sequence from each other, but in reverse.  We say
+that these two reads are reverse-complement from each other.
 
 == Genome assembler ==
 
-Genome assembly is done by a program called an assembler, which  is a program or
+Genome assembly is done by a program called an assembler, which is a program or
 algorithm that can take in a set of reads, usually 35 to 5000 bp long, and
 produce as output the reconstructed genome.  Ideally, the assembler would output
 the entire original genome as one continuous sequence, but in reality, this may
@@ -66,24 +72,29 @@ substrings of the original genome that are as long as possible.
 == Details of assembler input ==
 
 This slide shows in more detail exactly what the input to a genome assembler
-might be.  Reads are usually represented in a simple plain-text format, and this
-is a standard format for DNA sequences.  However, the assembler may use other
-DNA sequences internally.  For example, there are only 4 possible letters, so
-only 2 bits are needed to represent each base pair.
+might be.  Reads are usually provided in a plain-text format that simply lists
+the sequences in plain text, separated by a name for each read.  However, even
+though the input is usually in plain-text format, this does not rule out the
+possibility that the assembler can represent DNA sequences in a more
+space-efficient way internally.  For example, there are only 4 possible letters,
+so only 2 bits are sufficient to represent each letter.
 
 == Details of assembler output ==
 
 An assembler is expected to generate output in a similar format to the input,
 but the sequences will be contigs, which are assembled, contiguous sequences of
-DNA that are believed to exist in the original genome.  Each contig should be as
-long as possible.
-
-In this example here, you can see that sequences can be multi-line, and a new
-sequence doesn't begin until one of these tag lines that begin with
-greater-than-sign appears.
+DNA that are believed to exist in the original genome, and each contig should be
+as long as possible.
 
 == Genome assembly vs shortest common superstring ==
 
+I'm going to go over slide quickly, but basically it shows genome assembly is
+similar to the shortest common substring problem but has some key differences.
+Also, some models of genome assembly have been proven to be NP-complete, so
+algorithms for genome assembly usually are heuristic algorithms that have been
+shown to work well on real data.
+
+/*
 Genome assembly is somewhat similar to the shortest common superstring problem,
 which is a famous problem that has been proven to be NP-complete.  The shortest
 common superstring problem is to find the shortest string that contains every
@@ -102,18 +113,21 @@ collapsing these repeats.
 
 Overall, what we can take away from this is that genome assembly is complicated
 enough to need entirely new algorithms to solve.
+*/
 
 == An algorithm for genome assembly ==
 
-For this presentation, I will be focusing on one assembly algorithm that
-provides a good overview of some of the techniques that are used in genome
-assembly.  This algorithm was published in 2005, although it uses a number of
-ideas that already existed before then.
+For the rest of this walk, I will be focusing on an assembly algorithm that was
+published in 2005.  It provides a good overview of some of the technqiues that
+are used in genome assembly, especially since it draws on ideas that have been
+used earlier assemblers, such as the Celera assembler which was used for the
+first assembly of the human genome.  However, this algorithm uses some new ideas
+as well.
 
 Here I've condensed the overall algorithm into three steps.  The first step is
 to use overlaps between reads to build a graph that models the assembly problem.
 Next, the graph needs to be simplified and analyzed.  Finally, paths through the
-graph need to be found to reconstruct the original sequence.
+graph need to be found to reconstruct the original genome.
 
 == Overlaps between the reads ===
 
