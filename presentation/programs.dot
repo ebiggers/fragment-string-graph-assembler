@@ -9,7 +9,7 @@ digraph {
 	digraph_to_bidigraph [label="digraph-to-bidigraph"];
 	remove_contained_reads [label="remove-contained-reads"];
 	map_contained_reads [label="map-contained-reads"];
-	calculate_a_statistics [label="calculate-A-statistics",style=filled,fillcolor=yellow];
+	calculate_a_statistics [label="calculate-A-statistics"];
 	bidigraph_network_flow [label="bidigraph-network-flow",style=filled,fillcolor=yellow];
 	bidigraph_eulerian_path [label="bidigraph-eulerian-path",style=filled,fillcolor=yellow];
 	transitive_reduction [label="transitive-reduction"];

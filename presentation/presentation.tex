@@ -809,6 +809,22 @@ becomes:
 	\end{itemize}
 \end{frame}
 
+\begin{frame}{Arrival rate statistic (A-statistic)}
+	\begin{itemize}
+		\item The {\bf A-statistic} $A(e)$ of an edge $e$ in a
+		bidirected string graph is:
+	\end{itemize}
+	\[ A(e) = \frac{n}{G} \Delta - \log_2{k} \]
+	where $n$ is the total number of reads, $G$ is the estimated genome
+	length, $\Delta$ is the length of the edge in bp, and $k$ is the number
+	of reads that support that edge.
+	\begin{itemize}
+		\item The A-statistic is the logarithm of the probability that
+		an edge represents unique sequence rather than duplicate
+		sequence.
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Implementation}
 	\begin{minipage}{0.3\textwidth}
 		\begin{itemize}
