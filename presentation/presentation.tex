@@ -564,10 +564,10 @@
 		\vspace{2.5mm}
 
 		\begin{tikzpicture}[>=\ReadArrowType]
-				\draw[<-,style=very thick] (0.0, 0.0) -- (4.0, 0.0);
-				\draw[->,style=very thick] (1.2, -0.3) -- (5.2, -0.3);
-				\draw[<-,style=very thick] (2.4, -0.6) -- (6.4, -0.6);
-				\draw[<-,style=very thick] (3.6, -0.9) -- (7.6, -0.9);
+				\draw[<-,style=very thick] (0.0, 0.0) -- (2.6, 0.0);
+				\draw[->,style=very thick] (1.6, -0.3) -- (4.2, -0.3);
+				\draw[<-,style=very thick] (3.2, -0.6) -- (5.8, -0.6);
+				\draw[<-,style=very thick] (4.8, -0.9) -- (7.4, -0.9);
 				\draw (-0.3, 0.0) node {1.};
 				\draw (-0.3, -0.3) node {2.};
 				\draw (-0.3, -0.6) node {3.};
@@ -815,7 +815,7 @@ becomes:
 		\item The {\bf A-statistic} $A(e)$ of an edge $e$ in a
 		bidirected string graph is:
 	\end{itemize}
-	\[ A(e) = \frac{n}{G} \Delta - \log_2{k} \]
+	\[ A(e) = \frac{n}{G} \Delta - \ln{2} \cdot {k} \]
 	where $n$ is the total number of reads, $G$ is the estimated genome
 	length, $\Delta$ is the length of the edge in bp, and $k$ is the number
 	of reads that support that edge.
@@ -829,8 +829,8 @@ becomes:
 \begin{frame}{Implementation}
 	\begin{minipage}{0.3\textwidth}
 		\begin{itemize}
-			\item A set of C++ programs that iteratively transform the data into
-			the final assembly.
+			\item A set of C++ programs that iteratively transform
+			the data on-disk into the final assembly.
 			\item Yellow programs are not yet implemented.
 		\end{itemize}
 	\end{minipage}
