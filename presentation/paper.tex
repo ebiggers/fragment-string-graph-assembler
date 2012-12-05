@@ -5,6 +5,7 @@
 %\usepackage{threeparttable}
 %\usepackage{hyperref}
 \usepackage{graphicx}
+%\usepackage{hyperref}
 %\usepackage{listings}
 
 \title{A Bidirected String Graph Model for Genome Assembly}
@@ -32,14 +33,14 @@ complete copy of the genome.  A genome consists of one or more DNA ({\it
 deoxyribonucleic acid}) molecules in the form of {\it chromosomes}.  DNA is a
 double-stranded molecule, each strand of which is a polymer of {\em
 nucleotides}.  A nucleotide, together with the corresponding nucleotide on the
-opposite strand, is called a {\it base pair}.  In DNA, there are four possible
-nucleotides: adenine, cytosine, guanine, and thymine, which are abbreviated as
-\Base{A}, \Base{C}, \Base{G}, and \Base{T}, respectively.  \Base{A} always pairs
-with T on the other strand, and \Base{C} always pairs with \Base{G} on the other
-strand.  In addition, each strand has a direction, and the two strands of a DNA
-molecule are directed opposite one another.  Furthermore, a DNA molecule may be
-circular (as is usually the case for bacterial chromosomes), in which case the
-molecule has no ends.
+opposite strand, is called a {\it base pair} (abbreviation: {\it bp}).  In DNA,
+there are four possible nucleotides: adenine, cytosine, guanine, and thymine,
+which are abbreviated as \Base{A}, \Base{C}, \Base{G}, and \Base{T},
+respectively.  \Base{A} always pairs with T on the other strand, and \Base{C}
+always pairs with \Base{G} on the other strand.  In addition, each strand has a
+direction, and the two strands of a DNA molecule are directed opposite one
+another.  Furthermore, a DNA molecule may be circular (as is usually the case
+for bacterial chromosomes), in which case the molecule has no ends.
 
 Therefore, for the purposes of this paper, a genome is defined as a set of
 possibly circular, dual-stranded strings of the symbols \Base{A}, \Base{C},
@@ -85,17 +86,89 @@ base pairs, depending on the organism.  (See Table \ref{tab:GenomeSizes}).
 
 \subsection{Genome sequencing}
 
-{\it DNA sequencing} is the process of determining the base pair sequence of one
-or more DNA molecules.  {\it Genome sequencing} is the use of DNA sequencing to
-determine the base pair sequence of an entire genome.
+{\it DNA sequencing} is the process of determining the base pair sequence of
+({\it sequencing}) one or more DNA molecules.  {\it Genome sequencing} is the use
+of DNA sequencing to determine the base pair sequence of an entire genome.
 
+Sequencing a DNA molecule is very difficult because it exists at the molecular
+level, which makes each base pair much too small to be directly observed.
+Therefore, indirect laboratory techniques must be used in order to sequence a
+DNA molecule.  Advances in these techniques are progressing rapidly and they can
+now be performed by automated machines, but virtually every technique suffers
+from the limitation that only short fragments of DNA (several dozen to several
+thousand bp long) can be sequenced.  Therefore, to sequence an entire genome,
+which may be millions of bp long, the DNA from the genome must be broken into
+much smaller fragments, then those small fragments must be sequenced.  The
+original genome is then computationally reconstructed in a process called {\it
+genome assembly}.  {\it Genome sequencing} therefore refers to the entire
+process of sequencing a genome, including lab work and computational work, while
+{\it genome assembly} only refers to the computational work.
 
-\subsection{Overall workflow for genome sequencing}
-\subsection{Genome assemblers}
+\subsection{Genome assembly}
+
+\label{subsec:reads}
+
+The problem of genome assembly is to reconstruct a genome, as defined earlier,
+given a set of substrings from the genome that may originate from any strand of
+any DNA molecule in the genome.  Each substring is called a {\it read} and
+corresponds to some DNA that was sequenced by the sequencing machine.  In
+general, reads may contain errors, including {\it substitutions}, where a base
+pair in the read is incorrectly read as some other base pair, as well as {\it
+insertions}, where a sequence of one or more random base pairs have been
+inserted into some position in the read, and {\it deletions}, where a sequence
+of one or more base pairs from the original genome is missing from the interior
+of the read.  Reads are expected to be uniformly distributed on the genome with
+a certain {\it coverage} {\it coverage} $X$, meaning that each base pair in the
+original genome is expected to be included in $X$ different reads, on average.
+However, some sequencing technologies produce highly biased data where the
+coverage of genome regions is much more variable than that expected by uniform,
+random sampling.
+
+Genomes may contain {\it repeats}, which are subsequences that are repeated
+multiple times in the genome.  Repeated sequences may be longer than the length
+of any individual read, which makes the genome more difficult to assemble.
+
+Reads may contain other information, such as {\it quality scores} or {\it
+mate-pair} information, that provide additional information to the assembler.
+
+For the purposes of this paper, the problem of genome assembly is simplified by
+assuming error-free reads that are uniformly sampled from the genome.  In
+addition, the reads are assumed to be unpaired (meaning that mate-pair
+information, if available, is not used).
 
 \section{Genome assembly vs. shortest common superstring}
 
+Genome assembly is superficially similar to the shortest common superstring
+(SCS) problem, which is to find the shortest possible string that contains every
+string in a given set as substrings.  Genome assembly also requires finding a
+longer string that contains all of a set of substrings.  However, the actual
+genome may be more than one string, and the genome may be longer than the
+shortest possible genome due to repeats.  In addition,  genomes are
+double-stranded, and the reads may have the complications described in
+\ref{subsec:reads}, such as sequencing error.  Therefore, genome assembly is not
+the same as the SCS problem, and in fact seems to be harder, despite the fact
+that the SCS problem is already NP-complete\cite{Turner1989}.
+
+In fact, some models of genome assembly have also been proven to be NP-complete
+\cite{Medvedev2007}.  However, it is definitely not acceptable to have a genome
+assembly algorithm that takes exponential time to complete.  Instead, heuristic
+algorithms that tend to produce good results but also tend to have a reasonable
+running time must be designed.
+
 \section{Overview of fragment string graph algorithm}
+
+This paper explores the genome assembly problem through an algorithm published
+in 2005 by Eugene Myers\cite{Myers2005} that is based on the idea of the
+fragment string assembly graph.  The algorithm provides a good overview of the
+techniques that are used in genome assembly, especially since it draws on ideas
+used in previous assemblers, such as the Celera assembler which was used to
+assemble the human genome for the first time\cite{Venter2001}.  However, the
+algorithm also introduces some new ideas.
+
+The overall algorithm is as follows: first, use overlaps between reads to build
+a graph that models the assembly problem.  Next, simplify and analyze this
+graph.  Finally, find paths through this graph to reconstruct the original
+genome.
 
 \section{Overlaps}
 

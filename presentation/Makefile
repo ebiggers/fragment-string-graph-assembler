@@ -6,8 +6,12 @@ presentation.pdf:presentation.tex programs.pdf
 programs.pdf:programs.dot
 	dot -Tpdf -o$@ $+
 
-paper.pdf:paper.tex
-	pdflatex $+
+paper.pdf:paper.tex refs.bib
+	pdflatex $<
+	bibtex paper.aux
+	pdflatex $<
+	pdflatex $<
+
 
 clean:
 	rm -f presentation.{pdf,log,aux,nav,out,snm,toc} paper.{pdf,log,aux}
