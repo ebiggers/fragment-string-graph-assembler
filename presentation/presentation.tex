@@ -41,7 +41,7 @@
 \begin{frame}{Genomes}
 	\begin{itemize}
 		\item A genome (for our purposes) is a long string of A's, C's, G's, and T's
-		\item Genomes are dual-stranded
+		\item Genomes are double-stranded
 		\begin{itemize}
 			\item {\tt A} always pairs with {\tt T} and {\tt C} always pairs
 			with {\tt G}
@@ -193,6 +193,7 @@
 		\item {\it The fragment string assembly graph} (Myers, 2005)
 		\item Draws on ideas used in previous assemblers and also introduces new
 		ideas
+		\item Not the same as de Bruijn graph-based approaches
 		\item The fundamental algorithm:
 		\begin{enumerate}
 			\item Use overlaps between reads to build a graph that models the
@@ -434,8 +435,8 @@
 		\item We must allow each read to be used either in the
 		reverse-complement or forward direction.
 		\item We must allow the edges to be traversed in either direction.
-		\item However, each read must still be used in a consistent way within
-		any single assembly.
+		\item However, each read must still be used in a consistent way
+		at a location within any single assembly.
 		\item Solution: use a {\bf bidirected graph}.
 	\end{itemize}
 	\begin{center}
@@ -513,7 +514,7 @@
 	\begin{itemize}
 		\item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
 		edges in $G$ such that if any vertex $v$ is entered through a head
-		inwards, it is exited on a head outwards (unless it is the end of the
+		inwards, it is exited through a head outwards (unless it is the end of the
 		path), and vice versa.
 		\item A bidirected edge may be traversed in both directions
 		(possibly even during the same walk).
