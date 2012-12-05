@@ -8,7 +8,7 @@
 %\usepackage{listings}
 
 \title{A Bidirected String Graph Model for Genome Assembly}
-\author{Eric Biggers\footnote{Macalester College}}
+\author{Eric Biggers}
 
 \begin{document}
 \maketitle
@@ -20,10 +20,76 @@
 %genome, assembly software such as Allpaths-LG can be used to assemble these
 %fragments into longer contiguous sequences.  
 %\end{abstract}
+\newcommand\Base[1]{{\tt #1}}
 
 \section{Introduction to genome sequencing and assembly}
 
 \subsection{Definition of a genome}
+
+Every living organism contains a collection of hereditary material called a {\em
+genome}.  Typically, each individual cell of a multicellular organism contains a
+complete copy of the genome.  A genome consists of one or more DNA ({\it
+deoxyribonucleic acid}) molecules in the form of {\it chromosomes}.  DNA is a
+double-stranded molecule, each strand of which is a polymer of {\em
+nucleotides}.  A nucleotide, together with the corresponding nucleotide on the
+opposite strand, is called a {\it base pair}.  In DNA, there are four possible
+nucleotides: adenine, cytosine, guanine, and thymine, which are abbreviated as
+\Base{A}, \Base{C}, \Base{G}, and \Base{T}, respectively.  \Base{A} always pairs
+with T on the other strand, and \Base{C} always pairs with \Base{G} on the other
+strand.  In addition, each strand has a direction, and the two strands of a DNA
+molecule are directed opposite one another.  Furthermore, a DNA molecule may be
+circular (as is usually the case for bacterial chromosomes), in which case the
+molecule has no ends.
+
+Therefore, for the purposes of this paper, a genome is defined as a set of
+possibly circular, dual-stranded strings of the symbols \Base{A}, \Base{C},
+\Base{G}, and \Base{T}, where dual-stranded has the meaning indicated above (the
+two strands run in opposite directions, and the pairings \Base{A}---\Base{T} and
+\Base{C}---\Base{G} always hold.)
+
+This definition does not account for the fact that bacterial chromosomes are
+circular, nor does it account for the fact that diploid and polyploid organisms
+contain multiple, slightly-differing copies of each chromosome.  For the latter
+case, the above definition will consider each copy of the chromosome to be a
+completely different string in the genome.
+
+Genomes vary widely in size, from several thousand base pairs to many billion
+base pairs, depending on the organism.  (See Table \ref{tab:GenomeSizes}).
+
+\begin{table}[H]
+	\begin{center}
+		\begin{tabular}{|l|p{4.5cm}|}
+			%\hline
+			%$\phi$X174 bacteriophage &  $\sim$5,000 bp \\
+			%\hline
+			%Human mitochondrion &  $\sim$16,000 bp \\
+			\hline
+			{\bf Organism} & {\bf Approximate genome size (in base
+			pairs)} \\
+			\hline
+			{\it Variola} (smallpox) virus &  186,000 \\
+			\hline
+			{\it E. coli} (a common bacterium) & 4,600,000 \\
+			\hline
+			{\it Ananas comosus} (domesticated pineapple) & 500,000,000 \\
+			\hline
+			{\it Zea mays} (domesticated corn) & 2,000,000,000 \\
+			\hline
+			{\it Homo sapiens} (human)       &  3,200,000,000 \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Approximate genome sizes of selected organisms}
+	\label{tab:GenomeSizes}
+\end{table}
+
+\subsection{Genome sequencing}
+
+{\it DNA sequencing} is the process of determining the base pair sequence of one
+or more DNA molecules.  {\it Genome sequencing} is the use of DNA sequencing to
+determine the base pair sequence of an entire genome.
+
+
 \subsection{Overall workflow for genome sequencing}
 \subsection{Genome assemblers}
 
