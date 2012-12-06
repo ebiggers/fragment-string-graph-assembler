@@ -3,9 +3,16 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{comment}
 %\usepackage{amsthm}
 
 \usetikzlibrary{arrows}
+
+%\floatstyle{boxed}
+%\restylefloat{figure}
 
 %\theoremstyle{definition}
 %\newtheorem{definition}{Definition}
@@ -13,6 +20,7 @@
 \newcommand{\LengthVar}{L}
 \newcommand\Base[1]{{\tt #1}}
 \newcommand{\ReadArrowType}{latex}
+\newcommand{\Figure}[1]{Figure \ref{#1}}
 
 \title{A Bidirected String Graph Model for Genome Assembly}
 \author{Eric Biggers}
@@ -101,7 +109,9 @@ Therefore, indirect laboratory techniques must be used.  Advances in these
 techniques are progressing rapidly, and they can now be performed by automated
 machines.  However, every technique suffers from the limitation that only short
 fragments of DNA several dozen to several thousand base pairs long can be
-sequenced.  Therefore, to sequence an entire genome, which may be millions of
+sequenced.
+
+Therefore, to sequence an entire genome, which may be millions of
 base pairs long, the DNA from the genome must be broken into much smaller
 fragments, which are then sequenced.  Following this, the original genome is
 computationally reconstructed by a computer program called a {\it genome
@@ -201,6 +211,7 @@ graph are found to reconstruct the original genome.
 
 \section{Overlaps}
 
+\subsection{Definition of an overlap}
 %\begin{definition}
 	Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and
 	$g'$.  The reads $f$ and $g$ are said to {\bf exactly overlap} by some
@@ -224,6 +235,8 @@ read in the overlap is used in the original direction and the other read is used
 in the reverse-complement direction.  Note that an overlap from condition (4) is
 {\it not} a reverse-complement overlap, as it can equivalently be stated as the
 last $\LengthVar$ bp of $g$ exactly match the last $\LengthVar$ bp of $f$.
+\Figure{fig:overlap_types} shows the three fundamental types of overlaps that
+may arise from this definition.
 
 A read may overlap with itself; for example, a read may contain a suffix that
 matches its prefix of the same length.  Such an overlap is called a {\it
@@ -256,68 +269,246 @@ containing overlap is an overlap where the overlapped regions include the
 entirety of both reads.  For an exact overlap, this can only happen if the two
 reads are either identical or exact reverse-complements of each other.
 
-The reason we care about overlaps is that two reads that overlap are likely to
-come from adjacent positions on the genome.  For example, consider
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\begin{tikzpicture}=\ReadArrowType]
+			\draw[->,style=thick] (0,0) -- (2,0);
+			\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
+		\end{tikzpicture}
+		%\vspace{3mm}
+		%or (symmetrically)
+		%\vspace{3mm}
 
-\begin{center}
-	\noindent {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
-		ATATAT{GCTGGTTACTT} $\rightarrow$ } \\
-	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\rightarrow$
-		{GCTGGTTACTT}TGATAGATA $\rightarrow$ } \\
-	{\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
-\end{center}
+		%\begin{tikzpicture}=\ReadArrowType]
+			%\draw[->,style=thick] (2,0) -- (0,0);
+			%\draw[->,style=thick] (3.0,0.3) -- (1.0,0.3);
+		%\end{tikzpicture}
+		\caption{``Normal'' overlap}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\begin{tikzpicture}=\ReadArrowType]
+			\draw[->,style=thick] (0,0) -- (2,0);
+			\draw[->,style=thick] (3,0.3) -- (1,0.3);
+		\end{tikzpicture}
+		\caption{``Innie'' overlap}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\begin{tikzpicture}=\ReadArrowType]
+			\draw[->,style=thick] (2,0) -- (0,0);
+			\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
+		\end{tikzpicture}
+		\caption{``Outie'' overlap}
+	\end{subfigure}
+	\caption{The three types of overlaps.  The innie and outie overlaps are
+	reverse-complement overlaps, while the normal overlap is not.  Note:
+	with the normal overlap, there is a symmetric case that is not
+	considered a distinct type of overlap here.}
+	\label{fig:overlap_types}
+\end{figure}
 
-Overlapping reads may be from different strands, in which case the
-overlapped regions are reverse-complement from each other.
+%\begin{enumerate}
+	%\item ``Normal'' overlap
+		%\begin{center}
+			%\vspace{-0.5cm}
+			%\begin{tikzpicture}[>=\ReadArrowType]
+				%\draw[->,style=thick] (0,0) -- (2,0);
+				%\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
+			%\end{tikzpicture}
 
-\begin{center}
-	\noindent {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
-		ATATAT{GCTGGTTACTT} $\rightarrow$ } \\
-	{\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\leftarrow$
-		{CGACCAATGAA}ACTATCTAT $\leftarrow$ } \\
-	{\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
-\end{center}
+			%\vspace{3mm}
+			%or (symmetrically)
+			%\vspace{3mm}
 
-Overall, there are three types of overlaps:
+			%\begin{tikzpicture}[>=\ReadArrowType]
+				%\draw[->,style=thick] (2,0) -- (0,0);
+				%\draw[->,style=thick] (3.0,0.3) -- (1.0,0.3);
+			%\end{tikzpicture}
+		%\end{center}
+	%\vspace{0.5cm}
+	%\item ``Innie'' overlap
+		%\begin{center}
+			%\vspace{-0.5cm}
+			%\begin{tikzpicture}[>=\ReadArrowType]
+				%\draw[->,style=thick] (0,0) -- (2,0);
+				%\draw[->,style=thick] (3,0.3) -- (1,0.3);
+		%\end{tikzpicture} \end{center}
+	%\vspace{0.5cm}
+	%\item ``Outie'' overlap
+		%\begin{center}
+		%\vspace{-0.5cm}
+		%\begin{tikzpicture}[>=\ReadArrowType]
+				%\draw[->,style=thick] (2,0) -- (0,0);
+				%\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
+		%\end{tikzpicture} \end{center}
+%\end{enumerate}
 
-\begin{enumerate}
-	\item ``Normal'' overlap
-		\begin{center}
-			\vspace{-0.5cm}
-			\begin{tikzpicture}[>=\ReadArrowType]
-				\draw[->,style=thick] (0,0) -- (2,0);
-				\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
-			\end{tikzpicture}
+Overlaps are important because two reads that overlap may come from adjacent
+positions on the genome.  Although due to repeats, we cannot be certain that two
+overlapping reads actually come from adjacent positions, we {\it can} say for
+certain that two reads that do not overlap do not come from adjacent positions
+on the genome.  Regardless of this, \Figure{fig:overlap_examples} shows how two
+reads that overlap potentially could be combined to form a longer sequence.
 
-			\vspace{3mm}
-			or (symmetrically)
-			\vspace{3mm}
+\begin{figure}
+		%\begin{tikzpicture}
+			%\draw (0, 0) node[anchor=left] {Read 1:}	
+			%\draw (0, -1) node[anchor=left] {Read 2:}	
+			%\draw (0, -2) node[anchor=left] {Possible genome:}
+		%\end{tikzpicture}
+	\centering
+	\begin{subfigure}[t]{0.455\textwidth}
+		1: \hspace{0.7mm}{\tt $\rightarrow$ATATAT{GCTGGTTACTT}$\rightarrow$ } \\
+		2: \hspace{0.7mm}{\tt \ \ \ \ \ \ $\rightarrow${GCTGGTTACTT}TGATAGATA$\rightarrow$ } \\
+		G: {\tt $\rightarrow$ATATATGCTGGTTACTTTGATAGATA$\rightarrow$}
+		\caption{A normal overlap between reads (1) and (2) and the
+		implied way in which the two reads could be joined together to
+		form a longer sequence (G)}
+	\end{subfigure}
+		\hspace{0.07\textwidth}
+	\begin{subfigure}[t]{0.455\textwidth}
+		1: \hspace{0.7mm}{\tt $\rightarrow$ATATAT{GCTGGTTACTT}$\rightarrow$ } \\
+		2: \hspace{0.7mm}{\tt \ \ \ \ \ \ $\leftarrow${CGACCAATGAA}ACTATCTAT$\leftarrow$ } \\
+		G: {\tt $\rightarrow$ATATATGCTGGTTACTTTGATAGATA$\rightarrow$}
+		\caption{A reverse-complement overlap between reads (1) and
+		(2)--- more specifically, an ``innie'' overlap--- and the
+		implied way in which the two reads could be joined together to
+		form a longer sequence (G)}
+	\end{subfigure}
+	\caption{Examples of normal and reverse-complement overlaps}
+	\label{fig:overlap_examples}
+\end{figure}
 
-			\begin{tikzpicture}[>=\ReadArrowType]
-				\draw[->,style=thick] (2,0) -- (0,0);
-				\draw[->,style=thick] (3.0,0.3) -- (1.0,0.3);
-			\end{tikzpicture}
-		\end{center}
-	\vspace{0.5cm}
-	\item ``Innie'' overlap
-		\begin{center}
-			\vspace{-0.5cm}
-			\begin{tikzpicture}[>=\ReadArrowType]
-				\draw[->,style=thick] (0,0) -- (2,0);
-				\draw[->,style=thick] (3,0.3) -- (1,0.3);
-		\end{tikzpicture} \end{center}
-	\vspace{0.5cm}
-	\item ``Outie'' overlap
-		\begin{center}
-		\vspace{-0.5cm}
-		\begin{tikzpicture}[>=\ReadArrowType]
-				\draw[->,style=thick] (2,0) -- (0,0);
-				\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
-		\end{tikzpicture} \end{center}
-\end{enumerate}
+\subsection{Computing overlaps}
 
-Now that we've formalized the definition of an overlap, what we'd like to do is
-compute 
+\subsubsection{Algorithm}
+
+Now that the idea of an exact overlap has been formalized, what we would like to
+do is compute all pairwise exact overlaps of minimum length $L$ among the reads
+that were provided as input to the assembler.
+
+\begin{comment}
+\begin{algorithm}
+\caption{{\sc ComputeExactOverlapsNaive}($S$, $L$)}
+\begin{algorithmic}
+	%\FOR{{\bf each} distinct}
+	\STATE b
+\end{algorithmic}
+\end{algorithm}
+
+\newcommand{\OccVar}{\omega}
+%\newcommand{\OccOne}{{\OccVar}_1}
+%\newcommand{\OccTwo}{{\OccVar}_2}
+\newcommand{\OccOne}{{\tt occ1}}
+\newcommand{\OccTwo}{{\tt occ2}}
+\newcommand{\SeedVar}{{\tt seed}}
+\newcommand{\OccList}{{\tt occurrenceSet}}
+\newcommand{\OverlapSet}{{\tt overlapSet}}
+\newcommand{\OccMap}{{\tt occurrenceMap}}
+\newcommand{\PosOne}{{\tt pos1}}
+\newcommand{\PosTwo}{{\tt pos2}}
+\newcommand{\Len}{{\tt len}}
+\newcommand{\RightExtend}{{\tt rightExtend}}
+\newcommand{\LeftExtend}{{\tt leftExtend}}
+\newcommand{\ReadSet}{{\tt readSet}}
+\newcommand{\minOverlapLen}{{\tt minOverlapLen}}
+\newcommand{\readOneBeg}{{\tt read1Begin}}
+\newcommand{\readOneEnd}{{\tt read1End}}
+\newcommand{\readTwoBeg}{{\tt read2Begin}}
+\newcommand{\readTwoEnd}{{\tt read2End}}
+\newcommand{\numExtremePoints}{{\tt numExtremePoints}}
+
+\begin{algorithm}
+\caption{{\sc ComputeExactOverlapsSeedAndExtend}($\ReadSet$, $\minOverlapLen$)}
+\begin{algorithmic}
+	%\REQUIRE{$S$ is a list of DNA sequences}
+	%\REQUIRE{$L$ is a positive integer that is the minimum overlap length}
+	\STATE{Let $k$ be a positive integer less than or equal to
+	$\minOverlapLen$.}
+	\STATE{Let $\OccMap$ be a hash table that maps DNA sequences to sets of
+		$k$-mer occurrences.}
+	\STATE{Let $\OverlapSet$ be an empty set of overlaps.}
+	\FOR{{\bf each} sequence $s \in \ReadSet$}
+		\FOR{{\bf each} canonical $k$-mer $K \in r$}
+			\STATE{Add the occurrence of $K$ to $\OccMap[K]$}
+		\ENDFOR
+	\ENDFOR
+	\FOR{{\bf each} $(\SeedVar,\ \OccList) \in \OccMap$}
+		\FOR{{\bf each} distinct pair of $k$-mer occurrences $\OccOne,
+		\OccTwo \in \OccList$}
+			\IF{the read ID of $\OccOne$ is greater than the read ID
+			of $\OccTwo$}
+				\STATE{Swap $\OccOne$ and $\OccTwo$}
+			\ENDIF
+			\IF{$\OccOne$ and $\OccTwo$ are both forward or both
+			reverse-complement}
+				\STATE{${\tt rc} \gets$ {\bf true}}
+			\ELSE
+				\STATE{${\tt rc} \gets$ {\bf false}}
+			\ENDIF
+			\STATE{$f \gets$ the read containing $\OccOne$}
+			\STATE{$g \gets$ the read containing $\OccTwo$}
+			\STATE{$\PosOne \gets$ the position within $f$ of $\OccOne$}
+			\STATE{$\PosOne \gets$ the position within $g$ of $\OccTwo$}
+			\STATE{$\Len \gets k$}
+			\IF{${\tt rc}$}
+				\STATE{$g' \gets$ the reverse complement of $g$}
+				\STATE{${\tt \LeftExtend} \gets$ the number of
+				additional bp to the left of the seed that
+				match, comparing $f$ with $g'$}
+				\STATE{${\tt \RightExtend} \gets$ the number of
+				additional bp to the right of the seed that
+				match, comparing $f$ with $g'$}
+				\STATE{$\PosTwo \gets \PosTwo - {\tt
+				\RightExtend}$}
+			\ELSE
+				\STATE{${\tt \LeftExtend} \gets$ the number of
+				additional bp to the left of the seed that
+				match, comparing $f$ with $g$}
+				\STATE{${\tt \RightExtend} \gets$ the number of
+				additional bp to the right of the seed that
+				match, comparing $f$ with $g$}
+				\STATE{$\PosTwo \gets \PosTwo - {\tt \LeftExtend}$}
+			\ENDIF
+			\STATE{$\PosOne \gets \PosOne - {\tt \LeftExtend}$}
+			\STATE{$\Len \gets \Len + {\tt \LeftExtend} + {\tt \RightExtend}$}
+			\IF{$\Len < \minOverlapLen$} 
+				\STATE{\bf continue}
+			\ENDIF
+			\STATE{$\readOneBeg \gets \PosOne$}
+			\STATE{$\readOneEnd \gets \PosOne + \Len - 1$}
+			\STATE{$\readTwoBeg \gets \PosTwo$}
+			\STATE{$\readTwoEnd \gets \PosTwo + \Len - 1$}
+			\STATE{$\numExtremePoints \gets 0$}
+			\IF{$\readOneBeg = 0$}
+				\STATE{$\numExtremePoints \gets \numExtremePoints + 1$}
+			\ENDIF
+			\IF{$\readOneEnd = {\sc Length}(f) - 1$}
+				\STATE{$\numExtremePoints \gets \numExtremePoints + 1$}
+			\ENDIF
+			\IF{$\readTwoBeg = 0$}
+				\STATE{$\numExtremePoints \gets \numExtremePoints + 1$}
+			\ENDIF
+			\IF{$\readTwoEnd = {\sc Length}(g) - 1$}
+				\STATE{$\numExtremePoints \gets \numExtremePoints + 1$}
+			\ENDIF
+
+
+			%\STATE{Maximally extend the occurrence of $\SeedVar$ at
+			%$\OccOne$ and $\OccTwo$ outwards in both directions}
+			%\STATE{${\tt pos1} \gets$ the beginning of the maximally
+			%matched region on the read containing $\OccOne$}
+			%\STATE{${\tt pos2} \gets$ the beginning of the maximally
+			%matched region on the read containing $\OccTwo$}
+			%\STATE{${\tt plen} \gets$ the length of the maximall
+			%matched region on the read containing $\OccTwo$}
+		\ENDFOR
+	\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+\end{comment}
+
+\subsubsection{Implementation}
 
 \section{Building the fragment string assembly graph}
 
