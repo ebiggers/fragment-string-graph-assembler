@@ -117,7 +117,7 @@ enough to need entirely new algorithms to solve.
 
 == An algorithm for genome assembly ==
 
-For the rest of this walk, I will be focusing on an assembly algorithm that was
+For the rest of this talk, I will be focusing on an assembly algorithm that was
 published in 2005.  It provides a good overview of some of the technqiues that
 are used in genome assembly, especially since it draws on ideas that have been
 used earlier assemblers, such as the Celera assembler which was used for the
