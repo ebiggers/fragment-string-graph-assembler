@@ -663,7 +663,7 @@ fails in another way: it has no guarantee that a given read is used in a
 consistent way at a location within any single assembly.
 
 The solution to all these problems is to use a new type of graph called a
-\KeyTerm{bidirected graph}:
+\KeyTerm{bidirected graph}.
 \begin{center}
 	\begin{tikzpicture}[>=triangle 45]
 		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
@@ -772,7 +772,161 @@ direction, possibly even during the same walk.
 	\label{fig:bidiwalk_example}
 \end{figure}
 
+The concept of a walk through a bidirected graph maps quite nicely onto the
+genome assembly problem, since a walk through the bidirected string graph
+constructed from reads and overlaps models a way in which the reads can be
+assembled together consistently.  In such a walk, each read may be used in
+forward or reverse-complement orientation, depending on the direction, relative
+to the walk, of the adjacent arrow heads when the corresponding vertex is passed
+through.
+
+For example, consider the walk $1 \to 2 \to 3 \to 4$ in
+\Figure{fig:bidigraph_mapping}.  When the walk passes through vertex 1, the
+adjacent arrow head is pointed opposite the direction of the walk.  This implies
+that the corresponding read is used in reverse-complement orientation.  When the
+walk passes through vertex 2, the adjacent arrow heads are pointed in the
+direction of the walk, which implies that the corresponding read is used in
+forward orientation.  Finally, when the walk passes through vertices 3 and 4,
+the adjacent arrow heads are pointed opposite the direction of the walk, which
+implies that the corresponding reads are used in reverse-complement orientation.
+Note that $4 \to 3 \to 2 \to 1$ is also a valid walk, which represents the way
+in which the four reads could also assemble the other strand of the DNA
+molecule.
+
+\begin{figure}
+	\begin{center}
+		{\small
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (1) at (0.00, 0) {1};
+			\node (2) at (2.0, 0) {2};
+			\node (3) at (4.0, 0) {3};
+			\node (4) at (6.0, 0) {4};
+			\draw[<->,very thick] (1) edge (2);
+			\draw[>-<,very thick] (2) edge (3);
+			\draw[<-<,very thick] (3) edge (4);
+		\end{tikzpicture} }
+
+		\vspace{2.5mm}
+
+		\begin{tikzpicture}[>=\ReadArrowType]
+				\draw[<-,style=very thick] (0.0, 0.0) -- (2.6, 0.0);
+				\draw[->,style=very thick] (1.6, -0.3) -- (4.2, -0.3);
+				\draw[<-,style=very thick] (3.2, -0.6) -- (5.8, -0.6);
+				\draw[<-,style=very thick] (4.8, -0.9) -- (7.4, -0.9);
+				\draw (-0.3, 0.0) node {1.};
+				\draw (-0.3, -0.3) node {2.};
+				\draw (-0.3, -0.6) node {3.};
+				\draw (-0.3, -0.9) node {4.};
+		\end{tikzpicture}
+	\end{center}
+	\caption{A bidirected graph and the implied assembly of the
+	corresponding reads}
+	\label{fig:bidigraph_mapping}
+\end{figure}
+
+Earlier, a crucial point was quickly skipped over.  Each edge is supposed to be
+labeled with a DNA sequence, as we are building a bidirected {\em string} graph.
+However, we actually need to label each edge with two DNA sequences: one for
+each direction in which the edge can be traversed.  To see this, we need to
+consider exactly what it means to walk between vertices in the bidirected graph.
+
+Consider the the string graph fragment shown in \Figure{fig:bidiedge_interp_a}.
+When we walk from $f \to g$, we are using both $f$ and $g$ in forward
+orientation, based on the arrow heads.  But what this really means is that we
+are walking from the {\em end} of read $f$ to the {\em end} of read $g$.  In
+other words, traversing the edge in that direction is associated with the
+addition of the sequence after the overlapped region in $g$, up to the end of
+the $g$. 
+
+If we instead walk $g \to f$, we instead use both $g$ and $f$ in
+reverse-complement orientation by walking from the {\em beginning} of read $g$
+to the {\em beginning} of read $f$.  In other words, traversing the edge in that
+direction is associated with the addition of the sequence before the overlapped
+region in $f$, up to the beginning of $f$, and this sequence must be
+reverse-complemented because it is being used opposite its original direction.
+
+These interpretations can be generalized to the other two types of bidirected
+edges.  Furthermore, these intepretations imply that the actual sequence spelled
+out by a walk in the bidirected graph may include implied (non-labeled) sequence
+at the start (if we start at the end of a read) and/or the end (if we end at the
+beginning of a read).
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.48\textwidth}
+		\begin{tikzpicture}[>=triangle 45,scale=1.5]
+			\node[circle,fill=blue!20,draw=black] (f) at (0, 0) {f};
+			\node[circle,fill=blue!20,draw=black] (g) at (2.0, 0) {g};
+			\draw[>->,style=very thick] (f) edge (g);
+			\draw (1.00, 0.1) node[anchor=south] {\small \tt TTAGAAGTA};
+			\draw (1.00, -0.1) node[anchor=north] {
+					\rotatebox{180}{\small \tt
+					TGTGTAATC}};
+			\draw[->] (0.5, 0.5) ..
+				controls (0.7, 0.7) and (1.3, 0.7) ..
+				(1.5, 0.5);
+			\draw[->] (1.5, -0.5) ..
+				controls (1.3, -0.7) and (0.7, -0.7) ..
+				(0.5, -0.5);
+		\end{tikzpicture}
+		\caption{bidirected string graph fragment}
+		\label{fig:bidiedge_interp_a}
+	\end{subfigure}
+	\begin{subfigure}{0.48\textwidth}
+		\begin{tikzpicture}[>=\ReadArrowType,scale=0.8]
+			\draw[->,very thick] (0, 0) node[anchor=east] {$f.B$}
+					-> (4, 0) node[anchor=west] {$f.E$};
+			\draw[->,very thick] (2.09, -0.9) node[anchor=east] {$g.B$}
+					-> (6.09, -0.9) node[anchor=west] {$g.E$};
+
+			\draw (0, -0.1) node[anchor=south west]
+				{\hspace*{-1.4mm}{\small \tt
+					%GATTACACAGTGTAGTT
+					GATTACACA\hspace*{0.1cm}$a_1 \dots a_n$
+				}};
+
+			\draw (0, 0.1) node[anchor=north west]
+				{\hspace*{-2.6mm}
+					\rotatebox{180}{{\small \tt TGTGTAATC}}};
+
+			\draw (2.09, -1.0) node[anchor=south west]
+				{\hspace*{-1.4mm}{\small \tt
+					%GTGTAGTTTTAGAAGTA
+					\hspace*{0.1cm}$a_1 \dots a_n$\hspace*{0.25cm}TTAGAAGTA
+				}};
+
+			\draw (2.09, -0.9) node[anchor=north west]
+				{\hspace*{12.48mm}
+					\rotatebox{180}{{\small \tt TACTTCTAA}}};
+
+			\draw (2.09, -1.4) node[anchor=north] {$o.g_{begin}$}
+					-- (2.09, 0.6) node[anchor=south] {$o.f_{begin}$};
+			\draw (3.99, -1.4) node[anchor=north] {$o.g_{end}$}
+					-- (3.99, 0.6) node[anchor=south] {$o.f_{end}$};
+		\end{tikzpicture}
+		\caption{The corresponding overlap (labeled)}
+		\label{fig:bidiedge_interp_b}
+	\end{subfigure}
+
+	\begin{subfigure}{0.5\textwidth}
+		\begin{tabular}{c|c}
+			walk & interpretation \\ \hline
+			$f \to g$ & $f.E \to g.E$ with sequence $g[o.g_{end} + 1 \dots ${\tt
+			length}$(g)]$ \\
+			$g \to f$ & $g.B \to f.B$ with sequence $f[o.g_{begin} - 1 \dots 0]$ \\
+		\end{tabular}
+		\caption{Interpretation of each walk on the graph fragment}
+	\end{subfigure}
+	\caption{Full interpetation of an edge in the bidirected string graph}
+	\label{bidiedge_interp}
+\end{figure}
+
 \section{Removing contained reads}
+
+There is yet another flaw in the way that the construction of the graph has been
+presented that needs to be addressed.  Earlier, the definition of a
+\KeyTerm{contained read} was provided.  
 
 
 \section*{Acknowledgments}
