@@ -25,23 +25,35 @@
 \newcommand{\Subfigure}[1]{Figure \ref{#1}}
 \newcommand{\Section}[1]{Section \ref{#1}}
 \newcommand{\Subsection}[1]{Subsection \ref{#1}}
+\newcommand{\Algorithm}[1]{Algorithm \ref{#1}}
 
 \newcommand{\KeyTerm}[1]{{\it #1}}
 \newcommand{\ProgramName}[1]{{\tt #1}}
+\newcommand{\BidirectedEdgeForward}[2]{
+		\tikz[>=triangle 45,baseline]
+		\draw[>->,thin] (0,0.1) node[anchor=east] {#1} --
+					    (0.8,0.1) node[anchor=west] {#2};}
 
 \title{A Bidirected String Graph Model for Genome Assembly}
 \author{Eric Biggers}
 
+
 \begin{document}
 \maketitle
 
-%\begin{abstract}
-%Sequencing an organism's genome is an important step to further genetic research
-%on that organism.  However, current sequencing machines can only sequence very
-%short fragments of DNA that originate from random positions on the original
-%genome, assembly software such as Allpaths-LG can be used to assemble these
-%fragments into longer contiguous sequences.
-%\end{abstract}
+\begin{abstract}
+
+Sequencing an organism's genome is an important step to further genetic research
+on that organism.  However, currently available sequencing technology can only
+sequence short fragments of DNA.  As a result, whole-genome shotgun sequencing
+approaches to genome sequencing rely on programs called {\em genome assemblers}
+that can put together a set of short DNA fragments to reconstruct the original
+genome.  This paper provides an introduction and formalization of the genome
+assembly program, then introduces a model and algorithm for genome assembly that
+is based on a special type of graph called a \KeyTerm{bidirected string graph}.
+\end{abstract}
+
+\tableofcontents
 
 \section{Introduction to genome sequencing and assembly}
 
@@ -179,7 +191,7 @@ length of any individual read, which makes the genome more difficult to assemble
 accurately.  However, real genomes almost always contain repeats of substantial
 length, so genome assembly algorithms must be able to handle repeats.
 
-\section{Genome assembly vs. shortest common superstring}
+\subsection{Genome assembly vs. shortest common superstring}
 
 Genome assembly is superficially similar to the shortest common superstring
 (SCS) problem, which is to find the shortest possible string that contains every
@@ -955,7 +967,7 @@ beginning of a read).
 	\label{fig:bidiedge_interp}
 \end{figure}
 
-\subsection{An equivalent directed graph}
+\subsection{An equivalent directed graph model}
 
 \label{subsec:directed}
 
@@ -1027,9 +1039,271 @@ to be described).
 \section{Transitive reduction}
 
 Before trying to find walks through the string graph, it is very helpful to
-simplify the graph is much as
+simplify the graph is much as possible.  Very commonly, given three adjacent
+reads $f$, $g$, and $h$, $f$ will overlap $h$ as well as $g$.  This is redundant
+because we can, equivalently, walk $f$ to $g$ to $h$ rather than directly
+walking from $f$ to $h$.  \Figure{fig:transitive} shows an example of this.
 
-\section{Mapping contained reads}
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}
+			\draw[->,style=very thick] (0,0) node[anchor=east] {f} -- (2,0);
+			\draw[->,style=very thick] (0.6,0.25) node[anchor=east] {g} -- (2.6,0.25);
+			\draw[->,style=very thick] (1.2,0.5) node[anchor=east] {h} -- (3.2,0.5);
+		\end{tikzpicture}
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (f) at (0, 0) {f};
+			\node (g) at (1.7, 0) {g};
+			\node (h) at (3.4, 0) {h};
+			\draw[>->,style=very thick] (f) edge (g);
+			\draw[>->,style=very thick] (g) edge (h);
+			\draw[>->,style=very thick,bend left] (f) edge (h);
+		\end{tikzpicture}
+	\end{center}
+	\caption{Three overlapping reads $f$, $g$, and $h$, and the corresponding
+	bidirected graph.  The edge between $f$ and $h$ is transitive and is removed
+	by transitive reduction.}
+	\label{fig:transitive}
+\end{figure}
+
+Walks visiting more vertices are preferred because they are supported by more
+reads and the overlaps tend to be longer.  So, we would like to throw away
+\BidirectedEdgeForward{$f$}{$h$}, which is a \KeyTerm{transitive edge}, but keep
+\BidirectedEdgeForward{$f$}{$g$} and \BidirectedEdgeForward{$g$}{$h$}.
+
+To remove these redundant edges, \KeyTerm{transitive reduction} is performed on
+the bidirected string graph.
+
+\Algorithm{alg:transitive_reduction} produces pseudocode for a transitive
+reduction algorithm.  Essentially, the algorithm is to through each vertex $v$
+and examine vertices up to 2 edges away from $v$ to identify all transitive
+edges leaving $v$.  These edges are then marked for removal, and removed after
+all vertices in the graph have been considered.  Some optimizations are
+possible; for example, the lengths of the sequences the edges are labeled with
+can be taken into account to allow terminating the search of a vertex $v$'s
+neighborhood before all possible walks of length 2 leaving $v$ have been
+considered.
+
+Transitive reduction can be performed on either the bidirected or directed
+representations of the string graph, although for simplicity here it is
+described on the directed graph.
+
+\begin{algorithm}
+	\caption{{\sc TransitiveReduction}($G$)}
+	{\footnotesize
+		\begin{algorithmic}
+			\FOR{{\bf each} vertex $v \in G$}
+				\STATE{Mark all neighbors of $v$ as {\tt INPLAY}}
+				\STATE{Set {\tt longest} $\gets$ length of the longest edge leaving $v$}
+				\FOR{{\bf each} edge $v \to w$ in order of length}
+					\FOR{{\bf each} edge $w \to x$ in order of length}
+						\IF{$x$ is not marked {\tt INPLAY}}
+							\STATE{\bf continue}
+						\ENDIF
+						\IF{$len(v \to w) + len(w \to x) > $ {\tt longest}}
+							\STATE{\bf break}
+						\ENDIF
+						\STATE{Mark $x$ as {\tt ELIMINATED}}
+					\ENDFOR
+				\ENDFOR
+				\STATE{Mark as transitive all edges $v \to x$ where $x$ is marked {\tt ELIMINATED}}
+			\ENDFOR
+			\STATE{Eliminate all edges marked transitive}
+		\end{algorithmic}
+	}
+	\label{alg:transitive_reduction}
+\end{algorithm}
+
+Transitive reduction on a string graph is implemented as the program
+\ProgramName{transitive-reduction}.  It takes as input a file containing a
+string graph and produces as output a file containing the transitively reduced
+string graph.
+
+\section{Collapsing unbranched paths}
+
+After transitive reduction, a non-repetitive region of the genome will typically
+be represented in the string graph by a chain of vertices that is part of a
+valid walk and consists entirely of vertices with in-degree 1 and out-degree 1.
+This is referred to as an \KeyTerm{unbranched path}, and it contains one or more
+\KeyTerm{inner vertices}.  An unbranched path can be collapsed by removing the
+inner vertices and replacing them by a single edge that covers the entire path.
+This replacement edge is labeled with the concatenation of the sequences that
+the edges are labeled with.  In the bidirected case, this concatenation must be
+done for both directions in which the unbranched path might have been traversed.
+\Figure{fig:collapse_unbranched_paths} shows an example of how a short
+unbranched path can be collapsed.
+
+Collapsing unbranched paths is implemented as the program
+\ProgramName{collapsed-unbranched-paths}.  It takes as input a file containing a
+string graph and produces as output a file containing the string graph with
+unbranched paths collapsed.  Vertices are currently re-numbered; so, for
+example, vertex 10 after collapsing unbranched paths does not necessarily refer
+to the 10th read in the list of uncontained reads from which the graph was
+constructed.
+
+\begin{figure}
+	\begin{center}
+		{\small
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (1) at (0.0, -1) {1};
+			\node (2) at (0.0, 1) {2};
+			\node (3) at (1.5, 0) {3};
+			\node[fill=green!25] (4) at (3.25, 0) {4};
+			\node (5) at (5.0, 0) {5};
+			\node (6) at (6.5, 1) {6};
+			\node (7) at (6.5, -1) {7};
+			\draw[>->,very thick] (1) edge (3);
+			\draw[>->,very thick] (2) edge (3);
+			\draw[>->,very thick] (3) edge (4);
+			\draw[>->,very thick] (4) edge (5);
+			\draw[>->,very thick] (5) edge (6);
+			\draw[>->,very thick] (5) edge (7);
+		\end{tikzpicture}
+		}
+
+	becomes:
+
+		{\small
+		\begin{tikzpicture}[>=triangle 45]
+			\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+			\node (1) at (0.0, -1) {1};
+			\node (2) at (0.0, 1) {2};
+			\node (3) at (1.5, 0) {3};
+			\node (5) at (3.25, 0) {5};
+			\node (6) at (4.75, 1) {6};
+			\node (7) at (4.75, -1) {7};
+			\draw[>->,very thick] (1) edge (3);
+			\draw[>->,very thick] (2) edge (3);
+			\draw[>->,very thick] (3) edge (5);
+			\draw[>->,very thick] (5) edge (6);
+			\draw[>->,very thick] (5) edge (7);
+		\end{tikzpicture}
+		}
+	\end{center}
+	\caption{Vertex 4 an \KeyTerm{inner vertex} that is part of an unbranched
+	path that can be collapsed.  Edge labels are not shown.}
+	\label{fig:collapse_unbranched_paths}
+\end{figure}
+
+\section{Examples of graph construction and simplification}
+
+At this point, the assembler has been given a set of reads, has computed exact
+overlaps from them, removed contained reads and all overlaps involving them,
+then built a bidirected string graph that models the ways (via walks through the
+graph) in which the reads can be assembled together when the overlaps are used
+as evidence, then simplifies this graph through transitive reduction and
+collapsing unbranched paths.  Usually, the graph at this point will be much
+simpler than the original graph, although it may still be very complicated,
+depending on the genome and the data.
+
+\subsection{Random genome}
+
+A completely random genome is very unlikely to have repeats of significant
+length compared to the minimum overlap length.  In this case, transitive
+reduction is expected to leave the entire graph as a single unbranched path,
+provided the original genome was a single, non-circular string, and every base
+pair of it was included in at least one read.  Then, collapsing unbranched paths
+will collapse the entire bidirected graph into two vertices connected by a
+single edge.  Finding a walk through the edges of this graph is trivial and will
+produce an assembly of the entire genome.  \Figure{fig:random_example} shows the
+bidirected string graph that might result from such a genome and data.
+
+If we still assume a genome with no repeats of length greater than the overlap
+length, but relax the assumption that the genome is a single, non-circular
+string from which every base pair was included in a read, the graph will instead
+reduce and collapse to a set of components.  Components corresponding to
+non-circular sequence will contain two vertices with an edge between, while
+components corresponding to circular sequence will contain one vertex with an
+edge connecting it to itself (a loop).  In this case (and as will be elaborated
+on later), finding a walk through the bidirected string graph must be
+generalized to allow walking each component separately; but again for this
+particular case of a random genome, each such walk is still trivial, and the
+assembly will be optimal as long as the assembler does not decide to traverse
+any of the loops more than one time (this will also be elaborated on more
+later).
+
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}
+			{\small
+			\begin{tikzpicture}[>=triangle 45]
+				\node[circle,fill=blue!20,draw=black] (A) at (0.0, 0) {A};
+				\node[circle,fill=blue!20,draw=black] (B) at (3.0, 0) {B};
+				\draw[>->,very thick] (A) edge node[anchor=north] {4639100} (B);
+			\end{tikzpicture} }
+		\end{tikzpicture}
+		\caption{
+			Bidirected string graph for reads uniformly sampled from a 4.6 Mbp
+			random genome after transitive reduction and path collapsing.  (Edge
+			labeled with length of sequence, with the length being the same in both
+			directions)}
+		\label{fig:random_example}
+	\end{center}
+\end{figure}
+
+\subsection{Real genome}
+
+Real genomes are not random, and they contain far more repeats than would be
+expected purely by chance.\footnote{Biologically, repeats can occur for a number
+of reasons, such as gene duplications.} \Figure{fig:E_coli} shows an example of
+the simplified bidirected string graph for a real genome.  It is apparent that
+even when using perfect, fairly long reads that cover the entire genome, the
+repeats in the genome cause branches to appear in the graph when the repeats are
+too long to be resolved by the reads at this stage in the assembly.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{E_coli.pdf}
+		\caption{Transitively-reduced, collapsed bidirected string graph for
+		1000 bp perfect reads uniformly sampled every 100 bp from random
+		strands of the non-circular version of the 4,639,675 bp genome of {\it
+		E. coli} (a common bacterium) using a minimum overlap length of 250 bp.
+		This graph was produced by the code that has been
+		discussed, but the actual drawing of the picture was done by
+		{\it GraphViz}.  The 46,387 reads that were provided as input to the
+		assembler were generated by a Perl script.  The bottleneck of the
+		algorithm up to this point is \ProgramName{compute-overlaps}, which took
+		5 minutes and used a maximum of 984 MiB of memory to find all XXXXXX
+		overlaps from these reads, considering XXXXXX pairs of reads that shared
+		a 128-mer seed.  The running time and memory usage of
+		\ProgramName{compute-overlaps} would need to improved further to handle
+		larger genomes.  (Also it still does not handle inexact overlaps, which
+		are not considered in this paper.)}
+		\label{fig:E_coli}
+	\end{center}
+\end{figure}
+
+\subsection{Small step-by-step example}
+
+\section{Producing the final assembly}
+\subsection{Overview}
+
+\subsection{Calculating the A-statistic}
+\subsection{Mapping contained reads}
+\subsection{Network flow}
+\subsection{Generalized Eulerian path}
+
+\section{Possible future work}
+
+\begin{itemize}
+\item Finish the network flow and generalized Eulerian path parts of the algorithm
+so that the implementation is ``complete'' and can produce a ``final'' assembly
+\item Improve performance of \ProgramName{compute-overlaps}
+\item Allow for sequencing errors by finding inexact overlaps and modifying other
+stages of the algorithm, such as transitive reduction, to allow for the
+possibility that overlaps are not exact.
+\item Compensate for sequencing errors by attempting to correct them, either as
+part of \ProgramName{compute-overlaps} or as a new stage of the algorithm.
+\item Consider more recent publications that explore variations on this algorithm,
+such as parellizing the algorithm on a cluster \cite{X}, or using the
+Burrows-Wheeler transform to directly and efficiently construct the bidirected
+string graph directly from the reads\cite{X}.
+\item Use mate-pair information to help resolve repeats and connect assembled
+sequences even when they are separated by unknown sequence
+\end{itemize}
+
 \label{sec:mapping_contained_reads}
 
 \section*{Acknowledgments}
