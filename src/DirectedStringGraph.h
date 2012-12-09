@@ -243,15 +243,14 @@ public:
 	{
 		for (size_t i = 0; i < num_edges(); i++) {
 			const DirectedStringGraphEdge & e = _edges[i];
-
 			assert(e.get_v1_idx() < num_vertices());
 			assert(e.get_v2_idx() < num_vertices());
-
 			edge_idx_t j = locate_edge(e.get_v2_idx() ^ 1, e.get_v1_idx() ^ 1);
 			assert(j < num_edges());
 			const DirectedStringGraphEdge & e_X = _edges[j];
 			assert((e_X.get_v1_idx() ^ 1) == e.get_v2_idx());
 			assert((e_X.get_v2_idx() ^ 1) == e.get_v1_idx());
+			assert(e_X.get_num_inner_vertices() == e.get_num_inner_vertices());
 		}
 	}
 

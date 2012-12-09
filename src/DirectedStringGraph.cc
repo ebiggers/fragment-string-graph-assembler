@@ -313,12 +313,20 @@ void DirectedStringGraph::collapse_unbranched_paths()
 			const DirectedStringGraphVertex & v = _vertices[v_idx];
 			foreach(edge_idx_t edge_idx, v.edge_indices()) {
 				DirectedStringGraphEdge & e = _edges[edge_idx];
-				if (v_inner[e.get_v2_idx()]) {
+				v_idx_t v2_idx = e.get_v2_idx();
+				if (v_inner[v2_idx] && !remove_vertex[v2_idx]) {
 					num_unbranched_paths++;
 					follow_unbranched_path(e, remove_edge,
 							       remove_vertex, v_inner);
 				}
 			}
+		}
+	}
+
+	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+		if (!remove_vertex[v_idx] && v_inner[v_idx]) {
+			std::cerr << "Graph contains a smooth ring!" << std::endl;
+			unimplemented();
 		}
 	}
 

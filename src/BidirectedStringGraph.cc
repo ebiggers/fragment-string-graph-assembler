@@ -226,8 +226,13 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 							 v_w.get_mapped_read_count()) / 2);
 				e.set_A_statistic((w_v.get_A_statistic() +
 						   v_w.get_A_statistic()) / 2);
-				assert(w_v.get_num_inner_vertices() ==
-				       v_w.get_num_inner_vertices());
+				if (w_v.get_num_inner_vertices() !=
+				    v_w.get_num_inner_vertices())
+				{
+					std::cerr << w_v << std::endl;
+					std::cerr << v_w << std::endl;
+					assert(0);
+				}
 				e.set_num_inner_vertices(w_v.get_num_inner_vertices());
 
 				edge_idx_t edge_idx = this->push_back_edge(e);
