@@ -222,6 +222,7 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 	v_idx_t vi_idx = e.get_v2_idx();
 	assert(v_inner[vi_idx]);
 
+	v_idx_t num_inner_vertices = 0;
 	// Found beginning of unbranched path.  Walk along it until
 	// the end to get the total sequence length.
 	do {
@@ -231,6 +232,7 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 		if (new_seq_len + ei_i1.length() < new_seq_len)
 			fatal_error("Edge too long");
 		new_seq_len += ei_i1.length();
+		num_inner_vertices++;
 		vi_idx = ei_i1.get_v2_idx();
 	} while (v_inner[vi_idx]);
 
@@ -241,7 +243,9 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 	BaseVec::size_type seq_idx = new_seq.length();
 	new_seq.resize(new_seq_len);
 	vi_idx = e.get_v2_idx();
-	do {
+
+	e.set_num_inner_vertices(num_inner_vertices);
+	while (num_inner_vertices--) {
 		const DirectedStringGraphVertex &vi = _vertices[vi_idx];
 		const edge_idx_t ei_i1_idx = vi.first_edge_idx();
 		const DirectedStringGraphEdge &ei_i1 = _edges[ei_i1_idx];
@@ -251,11 +255,11 @@ void DirectedStringGraph::follow_unbranched_path(DirectedStringGraphEdge & e,
 			new_seq.set(seq_idx++, ei_i1_seq[i]);
 		}
 		e.increment_mapped_read_count(ei_i1.get_mapped_read_count());
-		e.increment_num_inner_vertices();
 		remove_edge[ei_i1_idx] = true;
 		remove_vertex[vi_idx] = true;
 		vi_idx = ei_i1.get_v2_idx();
-	} while (v_inner[vi_idx]);
+	}
+	assert(!v_inner[vi_idx]);
 	assert(new_seq_len == seq_idx);
 	e.set_v2_idx(vi_idx);
 }
@@ -324,7 +328,7 @@ void DirectedStringGraph::collapse_unbranched_paths()
 	}
 
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
-		if (!remove_vertex[v_idx] && v_inner[v_idx]) {
+		if (v_inner[v_idx] && !remove_vertex[v_idx]) {
 			std::cerr << "Graph contains a smooth ring!" << std::endl;
 			unimplemented();
 		}
