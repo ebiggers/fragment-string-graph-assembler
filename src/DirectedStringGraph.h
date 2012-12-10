@@ -250,7 +250,7 @@ public:
 			const DirectedStringGraphEdge & e_X = _edges[j];
 			assert((e_X.get_v1_idx() ^ 1) == e.get_v2_idx());
 			assert((e_X.get_v2_idx() ^ 1) == e.get_v1_idx());
-			assert(e_X.get_num_inner_vertices() == e.get_num_inner_vertices());
+			//assert(e_X.get_num_inner_vertices() == e.get_num_inner_vertices());
 		}
 	}
 
