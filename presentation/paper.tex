@@ -275,10 +275,9 @@ no mate-pair information is available.}
 \subsection{Definition of an overlap}
 %\begin{definition}
 	Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and
-	$g'$.  The reads $f$ and $g$ are said to {\bf exactly overlap} by some
-	length $\LengthVar$ if and only if at least one of the following is
-	true:
-	\begin{enumerate}
+	$g'$.  The reads $f$ and $g$ are said to \KeyTerm{exactly overlap} by some
+	length $\LengthVar$ if and only if at least one of the following is true:
+	\begin{itemize}
 		\item The last $\LengthVar$ bp of $f$ exactly match the first
 		$\LengthVar$ bp of $g$.
 		\item The last $\LengthVar$ bp of $f$ exactly match the first
@@ -287,7 +286,7 @@ no mate-pair information is available.}
 		$\LengthVar$ bp of $g$.
 		\item The last $\LengthVar$ bp of $f'$ exactly match the first
 		$\LengthVar$ bp of $g'$.
-	\end{enumerate}
+	\end{itemize}
 %\end{definition}
 
 Having four different conditions is required because reads may overlap in a
@@ -304,8 +303,8 @@ matches its prefix of the same length.  Such an overlap is called a
 \KeyTerm{self-overlap}.
 
 Overlaps may also be \KeyTerm{inexact}.  An inexact overlap is an overlap where
-overlapped regions of the two reads do not match exactly (in forward or
-reverse-complement form), but instead differ by a number of base-pair
+overlapped regions of the two reads do not match exactly (in either a forward or
+reverse-complement manner), but instead differ by a number of base-pair
 substitutions, insertions, and/or deletions up to a predetermined upper bound,
 such as 5\%.  However, inexact overlaps will not be considered further in this
 paper.
@@ -404,11 +403,11 @@ reads are either identical or exact reverse-complements of each other.
 		%\end{tikzpicture} \end{center}
 %\end{enumerate}
 
-Overlaps are important because two reads that overlap may come from adjacent
-positions on the genome.  Although due to repeats, we cannot be certain that two
-overlapping reads actually come from adjacent positions, we {\em can} say for
-certain that two reads that do not overlap do not come from adjacent positions
-on the genome.  Regardless of this, \Figure{fig:overlap_examples} shows how two
+Overlaps are important because two reads that overlap may have come from
+adjacent positions on the genome.  Although due to repeats, we cannot be certain
+that two overlapping reads actually came from adjacent positions, we {\em can}
+say for certain that two reads that do not overlap did not come from adjacent
+positions.  Regardless of this, \Figure{fig:overlap_examples} shows how two
 reads that overlap potentially could be combined to form a longer sequence.
 
 \begin{figure}
@@ -445,36 +444,39 @@ reads that overlap potentially could be combined to form a longer sequence.
 \subsubsection{Algorithms}
 
 Now that the idea of an exact overlap has been formalized, what we would like to
-do is compute all pairwise exact overlaps of minimum length $L$ among the reads
-that were provided as input to the assembler.
+do is compute all pairwise exact overlaps of some minimum length $L$ among the
+	reads that were provided as input to the assembler.  The chosen value of $L$
+	must be balanced so that we find can enough overlaps to adequately cover the
+	genome (small $L$ better) but still exclude most spurious overlaps (large
+	$L$ better).
 
-The naive way to do this is to consider every pair of reads in the input,
-including only distinct pairs but also including the special cases of each read
-paired with itself, and search for each of the types of overlaps between the two
-reads in each pair.  If there are $N$ reads in the input, this algorithm will
-need to consider $\frac{N^2}{2} + N$ pairs of reads, and the time spent on each
-read pair will depend several factors, including the minimum overlap length and
-the read lengths.  But even if we could somehow spend constant time on each read
-pair, this algorithm is much too slow because the running time rises quadraticly
-with respect to the number of reads.  This is important because there can easily
-be millions of reads in the input.
+The naive way to compute overlaps is to consider every pair of reads in the
+input, including only distinct pairs but also including the special cases of
+each read paired with itself, and search for each of the types of overlaps
+between the two reads in each pair.  If there are $N$ reads in the input, this
+algorithm will need to consider $\frac{N^2}{2} + N$ pairs of reads. The time
+spent on each read pair will depend several factors, including the minimum
+overlap length $L$ and the read lengths.  But even if we could somehow spend
+constant time on each read pair, this naive algorithm would be prohibitively
+slow because the running time rises quadraticly with respect to the number of
+reads, and there can easily be millions of reads in the input.
 
 A number of faster algorithms for computing overlaps have been designed.  One of
 the easier ones to understand is the \KeyTerm{seed-and-extend} algorithm.  It
 works by indexing the reads by short subsequences of a certain length (less than
-or equal to than the minimum overlap length) and then only comparing reads that
-actually share a subsequence.  Each of these short subsequences is called a
+or equal to than the minimum overlap length $L$) and then only comparing reads
+that actually share a subsequence.  Each of these short subsequences is called a
 \KeyTerm{seed}.  Two reads may share a seed in either a forward or
 reverse-complement manner.  Given two reads that share a seed, the seed can be
-extended outwards in both directions in order to find a maximal matched region,
-that may be either forward or reverse-complement, between the two reads.  Then,
-this maximal matched region is compared against the definition of an overlap.
-In particular, it must be at least as long as the minimum overlap length, it
-must have least 2 extreme points over the two reads, and it cannot be the prefix
-or suffix of both reads if the match does not extend to the opposite end of at
-least one of the reads.  If all of these conditions are met and the same overlap
-was not already found through another seed in the same two reads, this overlap
-is added to the set of overlaps.
+extended outwards in both directions to find a maximal matched region (that may
+be either forward or reverse-complement) between the two reads.  Then, this
+maximal matched region is compared against the definition of an overlap.  In
+particular, it must be at least as long as the minimum overlap length, it must
+have least 2 extreme points over the two reads, and it cannot be the prefix or
+suffix of both reads if the match does not extend to the opposite end of at
+least one of the reads.  If all of these conditions are met, this maximal matched
+region is translated into an overlap and added to the set of overlaps if not
+already present.
 
 The running time of the seed-and-extend algorithm, as described above, is
 typically much faster than the naive algorithm, although it is highly dependent
