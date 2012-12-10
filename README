@@ -1,0 +1,6 @@
+This is a proof-of-concept implementation of a genome assembler based on the
+ideas described in Eugene W. Myers' 2005 paper:
+	
+	The fragment string assembly graph
+
+as well as some other publications.  See presentation/paper.pdf.
