@@ -45,13 +45,14 @@
 
 Sequencing an organism's genome is an important step to further genetic research
 on that organism.  However, currently available sequencing technology can only
-sequence short fragments of DNA.  As a result, whole-genome shotgun sequencing
-approaches to genome sequencing rely on programs called {\em genome assemblers}
-that can put together a set of short DNA fragments to reconstruct the original
-genome.  This paper provides an introduction and formalization of the genome
-assembly program, then introduces a model and algorithm for genome assembly that
-is based on a special type of graph called a \KeyTerm{bidirected string graph}.
-\end{abstract}
+sequence short fragments of DNA.  As a result, the whole-genome shotgun
+sequencing approach to genome sequencing relies on breaking up a sample of
+genomic DNA into fragments, sequencing those fragments, then using a program
+called a {\em genome assembler} to put together these short sequences to
+reconstruct the original, much longer sequence.  This paper provides an
+introduction and formalization of the genome assembly problem, then introduces a
+model and algorithm for genome assembly that is based on a special type of graph
+called a \KeyTerm{bidirected string graph}.  \end{abstract}
 
 \tableofcontents
 
@@ -116,6 +117,23 @@ base pairs, depending on the organism (see Table \ref{tab:GenomeSizes}).
 	\label{tab:GenomeSizes}
 \end{table}
 
+\subsection{Complement and reverse-complement sequences}
+
+The \KeyTerm{complement} of a single-stranded DNA sequence $S$ is the
+single-stranded DNA sequence obtained by making the replacements $\Base{A}
+\leftrightarrow \Base{T}$ and $\Base{C} \leftrightarrow \Base{G}$.  The
+\KeyTerm{reverse-complement} of a single-stranded DNA sequence $S$ is the
+complement of $S$ reversed.  Physically, the reverse-complement of a
+single-stranded DNA sequence corresponds to the corresponding sequence on the
+other strand of the DNA molecule.  It is the reverse-complement, not the
+``regular'' complement, because the two strands of a DNA molecule run in
+opposite directions.
+
+The \KeyTerm{canonical form} of a DNA sequence is the lexicographically lesser
+of that sequence and its reverse-complement.  This concept is useful in
+algorithms where a DNA sequence and its reverse-complement are considered
+equivalent.
+
 \subsection{Genome sequencing}
 
 \KeyTerm{DNA sequencing} is the process of determining the base pair sequence of
@@ -132,20 +150,26 @@ fragments of DNA several dozen to several thousand base pairs long can be
 sequenced.
 
 Therefore, to sequence an entire genome, which may be millions of base pairs
-long, the DNA from the genome must be broken into much smaller fragments, which
-are then sequenced.  Following this, the original genome is computationally
-reconstructed by a computer program called a \KeyTerm{genome assembler} in a
-process called \KeyTerm{genome assembly}.  \KeyTerm{Genome sequencing} therefore
-refers to the entire process of sequencing a genome, including both lab work and
-computational work, while \KeyTerm{genome assembly} only refers to the
-computational work.\footnote{It usually also takes some technology-specific
-computational work to actually prepare the sequences for assembly; for example,
-a series of digital photographs of clumps of fluorescently labeled molecules
-might need to be interpreted as reads using image-processing algorithms.
-However, these programs and/or algorithms generally have already been developed
-by the manufacturer of the sequencing machine and work fairly well, and ``genome
-assembly'' does not cover these algorithms, although genome assembly algorithms
-still may be tuned for specific sequencing technologies.}
+long, the DNA from the whole genome must be broken into much smaller fragments,
+which are then sequenced.\footnote{This specifically refers to the
+\KeyTerm{whole-genome shotgun sequencing} approach to genome assembly rather
+than alternatives such as \KeyTerm{BAC-to-BAC} sequencing that are able to
+restrict sequences to certain regions of the genome in order to make sequencing
+the genome easier (currently, at the disadvantage of increased cost and
+non-computational work).} Following this, the original genome must be
+computationally reconstructed by a computer program called a \KeyTerm{genome
+assembler} in a process called \KeyTerm{genome assembly}.  \KeyTerm{Genome
+sequencing} therefore refers to the entire process of sequencing a genome,
+including both lab work and computational work, while \KeyTerm{genome assembly}
+only refers to the computational work.\footnote{It usually also takes some
+technology-specific computational work to actually prepare the sequences for
+assembly; for example, a series of digital photographs of clumps of
+fluorescently labeled molecules might need to be interpreted as reads using
+image-processing algorithms.  However, these programs and/or algorithms
+generally have already been developed by the manufacturer of the sequencing
+machine and work fairly well, and ``genome assembly'' does not cover these
+algorithms, although assemblers still may be tuned for specific sequencing
+technologies.}
 
 \subsection{Genome assembly}
 
@@ -173,62 +197,78 @@ assembler.
 
 It is also possible for reads to come from foreign DNA; for example, if a DNA
 sample is obtained from grinding up plant or animal tissue, there could be some
-bacterial cells, each with its own genome, contaminating the sample.  Therefore,
-ideally an assembler should be prepared to completely ignore some reads.
-However, this problem is not considered in this paper.
+bacterial cells, each with its own genome, contaminating the sample.  Ideally,
+an assembler should be prepared to completely ignore a read if it seems too
+unusual.  However, this problem is not considered in this paper.
 
 For the purposes of this paper, the problem of genome assembly is simplified by
-assuming that the reads are error-free and uniformly (randomly) sampled from the
-genome.  In addition, it is assumed there are no reads from foreign DNA, and the
-reads are assumed to be unpaired, which means that mate-pair information, if
-available, is not used.  In other words, a read is defined here as an exact
-substring from either strand of any part of the genome.
+assuming the following characteristics of the reads:
+
+\begin{itemize}
+	\item The reads are error-free and uniformly sampled from the genome.
+	\item There are no reads from foreign DNA.
+	\item The reads are unpaired, meaning that mate-pair information, if
+available, is not used.
+\end{itemize}
+
+In other words, a read is defined here as an exact substring from either strand
+of any part of the genome.
 
 Genomes may contain \KeyTerm{repeats}, which are subsequences that occur
 multiple times in the genome--- possibly adjacent to each other (a
 \KeyTerm{tandem repeat}), but not necessarily.  Repeats may be longer than the
 length of any individual read, which makes the genome more difficult to assemble
 accurately.  However, real genomes almost always contain repeats of substantial
-length, so genome assembly algorithms must be able to handle repeats.
+length, so assemblers must be able to handle repeats.
 
 \subsection{Genome assembly vs. shortest common superstring}
 
 Genome assembly is superficially similar to the shortest common superstring
-(SCS) problem, which is to find the shortest possible string that contains every
+problem, which is to find the shortest possible string that contains every
 string in a given set as substrings.  Genome assembly also requires finding a
-longer string that contains all of a set of substrings.  However, the actual
-genome may be more than one string, and it genome may be longer than the
-shortest possible genome from which the reads could have been sampled, due to
-repeats.  In addition,  genomes are double-stranded, and there may be other
-complications with the reads (described in subsection \ref{subsec:reads}), such
-as sequencing error.  Therefore, genome assembly is not the same as the SCS
-problem, and in fact seems to be harder, despite the fact that the SCS problem
-is already NP-complete\cite{Turner1989}.
+longer string that, roughly, contains every string in  a set of substrings.
+However, the actual genome may be more than one string, and the genome may also
+be longer than the shortest possible genome from which the reads could have been
+sampled, due to repeats.  In addition,  genomes are double-stranded, and there
+may be other complications with the reads, such as sequencing error.  Therefore,
+genome assembly is not the same as the shortest common superstring problem, and
+in fact seems to be harder, despite the fact that the shortest common
+superstring problem is already NP-complete\cite{Turner1989}.
 
-In fact, some models of genome assembly have also been proven to be NP-complete
-\cite{Medvedev2007}.  However, it is not acceptable to have a genome assembly
-algorithm that takes exponential time to complete.  Instead, heuristic
-algorithms that tend to produce good results but also tend to have a reasonable
-running time must be designed.
+In fact, some models of genome assembly have also been proven to be
+NP-complete\cite{Medvedev2007}.  However, it is not acceptable to have a genome
+assembly algorithm that takes exponential time to complete.  Instead, heuristic
+algorithms that tend to produce good results on real inputs while still having
+reasonable running times must be designed.
 
 \section{Overview of the fragment string graph algorithm}
 
 This paper explores the genome assembly problem through an algorithm published
-in 2005 by Eugene Myers\cite{Myers2005} that is based on the idea of the
-fragment string assembly graph.  The algorithm provides a good overview of the
+in 2005 by Eugene Myers that is based on the idea of the fragment string
+assembly graph\cite{Myers2005}.  The algorithm provides a good overview of the
 techniques that are used in genome assembly, especially since it draws on ideas
 used in previous assemblers, such as the Celera assembler, which was used to
 assemble the human genome for the first time\cite{Venter2001}.  In addition, the
 algorithm shares some ideas with de Bruijn graph-based assemblers, such as
 EULER-SR\cite{Pevzner2001}, although it does not use a de Bruijn graph for its
-assembly model.  The algorithm also introduces some new ideas.
+assembly model.  In fact, the algorithm is called the {\em fragment} string
+graph algorithm because the graph is built directly from the sequenced fragments
+(or reads), rather than subsequences ($k$-mers) taken from them.
 
-The overall fragment string graph algorithm is as follows: first, use overlaps
-between reads to build a graph that models the assembly problem.  The idea is
-that walks through this graph model a way in which reads may be assembled
-together when the overlaps are used as evidence for joining two reads.  The next
-step is to simplify and analyze the graph; and finally, find paths through the
-graph are found to reconstruct the original genome.
+The algorithm also introduces new ideas that were not used in previous
+publications or assemblers.
+
+The overall fragment string graph algorithm can be described as follows.  First,
+use overlaps between reads to build a graph that models the assembly problem.
+The idea is that walks through this graph model a way in which reads may be
+assembled together consistently when the overlaps are used as evidence for
+joining pairs of reads.  The next step is to simplify and analyze the graph, and
+the last step is to find paths through the graph to reconstruct the original
+genome.\footnote{The fragment string graph algorithm, as described in
+\cite{Myers2005}, does not involve any finishing steps such as scaffolding
+(using mate-pair information to improve the assembly), although ideas for doing
+this are outlined in \cite{Medvedev2009}.  However, in this paper we assume that
+no mate-pair information is available.}
 
 \section{Overlaps}
 
@@ -580,7 +620,7 @@ number of overlaps, which likely could be improved.
 			%matched region on the read containing $\OccOne$}
 			%\STATE{${\tt pos2} \gets$ the beginning of the maximally
 			%matched region on the read containing $\OccTwo$}
-			%\STATE{${\tt plen} \gets$ the length of the maximall
+			%\STATE{${\tt plen} \gets$ the length of the maximally
 			%matched region on the read containing $\OccTwo$}
 		\ENDFOR
 	\ENDFOR
@@ -751,7 +791,13 @@ follow directly from the different types of overlaps (see
 	\label{fig:overlap_mapping}
 \end{figure}
 
-A \KeyTerm{walk in a bidirected graph} $G$ is a continuous sequence of edges in
+The \KeyTerm{in-degree} of a vertex $v$ in a bidirected graph is the number of
+heads adjacent to $v$ that point inwards, while the \KeyTerm{out-degree} of $v$
+is the number of heads adjacent to $v$ that point outwards.  A bidirected graph
+$G$ is \KeyTerm{balanced} if for every vertex in $G$ the in-degree is equal to
+the out-degree.
+
+A \KeyTerm{walk} in a bidirected graph $G$ is a continuous sequence of edges in
 $G$ such that if any vertex $v$ is entered through a head inwards, it is exited
 through a head outwards (unless it is the end of the path), and vice versa.  An
 equivalent formulation is that if we consider a possible walk in a bidirected
@@ -786,23 +832,25 @@ direction, possibly even during the same walk.
 			\draw[color=red,thick] (4.00, 0) circle (0.8);
 		\end{tikzpicture}
 	} \end{center}
-	\caption{$1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid walks in
-	the bidirected graph below.  (Check circled pairs of heads.)}
+	\caption{$1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
+	walks in the bidirected graph above.  (Check circled pairs of heads to
+	verify this.)}
 	\label{fig:bidiwalk_example}
 \end{figure}
 
 A \KeyTerm{cycle} in a bidirected graph is a walk that begins and ends at the
-same vertex in such a way that it would be valid to trace the walk again when
+same vertex in such a way that it would be a valid to trace the walk again when
 the starting vertex is reached at the end of the cycle.
 
-A bidirected graph is \KeyTerm{connected} if the undirected graph produced by
-replacing all bidirected edges with undirected edges is connected.  A bidirected
-graph is \KeyTerm{strongly connected} if it is connected and for every edge
-there is a cycle containing it\cite{Medvedev2009}.
+A bidirected graph is \KeyTerm{connected} if and only if  the undirected graph
+produced by replacing all bidirected edges with undirected edges is connected as
+defined for undirected graphs.  A bidirected graph is \KeyTerm{strongly
+connected} if and only if it is connected and for every edge there is a cycle
+containing it.\cite{Medvedev2009}
 
-The concept of a walk through a bidirected graph maps quite nicely onto the
-genome assembly problem, since a walk through the bidirected string graph
-constructed from reads and overlaps models a way in which the reads can be
+The concept of a walk in a bidirected graph maps quite nicely onto the genome
+assembly problem because a walk through the bidirected string graph constructed
+from a set of reads and their overlaps models a way in which the reads can be
 assembled together consistently.  In such a walk, each read may be used in
 forward or reverse-complement orientation, depending on the direction, relative
 to the walk, of the adjacent arrow heads when the corresponding vertex is passed
@@ -875,7 +923,7 @@ region in $f$, up to the beginning of $f$, and this sequence must be
 reverse-complemented because it is being used opposite its original direction.
 
 These interpretations can be generalized to the other two types of bidirected
-edges.  Furthermore, these intepretations imply that the actual sequence spelled
+edges.  Furthermore, these interpretations imply that the actual sequence spelled
 out by a walk in the bidirected graph may include implied (non-labeled) sequence
 at the start (if we start at the end of a read) and/or the end (if we end at the
 beginning of a read).
@@ -1290,25 +1338,27 @@ too long to be resolved by the reads at this stage in the assembly.
 
 As \Figure{fig:E_coli} shows, the bidirected string graph may still be very
 complicated even after transitive reduction and traversal.  In even worse
-examples, the graph could easily have thousands of vertices and edges.  We still
-need to figure out how to walk through the graph to produce the best assembly.
+examples, the graph could easily have thousands of vertices and edges.
+Therefore, we need to figure out how to walk through the graph to produce the
+best assembly.
 
 An \KeyTerm{Eulerian path in a bidirected graph} is a walk that traverses each
-bidirected edge exactly one time (only in one of the two possible directions).
-Suppose we could find an Eulerian path in the bidirected string graph.  Then
-this path would correspond to an assembly that accounts for every overlap and
-therefore would be a valid assembly of the reads.  Furthermore, such a path may
-allow for vertices to be used for than one time in the assembly to allow for
-genomic repeats, which would not be true if we found a Hamiltonian path
-instead.\footnote{A Hamiltonian path is also inappropriate here because
-unbranched paths have been collapsed into single edges, which {\em must} be
-included in the assembly if the reads corresponding to the inner vertices are to
-take part in the assembly.  Furthermore, keep in mind that there is not a
-one-for-one correspondence between vertices and reads because contained reads
-were removed (see \Section{sec:removing_contained_reads)}.}
+bidirected edge exactly one time in either direction.  Suppose we could find an
+Eulerian path in the bidirected string graph.  Then this path would correspond
+to an assembly that accounts for every overlap and therefore would be a valid
+assembly of the original reads.  Furthermore, such a path may allow for vertices
+to be used for than one time in the assembly to allow for genomic repeats, which
+would not be true if we found a Hamiltonian path instead.\footnote{A Hamiltonian
+path is also inappropriate here because unbranched paths have been collapsed
+into single edges, which {\em must} be included in the assembly if the reads
+corresponding to the inner vertices are to take part in the assembly.
+Furthermore, keep in mind that there is not a one-for-one correspondence between
+vertices and reads because contained reads were removed (see
+\Subsection{subsec:removing_contained_reads}).}
 
 However, there are multiple problems with the Eulerian path approach.  First,
-the graph may not be Eulerian.  In the case that the graph 
+the graph may not be Eulerian.  This can happen if the graph is not strongly
+connected, not balanced (indegree always equal to out
 
 This implies we really would need to solve the
 bidirected equivalent of the Chinese Postman Problem instead.  Even then, the
