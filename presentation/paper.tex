@@ -26,7 +26,7 @@
 \newcommand{\Figure}[1]{Figure \ref{#1}}
 \newcommand{\Subfigure}[1]{Figure \ref{#1}}
 \newcommand{\Section}[1]{Section \ref{#1}}
-\newcommand{\Subsection}[1]{Subsection \ref{#1}}
+\newcommand{\Subsection}[1]{Section \ref{#1}}
 \newcommand{\Algorithm}[1]{Algorithm \ref{#1}}
 
 \newcommand{\KeyTerm}[1]{{\it #1}}
@@ -926,26 +926,26 @@ each direction in which the edge can be traversed.  To see this, we need to
 consider exactly what it means to walk between vertices in the bidirected graph.
 
 Consider the the string graph fragment shown in
-\Subfigure{subfig:bidiedge_interp_a}.  When we walk from $f \to g$, we are using
-both $f$ and $g$ in forward orientation, based on the arrow heads.  But what
-this really means is that we are walking from the {\em end} of read $f$ to the
-{\em end} of read $g$.  In other words, traversing the edge in that direction is
-associated with the addition of the sequence after the overlapped region in $g$,
-up to the end of the $g$.
+\Subfigure{subfig:bidiedge_interp_a}.  When we walk $f \to g$, both $f$ and $g$
+are used in forward orientation, as indicated by the directions of the adjacent
+arrow heads.  But what this really means is that we are walking from the {\em
+end} of read $f$ to the {\em end} of read $g$.  In other words, traversing the
+edge in that direction is associated with the addition of the sequence after the
+overlapped region in $g$, up to the end of the $g$.
 
-If we instead walk $g \to f$, we instead use both $g$ and $f$ in
-reverse-complement orientation by walking from the {\em beginning} of read $g$
-to the {\em beginning} of read $f$.  In other words, traversing the edge in that
-direction is associated with the addition of the sequence before the overlapped
-region in $f$, up to the beginning of $f$, and this sequence must be
-reverse-complemented because it is being used opposite its original direction.
+If we instead walk $g \to f$, both $g$ and $f$ are used reverse-complement
+orientation by walking from the {\em beginning} of read $g$ to the {\em
+beginning} of read $f$.  In other words, traversing the edge in that direction
+is associated with the addition of the sequence before the overlapped region in
+$f$, up to the beginning of $f$, and this sequence must be reverse-complemented
+because it is being used opposite its original direction.
 
 These interpretations can be generalized to the other two types of bidirected
 edges, and this is described in slightly more detail in \cite{Myers2005}.
 Furthermore, these interpretations imply that the actual sequence spelled out by
 a walk in the bidirected graph may include implied (non-labeled) sequence at the
 start (if we start at the end of a read) and/or the end (if we end at the
-beginning of a read).
+beginning of a read) of the walk.
 
 \begin{figure}
 	\begin{center}
@@ -970,18 +970,18 @@ beginning of a read).
 		\end{subfigure}
 		\begin{subfigure}[b]{0.48\textwidth}
 			\begin{tikzpicture}[>=\ReadArrowType,scale=0.8]
-				\draw[->,very thick] (0, 0) node[anchor=east] {$f.B$}
+				\draw[->,very thick] (-0.2, 0) node[anchor=east] {$f.B$}
 						-> (4, 0) node[anchor=west] {$f.E$};
 				\draw[->,very thick] (2.09, -0.9) node[anchor=east] {$g.B$}
-						-> (6.09, -0.9) node[anchor=west] {$g.E$};
+						-> (6.29, -0.9) node[anchor=west] {$g.E$};
 
-				\draw (0, -0.1) node[anchor=south west]
-					{\hspace*{-1.4mm}{\small \tt
+				\draw (-0.2, -0.1) node[anchor=south west]
+					{\hspace*{-1.5mm}{\small \tt
 						%GATTACACAGTGTAGTT
-						GATTACACA\hspace*{0.26cm}$a_1 \dots a_n$
+						GATTACACA\hspace*{1.5mm}$a_1 \dots a_n$
 					}};
 
-				\draw (0, 0.1) node[anchor=north west]
+				\draw (-0.2, 0.1) node[anchor=north west]
 					{\hspace*{-2.6mm}
 						\rotatebox{180}{{\small \tt TGTGTAATC}}};
 
@@ -992,7 +992,7 @@ beginning of a read).
 					}};
 
 				\draw (2.09, -0.9) node[anchor=north west]
-					{\hspace*{12.48mm}
+					{\hspace*{12.88mm}
 						\rotatebox{180}{{\small \tt TACTTCTAA}}};
 
 				\draw (2.09, -1.4) node[anchor=north] {$o.g_{begin}$}
@@ -1054,8 +1054,8 @@ suggests an alternate construction of the graph that does indeed use directed
 edges.  Instead of having each vertex be a read, have each vertex be an end of a
 read.  The advantage to this approach is that the problem can be expressed using
 a directed graph instead a bidirected graph, which can be helpful for the
-implementation.  The disadvantage is that two vertices are required for each
-read, they may be widely separated in the graph.
+implementation.  The disadvantage is that there are two completely separate
+vertices for each read.
 
 \subsection{Removing contained reads}
 
@@ -1072,18 +1072,21 @@ examine the overlaps to identify contained reads, and include in the initial
 construction of the bidirected string graph neither the contained reads nor any
 overlaps involving a contained read.
 
-The contained reads cannot, however be fully discarded, as they are needed for a
+This implies that a vertex in the bidirected string graph may actually
+correspond to more than one read.
+
+The contained reads cannot be completely discarded because they are needed for a
 later step (see \Section{sec:mapping_contained_reads}).
 
-\subsection{Implementation}
+\subsection{Implementation of assembly graph construction}
 
-As described in \Subsection{subsec:removing_contained_reads}, before we even
-build the graph, contained reads need to be removed.  This is implemented by the
-program \ProgramName{remove-contained-reads}.  It takes as input two files: the
-set of reads and the set of overlaps that were computed from them, and produces
-as output three files: the set of uncontained reads, the set of overlaps
-excluding those that involve contained reads, and an array that maps from the
-original read indices to the new read indices.
+As described in \Subsection{subsec:removing_contained_reads}, before the
+assembly graph is even built, contained reads need to be removed.  This is
+implemented by the program \ProgramName{remove-contained-reads}.  It takes as
+input two files: the set of reads and the set of overlaps that were computed
+from them, and produces as output three files: the set of uncontained reads, the
+set of overlaps excluding those that involve contained reads, and an array that
+maps from the original read indices to the new read indices.
 
 Building the graph is implemented by either the program
 \ProgramName{build-bidirected-string-graph} or the program
@@ -1099,9 +1102,9 @@ and add two directed edges for each overlap.
 
 The string graphs are stored in a binary format.  An additional program,
 \ProgramName{print-string-graph}, was implemented that can print a string graph
-in plain-text format, or print a string graph in the DOT language for input to
-the graph-drawing software {\it GraphViz}\cite{GraphVizPublication}, or print
-some other information about a string graph.
+in plain-text format, print a string graph in the DOT language for input to the
+graph-drawing software {\it GraphViz}\cite{GraphVizPublication}, or print some
+other information about a string graph.
 
 Furthermore, programs \ProgramName{bidigraph-to-digraph} and
 \ProgramName{digraph-to-bidigraph} were implemented to convert between the
@@ -1112,15 +1115,15 @@ sequences that the edges are labeled with, as this can be done to produce a
 preliminary assembly (especially after the graph simplifications that are about
 to be described).
 
-\section{Simplifying the graph}
+\section{Simplifying the assembly graph}
 
 \subsection{Transitive reduction}
 
 Before trying to find walks through the string graph, it is very helpful to
 simplify the graph is much as possible.  Very commonly, given three adjacent
 reads $f$, $g$, and $h$, $f$ will overlap $h$ as well as $g$.  This is redundant
-because we can, equivalently, walk $f$ to $g$ to $h$ rather than directly
-walking from $f$ to $h$.  \Figure{fig:transitive} shows an example of this.
+because we can, equivalently, walk $f \to g \to h$ rather than directly walking
+from $f \to h$.  \Figure{fig:transitive} shows an example of this.
 
 \begin{figure}
 	\begin{center}
@@ -1153,19 +1156,19 @@ reads and the overlaps tend to be longer.  So, we would like to throw away
 To remove these redundant edges, \KeyTerm{transitive reduction} is performed on
 the bidirected string graph.
 
-\Algorithm{alg:transitive_reduction} produces pseudocode for a transitive
-reduction algorithm.  Essentially, the algorithm is to through each vertex $v$
-and examine vertices up to 2 edges away from $v$ to identify all transitive
-edges leaving $v$.  These edges are then marked for removal, and removed after
-all vertices in the graph have been considered.  Some optimizations are
-possible; for example, the lengths of the sequences the edges are labeled with
-can be taken into account to allow terminating the search of a vertex $v$'s
-neighborhood before all possible walks of length 2 leaving $v$ have been
-considered.
+\Algorithm{alg:transitive_reduction} provides pseudocode for a transitive
+reduction algorithm similar to that described in \cite{Myers2005}.  Essentially,
+the algorithm is to through each vertex $v$ and examine vertices up to 2 edges
+away from $v$ to identify all transitive edges leaving $v$.  These edges are
+then marked for removal, and they are removed after all vertices in the graph
+have been considered.  Some optimizations are possible; for example, the lengths
+of the sequences the edges are labeled with can be taken into account to allow
+terminating the search of $v$'s neighborhood before all possible walks of length
+2 starting at $v$ have been considered.
 
 Transitive reduction can be performed on either the bidirected or directed
-representations of the string graph, although for simplicity here it is
-described on the directed graph.
+representations of the string graph, although for simplicity
+\Algorithm{alg:transitive_reduction} implies the directed representation.
 
 \begin{algorithm}
 	\caption{{\sc TransitiveReduction}($G$)}
@@ -1213,7 +1216,7 @@ done for both directions in which the unbranched path might have been traversed.
 unbranched path can be collapsed.
 
 Collapsing unbranched paths is implemented as the program
-\ProgramName{collapsed-unbranched-paths}.  It takes as input a file containing a
+\ProgramName{collapse-unbranched-paths}.  It takes as input a file containing a
 string graph and produces as output a file containing the string graph with
 unbranched paths collapsed.  Vertices are currently re-numbered; so, for
 example, vertex 10 after collapsing unbranched paths does not necessarily refer
@@ -1265,23 +1268,22 @@ constructed.
 	\label{fig:collapse_unbranched_paths}
 \end{figure}
 
-\section{Examples of graph construction and simplification}
+\section{Examples of assembly graph construction and simplification}
 
 At this point, the assembler has been given a set of reads, has computed exact
-overlaps from them, removed contained reads and all overlaps involving them,
-then built a bidirected string graph that models the ways (via walks through the
-graph) in which the reads can be assembled together when the overlaps are used
-as evidence, then simplifies this graph through transitive reduction and
-collapsing unbranched paths.  Usually, the graph at this point will be much
-simpler than the original graph, although it may still be very complicated,
-depending on the genome and the data.
+overlaps from them, has removed contained reads and all overlaps involving them,
+has built a bidirected string graph that models the ways in which the reads can
+be assembled together when the overlaps are used as evidence, and has simplified
+this graph through transitive reduction and collapsing unbranched paths.
+Usually, the graph at this point will be much simpler than the original graph,
+although it may still be very complicated, depending on the genome and the data.
 
 \subsection{Random genome}
 
 A completely random genome is very unlikely to have repeats of significant
 length compared to the minimum overlap length.  In this case, transitive
 reduction is expected to leave the entire graph as a single unbranched path,
-provided the original genome was a single, non-circular string, and every base
+provided the original genome was a single, non-circular string and every base
 pair of it was included in at least one read.  Then, collapsing unbranched paths
 will collapse the entire bidirected graph into two vertices connected by a
 single edge.  Finding a walk through the edges of this graph is trivial and will
@@ -1300,10 +1302,12 @@ generalized to allow walking each component separately; but again for this
 particular case of a random genome, each such walk is still trivial, and the
 assembly will be optimal as long as the assembler does not decide to traverse
 any of the loops more than one time (this will also be elaborated on more
-later).
+later), since there are no repeats of substantial length in a hypothetical
+random genome.
 
 \begin{figure}
 	\begin{center}
+		\vspace{1cm}
 		\begin{tikzpicture}
 			{\small
 			\begin{tikzpicture}[>=triangle 45]
@@ -1333,7 +1337,7 @@ too long to be resolved by the reads at this stage in the assembly.
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.6\textwidth]{E_coli.pdf}
+		\includegraphics[width=1.0\textwidth]{E_coli.pdf}
 		\caption{Transitively-reduced, collapsed bidirected string graph for
 		1000 bp perfect reads uniformly sampled every 100 bp from random strands
 		of the non-circular version of the 4,639,675 bp genome of {\it E. coli}
@@ -1347,8 +1351,7 @@ too long to be resolved by the reads at this stage in the assembly.
 		maximum of about 1 GiB of memory to find all 336,227 overlaps from these
 		reads, seeding on 128-mers.  The running time and memory usage of
 		\ProgramName{compute-overlaps} would need to improved further to handle
-		larger genomes.  (Also it still does not handle inexact overlaps, which
-		are not considered in this paper.)}
+		larger genomes.}
 		\label{fig:E_coli}
 	\end{center}
 \end{figure}
@@ -1363,9 +1366,9 @@ too long to be resolved by the reads at this stage in the assembly.
 
 As \Figure{fig:E_coli} shows, the bidirected string graph may still be very
 complicated even after transitive reduction and traversal.  In even worse
-examples, the graph could easily have thousands of vertices and edges.
-Therefore, we need to figure out how to walk through the graph to produce the
-best assembly.
+examples, the graph could easily have thousands of vertices and edges, and it
+may not even be connected.  Therefore, we need to figure out how to walk through
+the graph to produce the best assembly.
 
 An \KeyTerm{Eulerian path in a bidirected graph} is a walk that traverses each
 bidirected edge exactly one time in either direction.  Suppose we could find an
@@ -1382,35 +1385,34 @@ vertices and reads because contained reads were removed (see
 \Subsection{subsec:removing_contained_reads}).}
 
 However, there are multiple problems with the Eulerian path approach.  First,
-the graph may not be Eulerian.  This can happen if the graph is not strongly
-connected, not balanced (indegree always equal to out
-
-This implies we really would need to solve the
-bidirected equivalent of the Chinese Postman Problem instead.  Even then, the
-graph may not be fully connected, which would require that the final walk take
-the form of multiple discontinuous walks.  An equally severe problem is that
-some overlaps may be spurious, meaning that the two overlapping reads do not
-actually form a valid genomic sequence when combined.  Spurious overlaps can be
-caused by genomic repeats.  Therefore, we need to allow for the possibility that
-a given edge in the bidirected graph is omitted from the assembly if it seems
-like a good idea to do so.
+the graph may not be Eulerian.  This could happen if the graph is not balanced.
+This implies we really would need to solve the bidirected equivalent of the
+Chinese Postman Problem instead.\footnote{The Chinese Postman problem on a
+bidirected graph is formalized in \cite{Medvedev2009}.}  Even then, the graph
+may not be fully connected, which would require that the final walk take the
+form of multiple discontinuous walks.  An equally severe problem is that some
+overlaps may be spurious, meaning that the two overlapping reads do not actually
+form a valid genomic sequence when combined.  Spurious overlaps can be caused by
+genomic repeats.  Therefore, we need to allow for the possibility that an edge
+in the bidirected graph can be omitted from the walk if it seems like a good
+idea to do so.
 
 The way these problems can be solved is to (1) place a lower bound and an upper
 bound on the number of times each edge may be traversed, then (2) formulate and
 solve a minimum-cost network flow problem that finds the minimum total traversal
 count of edges in the graph in order for every vertex to be balanced (i.e. have
-the same indegree as out degree), then (3) find a generalized Eulerian tour
-through the graph, traversing each edge the exact number of times that was
-calculated in (2) and also allowing for the tour be discontinuous.
+the same in-degree as out-degree), then (3) find a generalized Eulerian tour
+through the bidirected graph, traversing each edge the exact number of times
+that was calculated in (2) and also allowing for the tour be discontinuous.
 
 \subsection{Calculating the A-statistic}
 
-We would like to use information from the data to restrict the number of times
-each edge may be traversed.  This can be done using a calculation called the
-\KeyTerm{A-statistic}, or \KeyTerm{arrival-rate statistic}, which is the
-logarithm of the probability that an edge represents unique sequence rather than
-duplicate sequence.  The A-statistic $A(e)$ of an edge $e$ in a bidirected
-string graph is:
+We would like to use hints from the original data to restrict the number of
+times each bidirected edge may be traversed.  This can be done using a
+calculation called the \KeyTerm{A-statistic}, or \KeyTerm{arrival-rate
+statistic}, which is the logarithm of the probability that an edge represents
+unique sequence rather than duplicate sequence\cite{Myers2005}.  The A-statistic
+$A(e)$ of an edge $e$ in a bidirected string graph is:
 
 \[ A(e) = \frac{n}{G} \Delta - \ln{2} \cdot {k} \]
 
