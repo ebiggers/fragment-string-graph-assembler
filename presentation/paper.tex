@@ -8,6 +8,8 @@
 \usepackage{algorithmic}
 \usepackage{comment}
 \usepackage{mathptmx}
+\usepackage{microtype}
+\usepackage{array}
 %\usepackage{amsthm}
 
 \usetikzlibrary{arrows}
@@ -47,7 +49,7 @@ Sequencing an organism's genome is an important step to further genetic research
 on that organism.  However, currently available sequencing technologies can only
 sequence short fragments of DNA.  As a result, the whole-genome shotgun
 sequencing approach to genome sequencing relies on breaking up a sample of
-genomic DNA into fragments, sequencing those fragments, then using a program
+genomic DNA into fragments, sequencing these fragments, then using a program
 called a {\em genome assembler} to put together these short sequences to
 reconstruct the original, much longer sequence.  This paper provides an
 introduction and formalization of the genome assembly problem, then introduces a
@@ -70,7 +72,7 @@ corresponding nucleotide on the opposite strand, is called a \KeyTerm{base pair}
 (abbreviation: \KeyTerm{bp}).  In DNA, there are four possible nucleotides:
 adenine, cytosine, guanine, and thymine, which are abbreviated as \Base{A},
 \Base{C}, \Base{G}, and \Base{T}, respectively.  \Base{A} always pairs with T on
-the other strand, and \Base{C} always pairs with \Base{G} on the other strand.
+the opposite strand, and \Base{C} always pairs with \Base{G} on the opposite strand.
 In addition, each strand has a direction, and the two strands of a DNA molecule
 are directed opposite one another.  Furthermore, a DNA molecule may be circular,
 as is usually the case for bacterial chromosomes.
@@ -78,8 +80,8 @@ as is usually the case for bacterial chromosomes.
 Based on these biological facts, a genome is formally defined, for the purposes
 of this paper, as a set of possibly circular, dual-stranded strings of the
 symbols \Base{A}, \Base{C}, \Base{G}, and \Base{T}, where dual-stranded has the
-meaning indicated above: the two strands run in opposite directions, and the
-pairings \Base{A}---\Base{T} and \Base{C}---\Base{G} always hold.
+meaning indicated above (the two strands run in opposite directions, and the
+pairings \Base{A}---\Base{T} and \Base{C}---\Base{G} always hold).
 
 This definition does not account for the fact that the genomes of diploid and
 polyploid organisms, including most plants and animals, contain multiple
@@ -92,24 +94,23 @@ base pairs, depending on the organism (see Table \ref{tab:GenomeSizes}).
 
 \begin{table}[H]
 	\begin{center}
-		\begin{tabular}{|l|p{4.5cm}|}
+		\begin{tabular}{|c|>{\centering\arraybackslash}p{5.2cm}|}
 			%\hline
 			%$\phi$X174 bacteriophage &  $\sim$5,000 bp \\
 			%\hline
 			%Human mitochondrion &  $\sim$16,000 bp \\
 			\hline
-			{\bf Organism} & {\bf Approximate genome size (in base
-			pairs)} \\
+			{\bf Organism} & {\bf Approximate genome size} \\
 			\hline
-			{\it Variola} virus (smallpox) &  186,000 \\
+			{\it Variola} virus (smallpox) &  186,000 bp\\
 			\hline
-			{\it E. coli} (a bacterium) & 4,600,000 \\
+			{\it E. coli} (a bacterium) & 4,600,000 bp \\
 			\hline
-			{\it Ananas comosus} (domesticated pineapple) & 500,000,000 \\
+			{\it Ananas comosus} (domesticated pineapple) & 500,000,000 bp \\
 			\hline
-			{\it Zea mays} (domesticated corn) & 2,000,000,000 \\
+			{\it Zea mays} (domesticated corn) & 2,000,000,000 bp \\
 			\hline
-			{\it Homo sapiens} (human)       &  3,200,000,000 \\
+			{\it Homo sapiens} (human)       &  3,200,000,000 bp \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -129,8 +130,8 @@ other strand of the DNA molecule.  It is the reverse-complement, not the
 ``regular'' complement, because the two strands of a DNA molecule run in
 opposite directions.
 
-The \KeyTerm{canonical form} of a DNA sequence is the lexicographically lesser
-of that sequence and its reverse-complement.  This concept is useful in
+The \KeyTerm{canonical form} of a DNA sequence $S$ is the lexicographically
+lesser of $S$ and its reverse-complement $S'$.  This concept is useful in
 algorithms where a DNA sequence and its reverse-complement are considered
 equivalent.
 
@@ -643,15 +644,16 @@ number of overlaps, which likely could be improved.
 After overlaps have been computed from the reads, the next step is to construct
 a graph that models how the reads can be assembled together when the overlaps
 are used as evidence.  To do this, define a graph where each vertex corresponds
-to a read and each edge corresponds to an overlap.  Two vertices are connected
-by an edge if and only if the corresponding reads share an overlap.  In
-addition, each edge is labeled with an appropriate DNA sequence, the details of
-which will be explained later.
+to a read\footnote{Actually, more than one read may map to the same vertex, as
+explained in \Subsection{subsec:removing_contained_reads}.} and each edge
+corresponds to an overlap.  Two vertices are connected by an edge if and only if
+the corresponding reads share an overlap.  In addition, each edge is labeled
+with an appropriate DNA sequence, the details of which will be explained later.
 
 It needs to be decided whether each edge will be directed, undirected, or
-something else.  To decide this, we need to consider exactly what we want each
-edge to actually represent.  Consider three reads $f$, $g$, and $h$, that
-overlap as follows:
+something else.  To decide this, we need to consider exactly what each edge
+needs to represent.  Consider three reads $f$, $g$, and $h$, that overlap as
+follows:
 
 \begin{center}
 	\begin{tikzpicture}[>=\ReadArrowType]
@@ -661,7 +663,7 @@ overlap as follows:
 	\end{tikzpicture}
 \end{center}
 
-There are 3 overlaps so there will be 3 edges--- one between $f$ and $g$, one
+There are 3 overlaps, so there will be 3 edges--- one between $f$ and $g$, one
 between $g$ and $h$, and one between $f$ and $h$.  As shown, the reads can be
 assembled together consistently when used in the order $f,\ g,\ h$; therefore, it
 must be possible to walk $f \to g \to h$ in the graph to model this assembly.
@@ -680,37 +682,61 @@ Therefore, the walk $h \to g \to f$ must be allowed.  Furthermore, read $f$
 directly overlaps with read $h$, so it must also be possible to walk directly $f
 \to h$ or $h \to f$.
 
+We might consider a directed graph as shown in
+\Subfigure{subfig:possible_directed}, but this does not work because the graph
+does not allow the reverse-complement walks such as $h \to g \to f$.
 
-We might consider a directed graph, but this does not work because the graph
-does not allow the reverse-complement walks such as $h \to g \to f$:
+\begin{figure}
+	\begin{center}
+		\begin{subfigure}{0.32\textwidth}
+			\begin{tikzpicture}[>=triangle 45]
+				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+				\node (f) at (0, 0) {f};
+				\node (g) at (1.7, 0) {g};
+				\node (h) at (3.4, 0) {h};
+				\draw[->,style=very thick] (f) edge (g);
+				\draw[->,style=very thick] (g) edge (h);
+				\draw[->,style=very thick,bend left] (f) edge (h);
+			\end{tikzpicture}
+			\caption{A possible directed \\representation of the \\string graph.}
+			\label{subfig:possible_directed}
+		\end{subfigure}
+		\begin{subfigure}{0.32\textwidth}
+			\begin{tikzpicture}[>=triangle 45]
+				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+				\node (f) at (0, 0) {f};
+				\node (g) at (1.7, 0) {g};
+				\node (h) at (3.4, 0) {h};
+				\draw[-,style=very thick] (f) edge (g);
+				\draw[-,style=very thick] (g) edge (h);
+				\draw[-,style=very thick,bend left] (f) edge (h);
+			\end{tikzpicture}
+			\caption{A possible undirected \\representation of the \\string graph.}
+			\label{subfig:possible_undirected}
+		\end{subfigure}
+		\begin{subfigure}{0.32\textwidth}
+			\begin{tikzpicture}[>=triangle 45]
+				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+				\node (f) at (0, 0) {f};
+				\node (g) at (1.7, 0) {g};
+				\node (h) at (3.4, 0) {h};
+				\draw[>->,style=very thick] (f) edge (g);
+				\draw[>-<,style=very thick] (g) edge (h);
+				\draw[>-<,style=very thick,bend left] (f) edge (h);
+			\end{tikzpicture}
+			\caption{A possible bidirected \\representation of the \\string graph.}
+			\label{subfig:possible_bidirected}
+		\end{subfigure}
+		\caption{Three possibilities for constructing the string graph.  The
+		bidirected construction works the best in terms of modeling the
+		underlying problem.}
+	\end{center}
+\end{figure}
 
-\begin{center}
-	\begin{tikzpicture}[>=triangle 45]
-		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-		\node (f) at (0, 0) {f};
-		\node (g) at (1.7, 0) {g};
-		\node (h) at (3.4, 0) {h};
-		\draw[->,style=very thick] (f) edge (g);
-		\draw[->,style=very thick] (g) edge (h);
-		\draw[->,style=very thick,bend left] (f) edge (h);
-	\end{tikzpicture}
-\end{center}
-
-Similarly, we might consider an undirected graph, but this does not work because
+Similarly, we might consider an undirected graph as shown in
+\Subfigure{subfig:possible_undirected}, but this does not work because
 the graph fails to disallow walks such as $g \to h \to f$ that correspond to
 assemblies that are not supported by the underlying reads.
-
-\begin{center}
-	\begin{tikzpicture}[>=triangle 45]
-		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-		\node (f) at (0, 0) {f};
-		\node (g) at (1.7, 0) {g};
-		\node (h) at (3.4, 0) {h};
-		\draw[-,style=very thick] (f) edge (g);
-		\draw[-,style=very thick] (g) edge (h);
-		\draw[-,style=very thick,bend left] (f) edge (h);
-	\end{tikzpicture}
-\end{center}
 
 The fundamental problem with using the directed graph is that at this stage in
 the assembly, we don't know in absolute terms which strand a given read is from.
@@ -725,18 +751,7 @@ fails in another way: it has no guarantee that a given read is used in a
 consistent way at a location within any single assembly.
 
 The solution to all these problems is to use a new type of graph called a
-\KeyTerm{bidirected graph}.
-\begin{center}
-	\begin{tikzpicture}[>=triangle 45]
-		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-		\node (f) at (0, 0) {f};
-		\node (g) at (1.7, 0) {g};
-		\node (h) at (3.4, 0) {h};
-		\draw[>->,style=very thick] (f) edge (g);
-		\draw[>-<,style=very thick] (g) edge (h);
-		\draw[>-<,style=very thick,bend left] (f) edge (h);
-	\end{tikzpicture}
-\end{center}
+\KeyTerm{bidirected graph}, shown in \Subfigure{subfig:possible_bidirected}.
 
 \subsection{Bidirected graphs}
 
@@ -744,8 +759,8 @@ A \KeyTerm{bidirected graph} is a graph where a directed head is attached to bot
 ends of each edge.
 
 There are 3 (or 4, ignoring symmetry) types of \KeyTerm{bidirected edges}.  They
-follow directly from the different types of overlaps (see
-\Figure{fig:overlap_mapping}).
+follow directly from the different types of overlaps, as shown in
+\Figure{fig:overlap_mapping}.
 
 \begin{figure}
 	\begin{center}
@@ -795,10 +810,10 @@ follow directly from the different types of overlaps (see
 \end{figure}
 
 The \KeyTerm{in-degree} of a vertex $v$ in a bidirected graph is the number of
-heads adjacent to $v$ that point inwards, while the \KeyTerm{out-degree} of $v$
-is the number of heads adjacent to $v$ that point outwards.  A bidirected graph
-$G$ is \KeyTerm{balanced} if for every vertex in $G$ the in-degree is equal to
-the out-degree.
+heads adjacent to $v$ that point inwards (towards $v$), while the
+\KeyTerm{out-degree} of $v$ is the number of heads adjacent to $v$ that point
+outwards (away from $v$).  A bidirected graph $G$ is \KeyTerm{balanced} if and
+only if for every vertex in $G$ the in-degree is equal to the out-degree.
 
 A \KeyTerm{walk} in a bidirected graph $G$ is a continuous sequence of edges in
 $G$ such that if any vertex $v$ is entered through a head inwards, it is exited
@@ -843,21 +858,21 @@ direction, possibly even during the same walk.
 
 A \KeyTerm{cycle} in a bidirected graph is a walk that begins and ends at the
 same vertex in such a way that it would be a valid to trace the walk again when
-the starting vertex is reached at the end of the cycle.
+the starting vertex is reached at the end of the walk.
 
 A bidirected graph is \KeyTerm{connected} if and only if  the undirected graph
-produced by replacing all bidirected edges with undirected edges is connected as
-defined for undirected graphs.  A bidirected graph is \KeyTerm{strongly
+produced by replacing all bidirected edges with undirected edges is connected
+(as defined for undirected graphs).  A bidirected graph is \KeyTerm{strongly
 connected} if and only if it is connected and for every edge there is a cycle
-containing it.\cite{Medvedev2009}
+containing it\cite{Medvedev2009}.
 
 The concept of a walk in a bidirected graph maps quite nicely onto the genome
 assembly problem because a walk through the bidirected string graph constructed
 from a set of reads and their overlaps models a way in which the reads can be
-assembled together consistently.  In such a walk, each read may be used in
-forward or reverse-complement orientation, depending on the direction, relative
-to the walk, of the adjacent arrow heads when the corresponding vertex is passed
-through.
+assembled together consistently\cite{Myers2005}.  In such a walk, each read may
+be used in forward or reverse-complement orientation, depending on the
+direction, relative to the walk, of the adjacent arrow heads when the
+corresponding vertex is passed through.
 
 For example, consider the walk $1 \to 2 \to 3 \to 4$ in
 \Figure{fig:bidigraph_mapping}.  When the walk passes through vertex 1, the
@@ -926,9 +941,10 @@ region in $f$, up to the beginning of $f$, and this sequence must be
 reverse-complemented because it is being used opposite its original direction.
 
 These interpretations can be generalized to the other two types of bidirected
-edges.  Furthermore, these interpretations imply that the actual sequence spelled
-out by a walk in the bidirected graph may include implied (non-labeled) sequence
-at the start (if we start at the end of a read) and/or the end (if we end at the
+edges, and this is described in slightly more detail in \cite{Myers2005}.
+Furthermore, these interpretations imply that the actual sequence spelled out by
+a walk in the bidirected graph may include implied (non-labeled) sequence at the
+start (if we start at the end of a read) and/or the end (if we end at the
 beginning of a read).
 
 \begin{figure}
@@ -1007,7 +1023,7 @@ beginning of a read).
 			\end{tikzpicture}
 		\end{center}
 		\caption{The corresponding directed string graph fragment}
-		\label{subfig:bidiedge_interp_a}
+		\label{subfig:bidiedge_interp_c}
 	\end{subfigure}
 
 	\vspace{1.0cm}
@@ -1096,7 +1112,9 @@ sequences that the edges are labeled with, as this can be done to produce a
 preliminary assembly (especially after the graph simplifications that are about
 to be described).
 
-\section{Transitive reduction}
+\section{Simplifying the graph}
+
+\subsection{Transitive reduction}
 
 Before trying to find walks through the string graph, it is very helpful to
 simplify the graph is much as possible.  Very commonly, given three adjacent
@@ -1180,7 +1198,7 @@ Transitive reduction on a string graph is implemented as the program
 string graph and produces as output a file containing the transitively reduced
 string graph.
 
-\section{Collapsing unbranched paths}
+\subsection{Collapsing unbranched paths}
 
 After transitive reduction, a non-repetitive region of the genome will typically
 be represented in the string graph by a chain of vertices that is part of a
