@@ -1399,13 +1399,15 @@ idea to do so.
 
 The way these problems can be solved is to (1) place a lower bound and an upper
 bound on the number of times each edge may be traversed, then (2) formulate and
-solve a minimum-cost network flow problem that finds the minimum total traversal
+solve a minimum-cost circulation problem that finds the minimum total traversal
 count of edges in the graph in order for every vertex to be balanced (i.e. have
 the same in-degree as out-degree), then (3) find a generalized Eulerian tour
 through the bidirected graph, traversing each edge the exact number of times
 that was calculated in (2) and also allowing for the tour be discontinuous.
 
 \subsection{Calculating the A-statistic}
+
+\label{subsec:a_statistics}
 
 We would like to use hints from the original data to restrict the number of
 times each bidirected edge may be traversed.  This can be done using a
@@ -1425,11 +1427,12 @@ unbranched path corresponding to $e$ before the unbranched paths were collapsed
 Edges with sufficiently high A-statistic are very likely to be single-copy edges
 and therefore should be traversed exactly one time.  The remaining edges may be
 traversed any number of times (with the exact number being determined during the
-network flow calculation), except for edges that originally were associated with
-one or more inner vertices, in which case we require the edge be traversed at
-least one time so that the reads corresponding to the inner vertices are used in
-the reconstruction of the genome.  This is needed because in the absence of
-foreign DNA, every read was presumably sampled from the genome.
+minimum-cost circulation calculation), except for edges that originally were
+associated with one or more inner vertices, in which case we require the edge be
+traversed at least one time so that the reads corresponding to the inner
+vertices are used in the reconstruction of the genome.  This is needed because
+in the absence of foreign DNA, every read was presumably sampled from the
+genome.
 
 However, $G$, the estimated genome length, is actually unknown, so it must be
 estimated first.  It can be estimated by producing a ``bootstrap'' genome length
@@ -1473,37 +1476,60 @@ it possible to account for contained reads when calculating the A-statistic.
 
 \label{subsec:mapping_contained_reads}
 
-\subsection{Minimum-cost network flow}
+\subsection{Minimum-cost circulation}
 
-Formally, a minimum-cost network flow problem on a directed graph takes as input
-for each edge $e$ an upper bound $c(e) \ge 0$ on flow and a cost per unit flow
-$v(e)$, and for each vertex $v$ a supply (positive) or demand (negative)
-$b(v)$ for flow.  It produces as output a flow $x(e)$ on each edge $e$ such
-that $\sum_e v(e)x(e)$ is minimized subject to $x(e) \in [0, c(e)]$ and
-$\sum_{u \to v}x(u \to v) + b(v) = \sum_{v \to w} x(v \to w)$.\cite{Myers2005}.
+Formally, a minimum-cost circulation problem on a directed graph takes as input
+for each edge $e$ an lower bound $l(e) \ge 0$ and an upper bound $u(e) \ge 0$ on
+flow and a cost per unit flow $v(e)$, and for each vertex $v$ a supply
+(positive) or demand (negative) $b(v)$ for flow.  It produces as output a flow
+$x(e)$ on each edge $e$ such that $\sum_e v(e)x(e)$ is minimized subject to
+$x(e) \in [l(e), u(e)]$ and $\sum_{u \to v}x(u \to v) + b(v) = \sum_{v \to w}
+x(v \to w)$ \cite{Myers2005}.  In the minimum-cost circulation problem, as
+opposed to less general network flow problems, no nodes are treated specially as
+sources or sinks; instead, flow must be balanced at every node $v$, but only
+after taking into account the supply or demand $b(v)$ at that node.
 
-We can roughly map our problem onto this definition assigning $c(e) = 0$ when
-$e$ is definitely single-copy and $c(e) = \infty$ otherwise, $b(v)$ the sum
-of the lower bounds on the traversal counts of all bidirected edges incident to
-$v$ with an inward head minus the sum of the lower bounds on the traversal
-counts of all edges incident to $v$ with an outward head, and $v(e) = 1$.  The
-resulting traversal count $t(e)$ for a bidirected edge $e$ is then the lower
-bound on the traversal count for that edge plus $x(e)$, the traversal count
-assigned in the network flow calculation.  The traversal count $t(e)$ represents
-the total number of times the edge may be traversed in a given assembly,
-counting traversals in both directions.
+The A-statistic calculation on each edge $e$, as described in
+\Subsection{subsec:a_statistics}, allows us to assign a lower bound $l(e)$ and
+an upper bound $u(e)$ on the traversal count for that edge.  Note that $u(e)$
+may be $\infty$, as these bounds are very approximate.  We also have $b(v) = 0$
+for all $v$, because the flow at every vertex must be balanced; this corresponds
+to the walk entering each vertex the same number of times that it is exited,
+making the graph as a whole be balanced.
 
-There is, however, a serious complication with this network flow formulation
-which was not addressed in \cite{Myers2005}.  We have a bidirected graph, not a
-directed graph, so it cannot be trivially mapped to a directed network flow
-problem.  A possible workaround for this is to solve directed flow on the
-directed equivalent to the bidirected graph, described in
+%It produces as output a flow
+%$x(e)$ on each edge $e$ such that $\sum_e v(e)x(e)$ is minimized subject to
+%$x(e) \in [0, c(e)]$ and $\sum_{u \to v}x(u \to v) + b(v) = \sum_{v \to w} x(v
+%\to w)$.\cite{Myers2005}.
+
+%We can roughly map our problem onto this definition assigning $c(e) = 0$ when
+%$e$ is definitely single-copy and $c(e) = \infty$ otherwise, $b(v)$ the sum
+%of the lower bounds on the traversal counts of all bidirected edges incident to
+%$v$ with an inward head minus the sum of the lower bounds on the traversal
+%counts of all edges incident to $v$ with an outward head, and $v(e) = 1$.  The
+%resulting traversal count $t(e)$ for a bidirected edge $e$ is then the lower
+%bound on the traversal count for that edge plus $x(e)$, the traversal count
+%assigned in the network flow calculation.  The traversal count $t(e)$ represents
+%the total number of times the edge may be traversed in a given assembly,
+%counting traversals in both directions.
+
+There are still two serious problems with this circulation formulation that need
+to be addressed.  First, we actually have a bidirected graph, not a directed
+graph.\footnote{The fact that this circulation problem actually needs to be
+formulated and solved on a bidirected graph is addressed in \cite{Medvedev2009},
+but not in \cite{Myers2005}, even though the latter introduced the overall
+fragment string graph algorithm.}
+
+but is a.  We have a
+bidirected graph, not a directed graph, so it cannot be trivially mapped to a
+directed network flow problem.  A possible workaround for this is to solve
+directed flow on the directed equivalent to the bidirected graph, described in
 \Subsection{subsec:directed}.  The calculated traversal counts for a directed
 edge $e$ between, for example, two vertices $f.E \to g.E$ is not guaranteed to
 be the same as the calculated traversal count for the edge that corresponds to
 the other direction of the implied bidirected edge, which would be $g.B \to f.B$
-in this example.  However, gWe can take the average of the two counts and use this as the
-traversal count for the corresponding bidirected edge, and this 
+in this example.  However, we can take the average of the two counts and use
+this as the traversal count for the corresponding bidirected edge, and this 
 
 %vertices $f.X$ and $g.X
 
