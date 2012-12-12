@@ -23,7 +23,7 @@ pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
 	pirs simulate -x $(COVERAGE) --no-gc-bias --no-subst-errors --no-indels \
 			--random-seed=1 --threads=1 $+
 else
-reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl
+reads.fa:genome.fa.$(SAMPLE_SIZE)
 	./simulate_uniform_reads.pl --read-len=$(READ_LEN)	\
 			--coverage=$(COVERAGE) --allow-rc \
 			--read-pos-log=reads.log --seed=$(SEED) $+ > $@

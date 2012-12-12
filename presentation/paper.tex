@@ -15,6 +15,9 @@
 %\usepackage{hyperref}
 %\usepackage{amsthm}
 
+\usepackage[nofiglist,notablist]{endfloat}
+\renewcommand{\efloatseparator}{\mbox{}}
+
 %\newcommand{\nodecolor}{blue!20}
 \newcommand{\nodecolor}{black!0}
 %\newcommand{\specialnodecolor}{green!25}
@@ -134,8 +137,9 @@ base pairs, depending on the organism (see Table \ref{tab:GenomeSizes}).
 			\end{tabular}
 			\begin{tablenotes}
 				\item [1] Technically, viruses are not organisms, but they still
-				have genomes.  Actually, some viruses have genomes made of RNA,
-				not DNA, but this is not considered in this paper.
+				have genomes.
+				%Actually, some viruses have genomes made of RNA,
+				%not DNA, but this is not considered in this paper.
 			\end{tablenotes}
 		\end{threeparttable}
 	\end{center}
@@ -239,8 +243,9 @@ In other words, a read is defined here as an exact substring from either strand
 of any part of the genome.
 
 Genomes may contain \KeyTerm{repeats}, which are subsequences that occur
-multiple times in the genome--- possibly adjacent to each other (a
-\KeyTerm{tandem repeat}), but not necessarily.  The number of times a
+multiple times in the genome--- possibly adjacent to each other,
+%(a \KeyTerm{tandem repeat})
+but not necessarily.  The number of times a
 subsequence occurs in the genome is referred to as its \KeyTerm{copy number}.
 Repeats may be longer than the length of any individual read, which makes the
 genome more difficult to assemble accurately.  However, real genomes almost
@@ -480,7 +485,7 @@ reads that overlap potentially could be combined to form a longer sequence.
 Now that the idea of an exact overlap has been formalized, what we would like to
 do is compute all pairwise exact overlaps of some minimum length $L$ among the
 	reads that were provided as input to the assembler.  The chosen value of $L$
-	must be balanced so that we find can enough overlaps to adequately cover the
+	must be balanced so that we can find enough overlaps to adequately cover the
 	genome (small $L$ better) but still exclude most spurious overlaps (large
 	$L$ better).
 
@@ -524,8 +529,8 @@ For each of these distinct seeds, the reads containing it are examined pairwise,
 which takes quadratic time with respect to the number of reads sharing the
 seed.  Since more reads will contain each seed when the reads are sampled more
 densely from the genome, the running time of the seed-and-extend algorithm rises
-quadratically with respect to read density.  In addition, the number of read
-pairs the algorithm considers for a specific seed also rises quadratically with
+quadraticly with respect to read density.  In addition, the number of read
+pairs the algorithm considers for a specific seed also rises quadraticly with
 the number of times that seed is repeated in the genome due to genomic repeats.
 Overall, the seed-and-extend algorithm is not ideal and is still a bottleneck of
 the entire assembly algorithm, despite the fact that it is much faster than the
@@ -677,8 +682,10 @@ number of overlaps, which likely could be improved.
 After overlaps have been computed from the reads, the next step is to construct
 a graph that models how the reads can be assembled when the overlaps are used as
 evidence.  To do this, define a graph where each vertex corresponds to a
-read\footnote{Actually, more than one read may map to the same vertex, as
-explained in \Subsection{subsec:removing_contained_reads}.} and each edge
+read
+%\footnote{Actually, more than one read may map to the same vertex, as explained
+%in \Subsection{subsec:removing_contained_reads}.}
+and each edge
 corresponds to an overlap.  Two vertices are connected by an edge if and only if
 the corresponding reads share an overlap.  In addition, each edge is labeled
 with an appropriate DNA sequence, the details of which will be explained later.
@@ -1072,7 +1079,7 @@ beginning of a read) of the walk.
 		\end{center}
 		\caption{Interpretation of each walk on the bidirected graph fragment}
 	\end{subfigure}
-	\caption{Full interpetation of an edge in a bidirected string graph}
+	\caption{Full interpretation of an edge in a bidirected string graph}
 	\label{fig:bidiedge_interp}
 \end{figure}
 
@@ -1130,10 +1137,10 @@ directed equivalent to the bidirected graph described in
 \Subsection{subsec:directed}.  Both programs take as input two files: the set of
 uncontained reads and their overlaps, and produce as output the bidirected or
 directed graph, serialized to a file.
-\ProgramName{build-bidirected-string-graph} will add one vertex for each read
-and add a bidirected edge for each overlap, while
-\ProgramName{build-directed-string-graph} will add two vertices for each read and
-add two directed edges for each overlap.
+\ProgramName{build-bidirected-string-graph} will add one vertex for each
+uncontained read and a bidirected edge for each overlap, while
+\ProgramName{build-directed-string-graph} will add two vertices for each
+uncontained read and two directed edges for each overlap.
 
 The string graphs are stored in a binary format.  An additional program,
 \ProgramName{print-string-graph}, was implemented that can print a string graph
@@ -1255,10 +1262,13 @@ unbranched path can be collapsed.
 Collapsing unbranched paths is implemented as the program
 \ProgramName{collapse-unbranched-paths}.  It takes as input a file containing a
 string graph and produces as output a file containing the string graph with
-unbranched paths collapsed.  Vertices are currently re-numbered; so, for
-example, vertex 10 after collapsing unbranched paths does not necessarily refer
-to the 10th read in the list of uncontained reads from which the graph was
-constructed.
+unbranched paths collapsed.  The algorithm marks vertices with in-degree 1 and
+out-degree 1 as inner, then iterates through every non-inner vertex to locate
+adjacent inner vertices, which must be the ends of unbranched paths.  Each
+unbranched path is then walked and collapsed.  Vertices are currently
+re-numbered; so, for example, vertex 10 after collapsing unbranched paths does
+not necessarily refer to the 10th read in the list of uncontained reads from
+which the graph was constructed.
 
 \begin{figure}
 	\begin{center}
@@ -1355,7 +1365,7 @@ random genome.
 		\end{tikzpicture}
 		\caption{
 			Bidirected string graph for reads uniformly sampled from a 4.6 Mbp
-			random genome after transitive reduction and path collapsing.  (Edge
+			random genome after transitive reduction and unbranched path collapsing.  (Edge
 			labeled with length of sequence, with the length being the same in both
 			directions)}
 		\label{fig:random_example}
@@ -1410,7 +1420,7 @@ GTACTTCTCGGAGCTATCCC
 \end{verbatim}
 
 Note that in this file format, a continuous sequence can be split among multiple
-lines.  A new sequence only begins after a line beginning with {\tt >} is
+lines; a new sequence only begins after a line beginning with {\tt >} is
 reached.
 
 The reads are the following 10 reads that are 50bp each and sampled randomly
@@ -1666,10 +1676,10 @@ A-statistic $A(e)$ of an edge $e$ in a bidirected string graph is:
 \[ A(e) = \frac{n}{G} \Delta - \ln{2} \cdot {k} \]
 
 where $n$ is the total number of reads, $G$ is the estimated genome length,
-$\Delta$ is the length of the edge in bp, and $k$ is the number of reads that
-support that edge.  To more precise, $k$ is the number of inner vertices in the
-unbranched path corresponding to $e$ before the unbranched paths were collapsed
-\cite{Myers2005}.
+$\Delta$ is the average length of $e$'s two sequences in bp, and $k$
+%is the number of reads that support that edge.  To more precise, $k$
+is the number of inner vertices in the unbranched path corresponding to $e$
+before the unbranched paths were collapsed \cite{Myers2005}.
 
 Edges with sufficiently high A-statistic are very likely to be single-copy edges
 and therefore should be traversed exactly one time.  The remaining edges may be
@@ -1685,10 +1695,10 @@ $G$, the estimated genome length, is actually unknown, so it must be estimated
 first.  It can be estimated by producing a ``bootstrap'' genome length by adding
 up the lengths of the sequences on every edge in both directions and dividing by
 2, then calculating the A-statistics using this bootstrap genome length and
-identifying edges that are probably single-copy.  The A-statistics can then be
-re-estimated over just these single-copy edges in order to refine the genome
-length further before calculating the final A-statistic on all the edges.  This
-algorithm is outlined in \cite{Myers2005}.
+identifying edges that are probably single-copy.  The estimated genome length
+can then be refined using just these single-copy edges before calculating the
+final A-statistic on all the edges.  This algorithm is outlined in
+\cite{Myers2005}.
 
 The calculation of the A-statistic on each edge in the bidirected string graph,
 including the genome length bootstrapping algorithm, is implemented by the
@@ -1789,16 +1799,16 @@ makes sense on bidirected graphs.
 Fortunately, there does exist a way to solve a bidirected flow problem by
 mapping it to a directed flow problem by using the directed equivalent of the
 bidirected graph, described in \Subsection{subsec:directed}.  However, the
-calculated flow on a directed edge between, for example, two vertices $f.E
-\to g.E$ is not guaranteed to be the same as the flow on $g.B \to f.B$, the edge
+calculated flow on a directed edge between, for example, two vertices $f.E \to
+g.E$ is not guaranteed to be the same as the flow on $g.B \to f.B$, the edge
 that corresponds to the other direction of the implied bidirected edge.  This
 problem can be worked around by taking the average of the two counts and using
 this as the flow on the bidirected edge.  This approximation is equivalent to
 performing monotonization on the binet matrix that represents the linear program
-reduction of bidirected flow to produce a totally unimodular matrix that
-represents a linear program that can be solved to find an integal flow that
-is at worst a 2-approximation to the optimal integral
-flow on the bidirected graph\cite{Medvedev2009}\cite{Hochbaum2004}.
+reduction of bidirected flow; this produces a totally unimodular matrix that
+represents a linear program that can be solved to find an integal flow that is
+at worst a 2-approximation to the optimal integral flow on the bidirected
+graph\cite{Medvedev2009}\cite{Hochbaum2004}.
 
 The second problem with our circulation formulation is that the bidirected
 string graph is not guaranteed to be connected, let alone strongly connected.
@@ -1890,6 +1900,7 @@ sequences even when they are separated by unknown sequence, possibly using ideas
 from \cite{Medvedev2009}.
 \end{itemize}
 
+\addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
 \bibliography{refs}
 

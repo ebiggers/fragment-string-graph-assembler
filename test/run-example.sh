@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 make GENOME=E_coli.fa   \
      SAMPLE_SIZE=500000 \

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 my $USAGE =
 "Usage: gen_random_genome.pl LENGTH\n";
