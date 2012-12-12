@@ -100,4 +100,5 @@ ifneq ($(BIDIGRAPH_OPS),true)
 endif
 
 clean:
-	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads
+	rm -f reads.* out.* genome.fa.* pirs_reads* .remove-contained-reads \
+		assemble.log
