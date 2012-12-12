@@ -10,6 +10,7 @@
 \usepackage{mathptmx}
 \usepackage{microtype}
 \usepackage{array}
+\usepackage{grffile}
 %\usepackage{amsthm}
 
 \usetikzlibrary{arrows}
@@ -339,7 +340,7 @@ reads are either identical or exact reverse-complements of each other.
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-		\begin{tikzpicture}=\ReadArrowType]
+		\begin{tikzpicture}[>=\ReadArrowType]
 			\draw[->,style=thick] (0,0) -- (2,0);
 			\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
 		\end{tikzpicture}
@@ -354,14 +355,14 @@ reads are either identical or exact reverse-complements of each other.
 		\caption{``Normal'' overlap}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\textwidth}
-		\begin{tikzpicture}=\ReadArrowType]
+		\begin{tikzpicture}[>=\ReadArrowType]
 			\draw[->,style=thick] (0,0) -- (2,0);
 			\draw[->,style=thick] (3,0.3) -- (1,0.3);
 		\end{tikzpicture}
 		\caption{``Innie'' overlap}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\textwidth}
-		\begin{tikzpicture}=\ReadArrowType]
+		\begin{tikzpicture}[>=\ReadArrowType]
 			\draw[->,style=thick] (2,0) -- (0,0);
 			\draw[->,style=thick] (1.0,0.3) -- (3.0,0.3);
 		\end{tikzpicture}
@@ -1363,6 +1364,197 @@ too long to be resolved by the reads at this stage in the assembly.
 \end{figure}
 
 \subsection{Small step-by-step example}
+
+This section walks through the construction and simplification of the bidirected
+string graph on a very small example and provides a more detailed look at the
+actual data.  The genome is 200 bp long and is given by the following file:
+
+%make -B SAMPLE_SIZE=200 READ_LEN=50 MIN_OVERLAP_LEN=15 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf COVERAGE=2.5 SEED=9 USE_PIRS=false
+
+\begin{verbatim}
+>random_genome
+ACTCGAATTCCGAATAGATAGAAGTCTGCTGATAATATCGCGCCGGTTCTGATGCGCCTC
+GGGGAACGTGGCGGGTAGAGCTATCGTGTCACTCTCTGTCAGTGGTCTGTGAAAATTGAT
+CGCTACTGTCCCGGTGTAACCAGTCGACCCGCGGCAACTGCGAAGGGCCTCTCGCTCGCA
+GTACTTCTCGGAGCTATCCC
+\end{verbatim}
+
+The reads are the following 10 reads (50bp each, sampled randomly from either
+strand of the above genome):
+
+\begin{verbatim}
+>read_1
+CAGAACCGGCGCGATATTATCAGCAGACTTCTATCTATTCGGAATTCGAG
+>read_2
+GCAGTTGCCGCGGGTCGACTGGTTACACCGGGACAGTAGCGATCAATTTT
+>read_3
+GCGGGTAGAGCTATCGTGTCACTCTCTGTCAGTGGTCTGTGAAAATTGAT
+>read_4
+AGTCTGCTGATAATATCGCGCCGGTTCTGATGCGCCTCGGGGAACGTGGC
+>read_5
+TTCGCAGTTGCCGCGGGTCGACTGGTTACACCGGGACAGTAGCGATCAAT
+>read_6
+TACACCGGGACAGTAGCGATCAATTTTCACAGACCACTGACAGAGAGTGA
+>read_7
+ACAGAGAGTGACACGATAGCTCTACCCGCCACGTTCCCCGAGGCGCATCA
+>read_8
+ACAGACCACTGACAGAGAGTGACACGATAGCTCTACCCGCCACGTTCCCC
+>read_9
+TAGCGATCAATTTTCACAGACCACTGACAGAGAGTGACACGATAGCTCTA
+>read_10
+CTATCGTGTCACTCTCTGTCAGTGGTCTGTGAAAATTGATCGCTACTGTC
+\end{verbatim}
+
+The location on the genome from which each of these reads came is shown below.
+Note that by chance, 36 bp from the right end of the genome are not included in
+any read:
+
+\newcounter{readNumber}
+\newcounter{readPos}
+\newcounter{forwardReads}
+\newcounter{rcReads}
+
+\setcounter{forwardReads}{0}
+\setcounter{rcReads}{1}
+
+% ForwardRead{pos}{len}
+\newcommand{\ForwardRead}[2]{
+	\addtocounter{readNumber}{1}
+	\addtocounter{forwardReads}{-1}
+	\setcounter{readPos}{#1}
+	\addtocounter{readPos}{#2}
+	\draw[->, style=thick] (#1, \arabic{forwardReads}) node[anchor=east]
+									{\arabic{readNumber}.} -- (\arabic{readPos},
+									\arabic{forwardReads});
+}
+
+% RcRead{pos}{len}
+\newcommand{\RcRead}[2]{
+	\addtocounter{readNumber}{1}
+	\addtocounter{rcReads}{1}
+	\setcounter{readPos}{#1}
+	\addtocounter{readPos}{#2}
+	\draw[<-, style=thick] (#1, \arabic{rcReads}) node[anchor=east]
+									{\arabic{readNumber}.} -- (\arabic{readPos},
+									\arabic{rcReads});
+}
+
+\begin{center}
+	\begin{tabular}{|ccc|}
+	\hline
+	{\bf Read number} & {\bf Position} & {\bf Reverse-complement?} \\ \hline
+	1  & 1  & yes \\
+	2  & 111  & yes \\
+	3  & 70  & no \\
+	4  & 22  & no \\
+	5  & 114  & yes \\
+	6  & 88  & yes \\
+	7  & 49  & yes \\
+	8  & 60  & yes \\
+	9  & 75  & yes \\
+	10  & 80  & no \\ \hline
+	\end{tabular}
+
+	\fbox{
+	\begin{tikzpicture}[>=\ReadArrowType,x=0.56mm,y=3.5mm]
+		\draw[<-, style=thick] (0, 1) node[anchor=east] {G.} -- (200, 1);
+		\draw[->, style=thick] (0, 0) node[anchor=east] {G.} -- (200, 0);
+
+		\RcRead{1}{50}
+		\RcRead{111}{50}
+		\ForwardRead{70}{50}
+		\ForwardRead{22}{50}
+		\RcRead{114}{50}
+		\RcRead{88}{50}
+		\RcRead{49}{50}
+		\RcRead{60}{50}
+		\RcRead{75}{50}
+		\ForwardRead{80}{50}
+	\end{tikzpicture}
+	}
+\end{center}
+
+\ProgramName{compute-overlaps} computes the following exact overlaps of minimum
+length 15 bp among the above reads:
+
+\begin{verbatim}
+Overlap { Read 1: [0, 28], Read 4: [0, 28], rc = 1 }
+Overlap { Read 2: [0, 46], Read 5: [3, 49], rc = 0 }
+Overlap { Read 2: [23, 49], Read 6: [0, 26], rc = 0 }
+Overlap { Read 2: [31, 49], Read 10: [31, 49], rc = 1 }
+Overlap { Read 3: [18, 49], Read 6: [18, 49], rc = 1 }
+Overlap { Read 3: [0, 28], Read 7: [0, 28], rc = 1 }
+Overlap { Read 3: [0, 39], Read 8: [0, 39], rc = 1 }
+Overlap { Read 3: [5, 49], Read 9: [5, 49], rc = 1 }
+Overlap { Read 3: [10, 49], Read 10: [0, 39], rc = 0 }
+Overlap { Read 4: [27, 49], Read 7: [27, 49], rc = 1 }
+Overlap { Read 5: [26, 49], Read 6: [0, 23], rc = 0 }
+Overlap { Read 5: [34, 49], Read 10: [34, 49], rc = 1 }
+Overlap { Read 6: [28, 49], Read 8: [0, 21], rc = 0 }
+Overlap { Read 6: [13, 49], Read 9: [0, 36], rc = 0 }
+Overlap { Read 6: [8, 49], Read 10: [8, 49], rc = 1 }
+Overlap { Read 7: [0, 38], Read 8: [11, 49], rc = 0 }
+Overlap { Read 7: [0, 23], Read 9: [26, 49], rc = 0 }
+Overlap { Read 7: [0, 18], Read 10: [0, 18], rc = 1 }
+Overlap { Read 8: [0, 34], Read 9: [15, 49], rc = 0 }
+Overlap { Read 8: [0, 29], Read 10: [0, 29], rc = 1 }
+Overlap { Read 9: [0, 44], Read 10: [0, 44], rc = 1 }
+\end{verbatim}
+
+These overlaps are then used by \ProgramName{build-bidirected-string-graph} to
+build the assembly graph.  Note that there are no contained reads in this
+example, so there are as many vertices as original reads.  Also, in this image
+(and the following images), each edge is labeled with the length of that edge's
+sequence, rather than the sequence itself.  Furthermore, although each edge
+really contains a separate sequence for each direction, for this particular
+example all the reads are the same length and only exact overlaps are
+considered, which makes it so the two sequences of each edge are the same
+length.
+
+\begin{center}
+	\includegraphics[scale=0.7]{example_200bp.bidigraph-crop.pdf}	
+\end{center}
+
+The assembly graph then can be simplified by \ProgramName{transitive-reduction}:
+
+\begin{center}
+	\includegraphics[scale=0.8]{example_200bp.reduced.mapped.bidigraph-crop.pdf}	
+\end{center}
+
+Then, the assembly can be simplified further by
+\ProgramName{collapse-unbranched-paths}:
+
+\begin{center}
+	\includegraphics[scale=0.8]{example_200bp.reduced.mapped.collapsed.bidigraph-crop.pdf}	
+\end{center}
+
+%\begin{figure}
+	%\begin{center}
+		%\begin{subfigure}{0.99\textwidth}
+			%\begin{center}
+				%\includegraphics[scale=0.5]{example.bidigraph-crop.pdf}	
+				%\caption{Bidirected string graph built from 100 bp reads sampled
+				%randomly at 5 $\times$ coverage from a 450 bp genome, using minimum 25
+				%bp overlaps.  Note: edges are labeled with their lengths, not DNA
+				%sequences.}
+			%\end{center}
+		%\end{subfigure}
+		%\begin{subfigure}{0.99\textwidth}
+			%\begin{center}
+				%\includegraphics[scale=0.7]{example.reduced.mapped.bidigraph-crop.pdf}	
+				%\caption{The bidirected string graph from the previous slide, after
+				%transitive reduction.}
+			%\end{center}
+		%\end{subfigure}
+		%\begin{subfigure}{0.99\textwidth}
+			%\begin{center}
+				%\includegraphics[scale=0.7]{example.reduced.mapped.collapsed.bidigraph-crop.pdf}	
+				%\caption{The bidirected string graph from the previous slide, after
+				%collapsing unbranched paths.}
+			%\end{center}
+		%\end{subfigure}
+	%\end{center}
+%\end{figure}
 
 \section{Producing the final assembly}
 

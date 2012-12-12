@@ -8,6 +8,7 @@ MIN_OVERLAP_LEN ?= 25
 GENOME          ?= random_genome.fa
 BIDIGRAPH_OPS   ?= false
 COVERAGE        ?= 50
+SEED            ?= 1;
 
 ifeq ($(GENOME),random_genome.fa)
 genome.fa.$(SAMPLE_SIZE):
@@ -24,7 +25,8 @@ pirs_reads_100_180_1.fq:genome.fa.$(SAMPLE_SIZE)
 else
 reads.fa:genome.fa.$(SAMPLE_SIZE) simulate_uniform_reads.pl
 	./simulate_uniform_reads.pl --read-len=$(READ_LEN)	\
-			--read-sep=$(READ_SEP) --allow-rc $+ > $@
+			--coverage=$(COVERAGE) --allow-rc \
+			--read-pos-log=reads.log --seed=$(SEED) $+ > $@
 endif
 
 ifeq ($(USE_PIRS),true)
