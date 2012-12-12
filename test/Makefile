@@ -1,4 +1,4 @@
-all:out.reduced.mapped.collapsed.calc.digraph.pdf out.reduced.mapped.collapsed.calc.bidigraph.pdf
+all:out.reduced.mapped.collapsed.calc.digraph out.reduced.mapped.collapsed.calc.bidigraph
 
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
