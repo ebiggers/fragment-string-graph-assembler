@@ -11,6 +11,8 @@
 \usepackage{microtype}
 \usepackage{array}
 \usepackage{grffile}
+\usepackage{threeparttable}
+%\usepackage{hyperref}
 %\usepackage{amsthm}
 
 \usetikzlibrary{arrows}
@@ -56,18 +58,20 @@ Sequencing an organism's genome is an important step to further genetic research
 on that organism.  However, currently available sequencing technologies can only
 sequence short fragments of DNA.  As a result, the whole-genome shotgun
 sequencing approach to genome sequencing relies on breaking up a sample of
-genomic DNA into fragments, sequencing these fragments, then using a program
-called a {\em genome assembler} to put together these short sequences to
-reconstruct the original, much longer sequence.  This paper provides an
-introduction and formalization of the genome assembly problem, then introduces a
-model and algorithm for genome assembly that is based on a special type of graph
-called a \KeyTerm{bidirected string graph}.  \end{abstract}
+genomic DNA into short fragments, sequencing these fragments, then using a
+program called a {\em genome assembler} to put together these short sequences to
+reconstruct the original genome.  This paper provides an introduction and
+formalization of the genome assembly problem, then introduces a model and
+algorithm for genome assembly that is based on a special type of graph called a
+\KeyTerm{bidirected string graph}.  \end{abstract}
 
 \tableofcontents
 
 \section{Introduction to genome sequencing and assembly}
 
 \subsection{Definition of a genome}
+
+\label{sec:genome}
 
 Every living organism contains a collection of hereditary material called a
 \KeyTerm{genome}.  Typically, each cell of a multicellular organism contains a
@@ -92,37 +96,44 @@ pairings \Base{A}---\Base{T} and \Base{C}---\Base{G} always hold).
 
 This definition does not account for the fact that the genomes of diploid and
 polyploid organisms, including most plants and animals, contain multiple
-slightly-differing copies of each chromosome.  In this case, the above
-definition will consider each copy of each chromosome to be a completely
-different string in the genome, unless the copies are completely identical.
+slightly-differing copies of each chromosome.  In this case, this definition
+will consider each copy of each chromosome to be a completely different string
+in the genome, unless the copies are completely identical.
 
 Genomes vary widely in size, from several thousand base pairs to many billion
 base pairs, depending on the organism (see Table \ref{tab:GenomeSizes}).
 
 \begin{table}[H]
 	\begin{center}
-		\begin{tabular}{|c|>{\centering\arraybackslash}p{5.2cm}|}
-			%\hline
-			%$\phi$X174 bacteriophage &  $\sim$5,000 bp \\
-			%\hline
-			%Human mitochondrion &  $\sim$16,000 bp \\
-			\hline
-			{\bf Organism} & {\bf Approximate genome size} \\
-			\hline
-			{\it Variola} virus (smallpox) &  186,000 bp\\
-			\hline
-			{\it E. coli} (a bacterium) & 4,600,000 bp \\
-			\hline
-			{\it Ananas comosus} (domesticated pineapple) & 500,000,000 bp \\
-			\hline
-			{\it Zea mays} (domesticated corn) & 2,000,000,000 bp \\
-			\hline
-			{\it Homo sapiens} (human)       &  3,200,000,000 bp \\
-			\hline
-		\end{tabular}
-	\end{center}
 	\caption{Approximate genome sizes of selected organisms}
-	\label{tab:GenomeSizes}
+		\label{tab:GenomeSizes}
+		\begin{threeparttable}
+			\begin{tabular}{|l|>{\arraybackslash}p{5.2cm}|}
+				%\hline
+				%$\phi$X174 bacteriophage &  $\sim$5,000 bp \\
+				%\hline
+				%Human mitochondrion &  $\sim$16,000 bp \\
+				\hline
+				{\bf Organism} & {\bf Approximate genome size} \\
+				\hline
+				{\it Variola} virus (smallpox) \tnote{1} &  186,000 bp \cite{smallpox}\\
+				\hline
+				{\it E. coli} (a bacterium) & 4,600,000 bp \\
+				\hline
+				{\it Ananas comosus} (domesticated pineapple) & 500,000,000 bp \\
+				\hline
+				{\it Zea mays} (domesticated corn) & 2,400,000,000 bp \cite{maize} \\
+				\hline
+				{\it Homo sapiens} (human)       &  3,200,000,000 bp \\
+				\hline
+			\end{tabular}
+			\begin{tablenotes}
+				\item [1] Technically, viruses are not organisms, but they still
+				have genomes.  Actually, some viruses have genomes made of RNA,
+				not DNA, but this is not considered in this paper.
+			\end{tablenotes}
+		\end{threeparttable}
+	\end{center}
 \end{table}
 
 \subsection{Complement and reverse-complement sequences}
@@ -146,8 +157,7 @@ equivalent.
 
 \KeyTerm{DNA sequencing} is the process of determining the base pair sequence of
 (\KeyTerm{sequencing}) one or more DNA molecules.  \KeyTerm{Genome sequencing}
-is the use of DNA sequencing to determine the base pair sequence of an entire
-genome.
+is the process of sequencing of all the DNA molecules that make up a genome.
 
 Sequencing a DNA molecule is very difficult because it is in fact an actual
 molecule, which makes each base pair much too small to be directly observed.
@@ -163,7 +173,7 @@ which are then sequenced.\footnote{This specifically refers to the
 \KeyTerm{whole-genome shotgun sequencing} approach to genome assembly rather
 than alternatives such as \KeyTerm{BAC-to-BAC} sequencing that are able to
 restrict sequences to certain regions of the genome in order to make sequencing
-the genome easier (currently, at the disadvantage of increased cost and
+the genome easier (currently, at the disadvantage of increased cost and much more
 non-computational work).} Following this, the original genome must be
 computationally reconstructed by a computer program called a \KeyTerm{genome
 assembler} in a process called \KeyTerm{genome assembly}.  \KeyTerm{Genome
@@ -175,36 +185,37 @@ assembly; for example, a series of digital photographs of clumps of
 fluorescently labeled molecules might need to be interpreted as reads using
 image-processing algorithms.  However, these programs and/or algorithms
 generally have already been developed by the manufacturer of the sequencing
-machine and work fairly well, and ``genome assembly'' does not cover these
-algorithms, although assemblers still may be tuned for specific sequencing
+machine and are assumed to work fairly well, so ``genome assembly'' does not cover these
+algorithms.  Still, assemblers may be tuned for specific sequencing
 technologies.}
 
 \subsection{Genome assembly}
 
 \label{subsec:reads}
 
-The goal of genome assembly is to reconstruct a genome, as defined earlier,
-given a set of substrings that may originate from any strand of any DNA molecule
-in the genome.  Each substring is called a \KeyTerm{read} and is the sequence of
-some DNA that was sequenced by the sequencing machine.  In general, reads may
-contain errors, including \KeyTerm{substitutions}, where a base pair in the read
-was incorrectly read as some other base pair, as well as \KeyTerm{insertions},
-where a sequence of one or more random base pairs have been inserted into some
-position in the read, and \KeyTerm{deletions}, where a sequence of one or more
-base pairs from the original genome is missing from the interior of the read.
-Reads are expected to be uniformly distributed on the genome with a certain
-coverage $X$ depending on how much data was collected, meaning that each base
-pair in the original genome is expected to be included in $X$ different reads on
-average, allowing for the reads to be from either strand.  However, some
-sequencing technologies produce biased data where the coverage across the genome
-is much more variable than that expected by uniform, random sampling.
+The goal of genome assembly is to reconstruct a genome, as defined in
+\Section{sec:genome}, given a set of substrings that may originate from any
+strand of any DNA molecule in the genome.  Each substring is called a
+\KeyTerm{read} and is the sequence of some DNA that was sequenced by the
+sequencing machine.  In general, reads may contain errors, including
+\KeyTerm{substitutions}, where a base pair in the read was incorrectly read as
+some other base pair, as well as \KeyTerm{insertions}, where a sequence of one
+or more random base pairs have been inserted into some position in the read, and
+\KeyTerm{deletions}, where a sequence of one or more base pairs from the
+original genome is missing from the interior of the read.  Reads are expected to
+be uniformly distributed on the genome with a certain coverage $X$ depending on
+how much data was collected, meaning that each base pair in the original genome
+is expected to be included in $X$ different reads on average, allowing for the
+reads to be from either strand.  However, some sequencing technologies produce
+biased data where the coverage across the genome is much more variable than that
+expected by uniform, random sampling.
 
 Reads may contain other information, such as \KeyTerm{quality scores} or
 \KeyTerm{mate-pair} information, that can provide additional hints to the
 assembler.
 
 It is also possible for reads to come from foreign DNA; for example, if a DNA
-sample is obtained from grinding up plant or animal tissue, there could be some
+sample is obtained by grinding up plant or animal tissue, there could be some
 bacterial cells, each with its own genome, contaminating the sample.  Ideally,
 an assembler should be prepared to completely ignore a read if it seems too
 unusual.  However, this problem is not considered in this paper.
