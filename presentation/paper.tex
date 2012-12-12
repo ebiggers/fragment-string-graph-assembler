@@ -35,6 +35,12 @@
 		\tikz[>=triangle 45,baseline]
 		\draw[>->,thin] (0,0.1) node[anchor=east] {#1} --
 					    (0.8,0.1) node[anchor=west] {#2};}
+\newcommand{\BidirectedEdgeInnie}{
+		\tikz[>=triangle 45,baseline]
+		\draw[>-<,thin] (0,0.1) -- (0.8,0.1) node {\ \ } ;}
+\newcommand{\BidirectedEdgeOutie}{
+		\tikz[>=triangle 45,baseline]
+		\draw[<->,thin] (0,0.1) --(0.8,0.1) node {\ \ };}
 
 \title{A Bidirected String Graph Model for Genome Assembly}
 \author{Eric Biggers}
@@ -1384,7 +1390,7 @@ Furthermore, keep in mind that there is not a one-for-one correspondence between
 vertices and reads because contained reads were removed (see
 \Subsection{subsec:removing_contained_reads}).}
 
-However, there are multiple problems with the Eulerian path approach.  First,
+However, there are multiple problems with this Eulerian path approach.  First,
 the graph may not be Eulerian.  This could happen if the graph is not balanced.
 This implies we really would need to solve the bidirected equivalent of the
 Chinese Postman Problem instead.\footnote{The Chinese Postman problem on a
@@ -1401,20 +1407,21 @@ The way these problems can be solved is to (1) place a lower bound and an upper
 bound on the number of times each edge may be traversed, then (2) formulate and
 solve a minimum-cost circulation problem that finds the minimum total traversal
 count of edges in the graph in order for every vertex to be balanced (i.e. have
-the same in-degree as out-degree), then (3) find a generalized Eulerian tour
+the same in-degree as out-degree), then (3) find a generalized Eulerian cycle
 through the bidirected graph, traversing each edge the exact number of times
-that was calculated in (2) and also allowing for the tour be discontinuous.
+that was calculated in (2), but also allowing for the cycle to be logically
+discontinuous by introducing a special vertex and special edges.
 
 \subsection{Calculating the A-statistic}
 
 \label{subsec:a_statistics}
 
-We would like to use hints from the original data to restrict the number of
-times each bidirected edge may be traversed.  This can be done using a
+We would like to use statistical properties of the original data to restrict the
+number of times each bidirected edge may be traversed.  This can be done using a
 calculation called the \KeyTerm{A-statistic}, or \KeyTerm{arrival-rate
 statistic}, which is the logarithm of the probability that an edge represents
-unique sequence rather than duplicate sequence \cite{Myers2005}.  The A-statistic
-$A(e)$ of an edge $e$ in a bidirected string graph is:
+unique sequence rather than duplicate sequence \cite{Myers2005}.  The
+A-statistic $A(e)$ of an edge $e$ in a bidirected string graph is:
 
 \[ A(e) = \frac{n}{G} \Delta - \ln{2} \cdot {k} \]
 
@@ -1434,14 +1441,14 @@ vertices are used in the reconstruction of the genome.  This is needed because
 in the absence of foreign DNA, every read was presumably sampled from the
 genome.
 
-However, $G$, the estimated genome length, is actually unknown, so it must be
-estimated first.  It can be estimated by producing a ``bootstrap'' genome length
-by adding up the lengths of the sequences on every edge in both directions and
-dividing by 2, then calculating the A-statistics using this bootstrap genome
-length and identifying edges that are probably single-copy.  The A-statistics
-can then be re-estimated over just these single-copy edges in order to refine
-the genome length further before calculating the final A-statistic on all the
-edges.  This procedure was outlined in \cite{Myers2005}.
+$G$, the estimated genome length, is actually unknown, so it must be estimated
+first.  It can be estimated by producing a ``bootstrap'' genome length by adding
+up the lengths of the sequences on every edge in both directions and dividing by
+2, then calculating the A-statistics using this bootstrap genome length and
+identifying edges that are probably single-copy.  The A-statistics can then be
+re-estimated over just these single-copy edges in order to refine the genome
+length further before calculating the final A-statistic on all the edges.  This
+procedure was outlined in \cite{Myers2005}.
 
 The calculation of the A-statistic on each edge in the bidirected string graph,
 including the genome length bootstrapping algorithm, is implemented by the
@@ -1460,7 +1467,7 @@ the A-statistics.
 A contained read may easily be mapped to the vertex corresponding to a read that
 contains it, but this is not sufficient because the A-statistic is calculated
 over the edges, not the vertices.  Instead, we need to map each end of each the
-contained read to the edge, or in general the set of edges, that contains it.
+contained read to the edge, or in general the set of edges, that may contain it.
 
 The algorithm for doing so is outlined in \cite{Myers2005} and was implemented
 by the program \ProgramName{map-contained-reads}, which runs before
@@ -1478,6 +1485,8 @@ it possible to account for contained reads when calculating the A-statistic.
 
 \subsection{Minimum-cost circulation}
 
+\label{subsec:circulation}
+
 Formally, a minimum-cost circulation problem on a directed graph takes as input
 for each edge $e$ an lower bound $l(e) \ge 0$ and an upper bound $u(e) \ge 0$ on
 flow and a cost per unit flow $v(e)$, and for each vertex $v$ a supply
@@ -1492,10 +1501,17 @@ after taking into account the supply or demand $b(v)$ at that node.
 The A-statistic calculation on each edge $e$, as described in
 \Subsection{subsec:a_statistics}, allows us to assign a lower bound $l(e)$ and
 an upper bound $u(e)$ on the traversal count for that edge.  Note that $u(e)$
-may be $\infty$, as these bounds are very approximate.  We also have $b(v) = 0$
-for all $v$, because the flow at every vertex must be balanced; this corresponds
-to the walk entering each vertex the same number of times that it is exited,
-making the graph as a whole be balanced.
+may be $\infty$.  We also have $b(v) = 0$ for all $v$, because the flow at every
+vertex must be balanced; this corresponds to the walk entering each vertex the
+same number of times that it is exited, making the graph as a whole be balanced.
+Furthermore, we have $v(e) = 1$ because no edges are considered to be more
+costly to use than any other in this formulation.\footnote{Note that the goal of
+this assembly algorithm is not to minimize the assembled genome length, but
+rather to maximize the similarity of our assembled genome to the true genome.
+Therefore, there is no need to assign greater costs to edges that represent
+longer DNA sequences (at least in this formulation of the program), because that
+would make it more costly to repeat a longer edge even if there is strong
+evidence that edge corresponds to repeated sequence.}
 
 %It produces as output a flow
 %$x(e)$ on each edge $e$ such that $\sum_e v(e)x(e)$ is minimized subject to
@@ -1515,25 +1531,65 @@ making the graph as a whole be balanced.
 
 There are still two serious problems with this circulation formulation that need
 to be addressed.  First, we actually have a bidirected graph, not a directed
-graph.\footnote{The fact that this circulation problem actually needs to be
-formulated and solved on a bidirected graph is addressed in \cite{Medvedev2009},
-but not in \cite{Myers2005}, even though the latter introduced the overall
-fragment string graph algorithm.}
+graph, so we need to calculate a \KeyTerm{bidirected flow}.\footnote{The fact
+that this circulation problem actually needs to be formulated and solved on a
+bidirected graph is addressed in \cite{Medvedev2009}, but not in
+\cite{Myers2005}, even though the latter introduced the overall fragment string
+graph algorithm.}
+A bidirected flow is not the same as a directed flow because of the
+presence of \BidirectedEdgeInnie and \BidirectedEdgeOutie edges, where the
+magnitude of the flow on that edge is counted as going into both vertices (in
+the case of a \BidirectedEdgeOutie edge) or out of both vertices (in the case of
+an \BidirectedEdgeInnie edge).  This does not imply that the edge itself is a
+source or a sink, but rather than the flow is defined in a peculiar way that
+makes sense on bidirected graphs.
 
-but is a.  We have a
-bidirected graph, not a directed graph, so it cannot be trivially mapped to a
-directed network flow problem.  A possible workaround for this is to solve
-directed flow on the directed equivalent to the bidirected graph, described in
-\Subsection{subsec:directed}.  The calculated traversal counts for a directed
-edge $e$ between, for example, two vertices $f.E \to g.E$ is not guaranteed to
-be the same as the calculated traversal count for the edge that corresponds to
-the other direction of the implied bidirected edge, which would be $g.B \to f.B$
-in this example.  However, we can take the average of the two counts and use
-this as the traversal count for the corresponding bidirected edge, and this 
+Fortunately, there does exist a way to solve a bidirected flow problem by
+mapping it to a directed flow problem by using the directed equivalent of the
+bidirected graph, described in \Subsection{subsec:directed}.  However, the
+calculated flow on directed edge $e$ between, for example, two vertices $f.E \to
+g.E$ is not guaranteed to be the same as the flow on $g.B \to f.B$, the edge
+that corresponds to the other direction of the implied bidirected edge.  This
+problem can be worked around by taking the average of the two counts and using
+this as the flow on the bidirected edge.  This approximation is equivalent to
+performing monotonization on the binet matrix that represents the linear program
+reduction of bidirected flow to produce a totally unimodular matrix that
+corresponds to a linear program that can be solved to find an integal flow that
+is at worst a 2-approximation to the optimal integral
+flow\cite{Medvedev2009}\cite{Hochbaum2004}.
 
-%vertices $f.X$ and $g.X
+The second problem with our circulation formulation is that the bidirected
+string graph is not guaranteed to be connected, let alone strongly connected.
+For example, there might be vertices that have in-degree 0 but one or more out
+edges with nonzero lower bound on flow.  Such vertices may represent the last
+read in a genomic region before a coverage gap or the end of the sequence.  Our
+goal is to have such vertices be the endpoints of walks through the bidirected
+graph.  To take this into account in the formulation of the bidirected flow
+problem, we can introduce a special vertex $s$ and unlabeled special edges
+between $s$ and every other vertex.  Each special edge $e$ can have any amount
+of flow ($l(e) = 0,\ u(e) = \infty$), but at great cost ($v(e) = X$, where $X$
+is a very large number).  The addition of these edges will make the graph
+strongly connected, and therefore it will be possible to solve the minimum-cost
+circulation problem to find a flow that corresponds to balancing the in-degree
+and out-degree of every vertex when a certain traversal count $t(e)$ is assigned
+to each edge $e$.
 
-\subsection{Generalized Eulerian path}
+\subsection{Generalized Eulerian cycle}
+
+\label{subsec:eulerian}
+
+Here, a \KeyTerm{generalized Eulerian cycle} means a cycle in a bidirected graph
+$G$ that traverses each edge $e$ exactly $t(e)$ times, where $t(e)$ is the flow
+on edge $e$ as calculated using the method \Subsection{subsec:circulation}.  A
+generalized Eulerian cycle is guaranteed to exist because the graph was made
+strongly connected before solving the minimum-cost circulation problem.  (A more
+thorough explanation of this observation can be found in \cite{Medvedev2009}).
+The cycle corresponds to a consistent assembly of the genome, and it can be
+decomposed into a set of contigs by placing a contig break every time the
+special vertex $s$ is passed through.
+
+It should be possible to find this generalized Eulerian cycle by adapting an
+existing Eulerian path algorithm to work on a bidirected graph.
 
 \section{Implementation}
 
@@ -1544,14 +1600,15 @@ as zero or more other command-line arguments and produces as output one or more
 files.  Each file contains data such as a list of reads, a list of overlaps, or
 a graph.  Internally to the assembler pipeline, data is stored in binary form.
 \Figure{fig:impl_graph} shows how the data flows through the main stages of the
-assembler.
+assembler.  The assembly pipeline is run using a Makefile that describes this
+flow.
 
 The input to the assembler is one or more files in plain-text form that each
 contain a list of reads.  The final output of the assembler will eventually be a
-file in plain-text format that gives the list of assembled contigs.  Currently,
-the final stages of the algorithm (\Section{sec:final}, except for the
-calculation of the A-statistics) have not been implemented as of the end of the
-semester of Fall 2012.
+file in plain-text format that gives the list of assembled contigs.  However,
+the final stages of the algorithm (Sections \ref{subsec:circulation} and
+\ref{subsec:eulerian}) have not been implemented as of the end of the semester
+of Fall 2012.
 
 \begin{figure}
 	\begin{center}
@@ -1567,9 +1624,9 @@ semester of Fall 2012.
 \section{Possible future work}
 
 \begin{itemize}
-\item Finish the network flow and generalized Eulerian path parts of the
-algorithm so that the implementation is ``complete'' and can produce a ``final''
-assembly.
+\item Finish the minimum-cost circulation and generalized Eulerian path parts of
+the algorithm so that the implementation is ``complete'' and can produce a
+``final'' assembly.
 \item Improve the performance of \ProgramName{compute-overlaps}.
 \item Allow for sequencing errors by finding inexact overlaps and modifying other
 stages of the algorithm, such as transitive reduction, to allow for the
@@ -1579,7 +1636,7 @@ part of \ProgramName{compute-overlaps} or as a new stage of the algorithm.
 \item Consider more recent publications that explore variations on this
 algorithm, such as parallelizing the algorithm \cite{Jackson2008}, or using the
 Burrows-Wheeler transform to efficiently construct the transitively-reduced
-bidirected string graph directly from the reads\cite{Simpson2010}.
+bidirected string graph directly from the reads \cite{Simpson2010}.
 \item Use mate-pair information to help resolve repeats and connect assembled
 sequences even when they are separated by unknown sequence, possibly using ideas
 from \cite{Medvedev2009}.
