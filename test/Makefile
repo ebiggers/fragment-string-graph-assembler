@@ -3,19 +3,19 @@ all:out.reduced.mapped.collapsed.calc.digraph.pdf out.reduced.mapped.collapsed.c
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
 READ_SEP        ?= 30
-USE_PIRS        ?= true
+USE_PIRS        ?= false
 MIN_OVERLAP_LEN ?= 25
 GENOME          ?= random_genome.fa
 BIDIGRAPH_OPS   ?= false
 COVERAGE        ?= 50
-SEED            ?= 1;
+SEED            ?= 1
 
 ifeq ($(GENOME),random_genome.fa)
 genome.fa.$(SAMPLE_SIZE):
 	./gen_random_genome.pl $(SAMPLE_SIZE) > $@
 else
 genome.fa.$(SAMPLE_SIZE): $(GENOME)
-	fasta-head -c $(SAMPLE_SIZE) $+ > $@
+	./fasta_head.pl --bytes $(SAMPLE_SIZE) < $+ > $@
 endif
 
 ifeq ($(USE_PIRS),true)
