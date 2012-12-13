@@ -171,6 +171,5 @@ public:
 	{
 		for (unsigned i = 0; i < _K; i++)
 			os << BaseUtils::bin_to_ascii(kmer[i]);
-		return os;
 	}
 };

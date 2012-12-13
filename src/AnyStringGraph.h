@@ -75,6 +75,7 @@ public:
 	DISPATCH0(transitive_reduction);
 	DISPATCH0(calculate_A_statistics);
 	DISPATCH0(collapse_unbranched_paths);
+	DISPATCH0(min_cost_circulation);
 	DISPATCH1(print_stats, std::ostream &);
 	DISPATCH1(write, const char *);
 	DISPATCH1(extract_edge_seqs, BaseVecVec &);

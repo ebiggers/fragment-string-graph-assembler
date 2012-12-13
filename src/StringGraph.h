@@ -26,6 +26,7 @@ protected:
 	}
 
 	void print(std::ostream & os) const {
+		os << "_mapped_read_count=" << _mapped_read_count << '\t';
 		os << "_num_inner_vertices=" << _num_inner_vertices << '\t';
 		os << "_A_statistic=" << _A_statistic << '\t';
 	}

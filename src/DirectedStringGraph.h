@@ -40,9 +40,13 @@ class DirectedStringGraphEdge : public StringGraphEdge {
 public:
 	typedef unsigned int v_idx_t;
 private:
-	v_idx_t _v1_idx;
-	v_idx_t _v2_idx;
-	BaseVec _seq;
+	v_idx_t  _v1_idx;
+	v_idx_t  _v2_idx;
+	BaseVec  _seq;
+	unsigned _flow_lower_bound;
+	unsigned _flow_upper_bound;
+	unsigned _cost_per_unit_flow;
+	unsigned _traversal_count;
 
 	// Serialize or deserialize the directed string graph edge to/from a
 	// stream.
@@ -56,6 +60,8 @@ private:
 		ar & _seq;
 	}
 public:
+	static const unsigned INFINITE_FLOW = std::numeric_limits<unsigned>::max();
+
 	// Return a reference to the sequence associated with this edge of the
 	// directed string graph.
 	BaseVec & get_seq() { return _seq; }
@@ -92,6 +98,18 @@ public:
 	void set_v1_idx(const v_idx_t v1_idx) { _v1_idx = v1_idx; }
 
 	void set_v2_idx(const v_idx_t v2_idx) { _v2_idx = v2_idx; }
+
+	void set_flow_bounds(const unsigned flow_lower_bound,
+			     const unsigned flow_upper_bound)
+	{
+		_flow_lower_bound = flow_lower_bound;
+		_flow_upper_bound = flow_upper_bound;
+	}
+
+	void set_cost_per_unit_flow(const unsigned cost_per_unit_flow)
+	{
+		_cost_per_unit_flow = cost_per_unit_flow;
+	}
 
 	// Print this directed string graph edge.
 	void print(std::ostream & os = std::cout, const v_idx_t v_idx = 0,
@@ -159,6 +177,19 @@ private:
 		edge_idx_t edge_idx = this->push_back_edge(e);
 		_vertices[v1_idx].add_edge_idx(edge_idx);
 	}
+
+	DirectedStringGraphEdge &
+	add_unlabeled_edge(const v_idx_t v1_idx,
+			   const v_idx_t v2_idx)
+	{
+		DirectedStringGraphEdge e;
+		e.set_v_indices(v1_idx, v2_idx);
+		edge_idx_t edge_idx = this->push_back_edge(e);
+		_vertices[v1_idx].add_edge_idx(edge_idx);
+		return _edges[edge_idx];
+	}
+
+				
 public:
 	// Initialize this directed string graph with enough space for
 	// @num_reads reads to be inserted.
@@ -185,6 +216,7 @@ public:
 	}
 
 	void transitive_reduction();
+	void min_cost_circulation();
 	void collapse_unbranched_paths();
 	void calculate_A_statistics();
 	void print_stats(std::ostream & os) const;

@@ -5,6 +5,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include "BidirectedStringGraph.h"
 #include <math.h>
+#include <lemon/network_simplex.h>
 
 const char DirectedStringGraph::magic[] =
 	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
@@ -675,7 +676,7 @@ void DirectedStringGraph::calculate_A_statistics()
 		for (size_t j = 0; j < n_edges; j++) {
 			DirectedStringGraphEdge & e = _edges[j];
 			size_t edge_len = _edges[j].length();
-			unsigned edge_reads = _edges[j].get_num_inner_vertices();
+			unsigned edge_reads = _edges[j].get_mapped_read_count();
 			float A_statistic = (global_arrival_rate * edge_len) -
 					     (edge_reads * M_LN2);
 			e.set_A_statistic(A_statistic);
@@ -699,5 +700,33 @@ void DirectedStringGraph::calculate_A_statistics()
 		info("num_unique_edges = %zu", num_unique_edges);
 		info("num_optional_edges = %zu", num_optional_edges);
 		info("num_required_edges = %zu", num_required_edges);
+	}
+}
+
+void DirectedStringGraph::min_cost_circulation()
+{
+	foreach (DirectedStringGraphEdge & e, edges()) {
+		if (e.get_A_statistic() > 0) {
+			e.set_flow_bounds(1, 1);
+		} else if (e.get_num_inner_vertices() > 0) {
+			e.set_flow_bounds(1, DirectedStringGraphEdge::INFINITE_FLOW);
+		} else {
+			e.set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
+		}
+		e.set_cost_per_unit_flow(1);
+	}
+
+	v_idx_t n_verts = num_vertices();
+	v_idx_t special_v_idx = n_verts;
+	_vertices.resize(n_verts + 1);
+	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+		DirectedStringGraphEdge * e;
+
+		e = &add_unlabeled_edge(v_idx, special_v_idx);
+		e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
+		e->set_cost_per_unit_flow(10000000);
+		e = &add_unlabeled_edge(special_v_idx, v_idx);
+		e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
+		e->set_cost_per_unit_flow(10000000);
 	}
 }

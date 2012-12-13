@@ -277,6 +277,7 @@ public:
 	}
 
 	void transitive_reduction();
+	void min_cost_circulation();
 	void collapse_unbranched_paths();
 	void calculate_A_statistics();
 	void print_stats(std::ostream & os) const;
