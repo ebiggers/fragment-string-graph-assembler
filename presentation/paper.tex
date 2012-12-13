@@ -55,6 +55,7 @@
 
 \title{A Bidirected String Graph Model for Genome Assembly}
 \author{Eric Biggers}
+\date{December 12, 2012}
 
 
 \begin{document}
@@ -867,8 +868,8 @@ vertex is passed through as part of a walk, the arrow heads adjacent to that
 vertex that are used in the relevant part of the walk are pointed in the same
 direction {\em relative to the walk}. If there are no such pairs of heads that
 point towards each other or point away from each other, the walk is valid.  The
-red circles in \Figure{fig:bidiwalk_example} show the two pairs of heads that
-need to be checked for the possible walk $1 \to 2 \to 3 \to 4$.
+circles in \Figure{fig:bidiwalk_example} show the two pairs of heads that need
+to be checked for the possible walk $1 \to 2 \to 3 \to 4$.
 
 Note that this definition is symmetric, which implies that the reverse of a walk
 in a bidirected graph is also a valid walk (e.g. the walk $4 \to 3 \to 2 \to 1$
@@ -886,8 +887,8 @@ direction, possibly even during the same walk.
 			\draw[<->,very thick] (1) edge (2);
 			\draw[>-<,very thick] (2) edge (3);
 			\draw[<-<,very thick] (3) edge (4);
-			\draw[color=red,thick] (2.00, 0) circle (0.8);
-			\draw[color=red,thick] (4.00, 0) circle (0.8);
+			\draw[color=black!70] (2.00, 0) circle (0.8);
+			\draw[color=black!70] (4.00, 0) circle (0.8);
 		\end{tikzpicture}
 	} \end{center}
 	\caption{$1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
