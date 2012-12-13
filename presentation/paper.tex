@@ -97,9 +97,9 @@ are directed opposite one another.  Furthermore, a DNA molecule may be circular,
 as is usually the case for bacterial chromosomes.
 
 Based on these biological facts, a genome is formally defined, for the purposes
-of this paper, as a set of possibly circular, dual-stranded strings of the
-symbols \Base{A}, \Base{C}, \Base{G}, and \Base{T}, where dual-stranded has the
-meaning indicated above (the two strands run in opposite directions, and the
+of this paper, as a set of possibly circular, double-stranded strings of the
+symbols \Base{A}, \Base{C}, \Base{G}, and \Base{T}, where double-stranded has
+the meaning indicated above (the two strands run in opposite directions, and the
 pairings \Base{A}---\Base{T} and \Base{C}---\Base{G} always hold).
 
 This definition does not account for the fact that the genomes of diploid and
@@ -179,7 +179,7 @@ sequenced.
 Therefore, to sequence an entire genome, which may be millions of base pairs
 long, the DNA from the whole genome must be broken into much smaller fragments,
 which are then sequenced.\footnote{This specifically refers to the
-\KeyTerm{whole-genome shotgun sequencing} approach to genome assembly rather
+\KeyTerm{whole-genome shotgun sequencing} approach to genome sequencing rather
 than alternatives such as \KeyTerm{BAC-to-BAC} sequencing that are able to
 restrict sequences to certain regions of the genome in order to make sequencing
 the genome easier (currently, at the disadvantage of increased cost and much more
@@ -331,42 +331,11 @@ no mate-pair information is available.}
 Having four different conditions is required because reads may overlap in a
 reverse-complement manner.  An overlap is reverse-complement if and only if one
 read in the overlap is used in the original direction and the other read is used
-in the reverse-complement direction.  Note that an overlap from condition (4) is
-{\em not} a reverse-complement overlap, as it can equivalently be stated as the
-last $\LengthVar$ bp of $g$ exactly match the first $\LengthVar$ bp of $f$.
-\Figure{fig:overlap_types} shows the three fundamental types of overlaps that
-may arise from this definition.
-
-A read may overlap with itself; for example, a read may contain a suffix that
-matches its prefix of the same length.  Such an overlap is called a
-\KeyTerm{self-overlap}.
-
-Overlaps may also be \KeyTerm{inexact}.  An inexact overlap is an overlap where
-the overlapped regions of the two reads do not match exactly (in either a
-forward or reverse-complement manner), but instead differ by a number of
-base-pair substitutions, insertions, and/or deletions up to a predetermined
-upper bound, such as 5\%.  However, inexact overlaps will not be considered
-further in this paper.
-
-An overlap $o$ is fully described by the 7-tuple $(f,\ f_{begin},\ f_{end},\ g,
-\ g_{begin},\ g_{end},\ rc)$, where $f$ and $g$ are the two reads involved in the
-overlap, $f_{begin}$ and $f_{end}$ are the starting and ending indices of the
-overlapped region on the $f$ read, $g_{begin}$ and $g_{end}$ are the starting
-and ending indices of the overlapped region on the $g$ read, and $rc$ is a
-boolean that indicates whether the overlap is reverse-complement or not.  An
-overlap therefore has two overlapped regions--- one on each read.  For exact
-overlaps, the two overlapped regions are the same length; in other words,
-$g_{end} - g_{begin} = f_{end} - f_{begin}$.
-
-An \KeyTerm{extreme point} occurs when an overlapped region extends to the
-beginning or the end of the corresponding read.  An overlap always contains at
-least two extreme points.
-
-A \KeyTerm{containing overlap} is an overlap in which the overlapped region of
-one read, the \KeyTerm{contained read}, is the entire read.  A special case of a
-containing overlap is an overlap where the overlapped regions include the
-entirety of both reads.  For an exact overlap, this can only happen if the two
-reads are either identical or exact reverse-complements of each other.
+in the reverse-complement direction.  Note that an overlap from the last
+condition is {\em not} a reverse-complement overlap, as it can equivalently be
+stated as the last $\LengthVar$ bp of $g$ exactly match the first $\LengthVar$
+bp of $f$.  \Figure{fig:overlap_types} shows the three fundamental types of
+overlaps that may arise from this definition.
 
 \begin{figure}
 	\centering
@@ -405,6 +374,38 @@ reads are either identical or exact reverse-complements of each other.
 	considered a distinct type of overlap here.}
 	\label{fig:overlap_types}
 \end{figure}
+
+A read may overlap with itself; for example, a read may contain a suffix that
+matches its prefix of the same length.  Such an overlap is called a
+\KeyTerm{self-overlap}.
+
+Overlaps may also be \KeyTerm{inexact}.  An inexact overlap is an overlap where
+the overlapped regions of the two reads do not match exactly (in either a
+forward or reverse-complement manner), but instead differ by a number of
+base-pair substitutions, insertions, and/or deletions up to a predetermined
+upper bound, such as 5\%.  However, inexact overlaps will not be considered
+further in this paper.
+
+An overlap $o$ is fully described by the 7-tuple $(f,\ f_{begin},\ f_{end},\ g,
+\ g_{begin},\ g_{end},\ rc)$, where $f$ and $g$ are the two reads involved in the
+overlap, $f_{begin}$ and $f_{end}$ are the starting and ending indices of the
+overlapped region on the $f$ read, $g_{begin}$ and $g_{end}$ are the starting
+and ending indices of the overlapped region on the $g$ read, and $rc$ is a
+boolean that indicates whether the overlap is reverse-complement or not.  An
+overlap therefore has two overlapped regions--- one on each read.  For exact
+overlaps, the two overlapped regions are the same length; in other words,
+$g_{end} - g_{begin} = f_{end} - f_{begin}$.
+
+An \KeyTerm{extreme point} occurs when an overlapped region extends to the
+beginning or the end of the corresponding read.  An overlap always contains at
+least two extreme points.
+
+A \KeyTerm{containing overlap} is an overlap in which the overlapped region of
+one read, the \KeyTerm{contained read}, is the entire read.  A special case of a
+containing overlap is an overlap where the overlapped regions include the
+entirety of both reads.  For an exact overlap, this can only happen if the two
+reads are either identical or exact reverse-complements of each other.
+
 
 %\begin{enumerate}
 	%\item ``Normal'' overlap
@@ -445,7 +446,7 @@ reads are either identical or exact reverse-complements of each other.
 Overlaps are important because two reads that overlap may have come from
 adjacent positions on the genome.  Although due to repeats, we cannot be certain
 that two overlapping reads actually came from adjacent positions, we {\em can}
-say for certain that two reads that do not overlap did not come from adjacent
+be certain that two reads that do not overlap did not come from adjacent
 positions.  Regardless of this, \Figure{fig:overlap_examples} shows how two
 reads that overlap potentially could be combined to form a longer sequence.
 
@@ -482,23 +483,22 @@ reads that overlap potentially could be combined to form a longer sequence.
 
 \subsubsection{Algorithms}
 
-Now that the idea of an exact overlap has been formalized, what we would like to
-do is compute all pairwise exact overlaps of some minimum length $L$ among the
-	reads that were provided as input to the assembler.  The chosen value of $L$
-	must be balanced so that we can find enough overlaps to adequately cover the
-	genome (small $L$ better) but still exclude most spurious overlaps (large
-	$L$ better).
+Now that the idea of an exact overlap has been formalized, our goal is to
+compute all pairwise exact overlaps of some minimum length $L$ among the reads
+that were provided as input to the assembler.  The chosen value of $L$ must be
+balanced so that we can find enough overlaps to adequately cover the genome
+(small $L$ better) but still exclude most spurious overlaps (large $L$ better).
 
 The naive way to compute overlaps is to consider every pair of reads in the
-input, including only distinct pairs but also including the special cases of
-each read paired with itself, and search for each of the types of overlaps
-between the two reads in each pair.  If there are $N$ reads in the input, this
-algorithm will need to consider $\frac{N^2}{2} + N$ pairs of reads. The time
-spent on each read pair will depend several factors, including the minimum
-overlap length $L$ and the read lengths.  But even if we somehow could spend
-constant time on each read pair, this naive algorithm would be prohibitively
-slow because the running time rises quadraticly with respect to the number of
-reads, and there can easily be millions of reads in the input.
+input, including only distinct pairs but also including each read paired with
+itself, and search for each of the types of overlaps between the two reads in
+each pair.  If there are $N$ reads in the input, this algorithm will need to
+consider $\frac{N^2}{2} + N$ pairs of reads. The time spent on each read pair
+will depend several factors, including the minimum overlap length $L$ and the
+read lengths.  But even if we somehow could spend constant time on each read
+pair, this naive algorithm would be prohibitively slow because the running time
+rises quadraticly with respect to the number of reads, and there can easily be
+millions of reads in the input.
 
 A number of faster algorithms for computing overlaps have been designed.  One of
 the easier ones to understand is the \KeyTerm{seed-and-extend} algorithm.  It
@@ -510,12 +510,12 @@ reverse-complement manner.  Given two reads that share a seed, the seed can be
 extended outwards in both directions to find a maximal matched region (that may
 be either forward or reverse-complement) between the two reads.  Then, this
 maximal matched region is compared against the definition of an overlap.  In
-particular, it must be at least as long as the minimum overlap length, it must
-have least 2 extreme points over the two reads, and it cannot be the prefix or
-suffix of both reads if the match does not extend to the opposite end of at
-least one of the reads.  If all of these conditions are met, this maximal matched
-region is translated into an overlap and added to the set of overlaps if not
-already present.
+particular, it must have length greater than or equal to $L$, it must have least
+2 extreme points over the two reads, and it cannot be the prefix or suffix of
+both reads if the match does not extend to the opposite end of at least one of
+the reads.  If all of these conditions are met, this maximal matched region is
+translated into an overlap and added to the set of overlaps if not already
+present.
 
 The running time of this seed-and-extend algorithm is
 typically much faster than the naive algorithm, although it is highly dependent
@@ -541,13 +541,13 @@ entirely a single repeated letter).
 
 For this project, the seed-and-extend algorithm for computing overlaps was
 implemented as the program \ProgramName{compute-overlaps}.  It takes as input a
-file that contains a list of reads, as well as a parameter that specifies the
-minimum overlap length $L$.  It produces as output (via a data structure
-serialized to a file) all exact pairwise overlaps of minimum length $L$ among
-reads in the input file, including reverse-complement overlaps and
-self-overlaps.  The running time of the algorithm was discussed above.  The
-memory usage is linear with respect to the total length of the reads and the
-number of overlaps, which likely could be improved.
+file that contains a list of reads and a parameter that specifies the minimum
+overlap length $L$.  It produces as output, via a data structure serialized to a
+file, all exact pairwise overlaps of minimum length $L$ among the input reads,
+including reverse-complement overlaps and self-overlaps.  The running time of
+the algorithm was discussed above.  The memory usage is linear with respect to
+the total length of the reads and the number of overlaps, which likely could be
+improved.
 
 \begin{comment}
 \begin{algorithm}
@@ -861,14 +861,14 @@ through a head outwards (unless it is the end of the path), and vice versa.  An
 equivalent formulation is that if we consider a possible walk in a bidirected
 graph, such as the possible walk $1 \to 2 \to 3 \to 4$ in the graph shown in
 \Figure{fig:bidiwalk_example}, in order to check whether the walk is valid or
-not, we must consider every vertex in the possible walk except for the very
-first and last vertices.  For each such vertex, we need to verify that each time
-that vertex is passed through as part of a walk, the arrow heads adjacent to
-that vertex that are used in the relevant part of the walk are pointed in the
-same direction {\em relative to the walk}. If there are no such pairs of heads
-that point towards each other or point away from each other, the walk is valid.
-The red circles in \Figure{fig:bidiwalk_example} show the two pairs of heads
-that need to be checked for the possible walk $1 \to 2 \to 3 \to 4$.
+not, we must consider every vertex in the possible walk except for the first and
+last vertices.  For each such vertex, we need to verify that each time that
+vertex is passed through as part of a walk, the arrow heads adjacent to that
+vertex that are used in the relevant part of the walk are pointed in the same
+direction {\em relative to the walk}. If there are no such pairs of heads that
+point towards each other or point away from each other, the walk is valid.  The
+red circles in \Figure{fig:bidiwalk_example} show the two pairs of heads that
+need to be checked for the possible walk $1 \to 2 \to 3 \to 4$.
 
 Note that this definition is symmetric, which implies that the reverse of a walk
 in a bidirected graph is also a valid walk (e.g. the walk $4 \to 3 \to 2 \to 1$
@@ -1247,28 +1247,17 @@ string graph.
 
 \subsection{Collapsing unbranched paths}
 
-After transitive reduction, a non-repetitive region of the genome will typically
+After transitive reduction, a non-repetitive region of the genome typically will
 be represented in the string graph by a chain of vertices that is part of a
 valid walk and consists entirely of vertices with in-degree 1 and out-degree 1.
 This is referred to as an \KeyTerm{unbranched path}, and it contains one or more
 \KeyTerm{inner vertices}.  An unbranched path can be collapsed by removing the
 inner vertices and replacing them by a single edge that covers the entire path.
 This replacement edge is labeled with the concatenation of the sequences that
-the edges are labeled with.  In the bidirected case, this concatenation must be
-done for both directions in which the unbranched path might have been traversed.
-\Figure{fig:collapse_unbranched_paths} shows an example of how a short
-unbranched path can be collapsed.
-
-Collapsing unbranched paths is implemented as the program
-\ProgramName{collapse-unbranched-paths}.  It takes as input a file containing a
-string graph and produces as output a file containing the string graph with
-unbranched paths collapsed.  The algorithm marks vertices with in-degree 1 and
-out-degree 1 as inner, then iterates through every non-inner vertex to locate
-adjacent inner vertices, which must be the ends of unbranched paths.  Each
-unbranched path is then walked and collapsed.  Vertices are currently
-re-numbered; so, for example, vertex 10 after collapsing unbranched paths does
-not necessarily refer to the 10th read in the list of uncontained reads from
-which the graph was constructed.
+the original edges were labeled with.  In the bidirected case, this
+concatenation must be done for both directions in which the unbranched path
+might have been traversed.  \Figure{fig:collapse_unbranched_paths} shows an
+example of how a short unbranched path can be collapsed.
 
 \begin{figure}
 	\begin{center}
@@ -1310,10 +1299,21 @@ which the graph was constructed.
 		\end{tikzpicture}
 		}
 	\end{center}
-	\caption{Vertex 4 an \KeyTerm{inner vertex} that is part of an unbranched
-	path that can be collapsed.  Edge labels are not shown.}
+	\caption{Vertex 4 is an inner vertex that is part of an unbranched path that
+	can be collapsed.  Edge labels are not shown.}
 	\label{fig:collapse_unbranched_paths}
 \end{figure}
+
+Collapsing unbranched paths is implemented as the program
+\ProgramName{collapse-unbranched-paths}.  It takes as input a file containing a
+string graph and produces as output a file containing the string graph with
+unbranched paths collapsed.  The algorithm marks vertices with in-degree 1 and
+out-degree 1 as inner, then iterates through every non-inner vertex to locate
+adjacent inner vertices, which must be the ends of unbranched paths.  Each
+unbranched path is then walked and collapsed.  Vertices are currently
+re-numbered; so, for example, vertex 10 after collapsing unbranched paths does
+not necessarily refer to the 10th read in the list of uncontained reads from
+which the graph was constructed.
 
 \section{Examples of assembly graph construction and simplification}
 
@@ -1358,8 +1358,8 @@ random genome.
 		\begin{tikzpicture}
 			{\small
 			\begin{tikzpicture}[>=triangle 45]
-				\node[circle,fill=\nodecolor,draw=black] (A) at (0.0, 0) {A};
-				\node[circle,fill=\nodecolor,draw=black] (B) at (3.0, 0) {B};
+				\node[circle,fill=\nodecolor,draw=black] (A) at (0.0, 0) {1};
+				\node[circle,fill=\nodecolor,draw=black] (B) at (3.0, 0) {2};
 				\draw[>->,very thick] (A) edge node[anchor=north] {4639100} (B);
 			\end{tikzpicture} }
 		\end{tikzpicture}
@@ -1377,10 +1377,11 @@ random genome.
 Real genomes are not random, and they contain far more repeats than would be
 expected purely by chance.\footnote{Biologically, repeats can occur for a number
 of reasons, such as gene duplications.} \Figure{fig:E_coli} shows an example of
-the simplified bidirected string graph for a real genome.  It is apparent that
-even when using perfect, fairly long reads that cover the entire genome, the
-repeats in the genome cause branches to appear in the graph when the repeats are
-too long to be resolved by the reads at this stage in the assembly.
+the simplified bidirected string graph for reads sampled from a real genome.  It
+is apparent that even when using perfect, fairly long reads that cover the
+entire genome, the repeats in the genome cause branches to appear in the graph
+when the repeats are too long to be resolved by the reads at this stage in the
+assembly algorithm.
 
 \begin{figure}
 	\begin{center}
@@ -1407,7 +1408,8 @@ too long to be resolved by the reads at this stage in the assembly.
 
 This section walks through the construction and simplification of the bidirected
 string graph on a very small example and provides a more detailed look at the
-actual data.  The genome is 200 bp long and is given by the following file:
+actual data.  The genome is 200 bp long and is given by the following plain-text
+file:
 
 %make -B SAMPLE_SIZE=200 READ_LEN=50 MIN_OVERLAP_LEN=15 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf COVERAGE=2.5 SEED=9 USE_PIRS=false
 
@@ -1420,7 +1422,7 @@ GTACTTCTCGGAGCTATCCC
 \end{verbatim}
 
 Note that in this file format, a continuous sequence can be split among multiple
-lines; a new sequence only begins after a line beginning with {\tt >} is
+lines, and a new sequence only begins after a line beginning with {\tt >} is
 reached.
 
 The reads are the following 10 reads that are 50bp each and sampled randomly
@@ -1501,8 +1503,8 @@ the left end of the genome are not included in any read:
 
 	\fbox{
 	\begin{tikzpicture}[>=\ReadArrowType,x=0.56mm,y=3.5mm]
-		\draw[<-, style=thick] (0, 1) node[anchor=east] {G.} -- (200, 1);
-		\draw[->, style=thick] (0, 0) node[anchor=east] {G.} -- (200, 0);
+		\draw[<-, style=thick] (0, 1) node[anchor=east] {$G'$.} -- (200, 1);
+		\draw[->, style=thick] (0, 0) node[anchor=east] {$G$.} -- (200, 0);
 
 		\RcRead{1}{50}
 		\RcRead{111}{50}
@@ -1547,13 +1549,13 @@ Overlap { Read 9: [0, 44], Read 10: [0, 44], rc = 1 }
 
 These overlaps are then used by \ProgramName{build-bidirected-string-graph} to
 build the assembly graph.  Note that there are no contained reads in this
-example, so there are as many vertices as original reads.  Also, in the below
-graph drawing (as well as following graph drawings), each edge is labeled with
-the length of that edge's sequence rather than the sequence itself.
-Furthermore, although each edge really contains a separate sequence for each
-direction, for this particular example all the reads are the same length and
-only exact overlaps are considered, which makes it so the two sequences of each
-edge are always the same length.
+example, so there are as many vertices as original reads.  Also, in the
+following graph drawings, each edge is labeled with the length of that edge's
+sequence rather than the sequence itself.  Furthermore, although each edge
+really contains a separate sequence for each direction, for this particular
+example all the reads are the same length and only exact overlaps are
+considered, which makes it so the two sequences of each edge are always the same
+length.
 
 \begin{center}
 	\includegraphics[scale=0.7]{example_200bp.bidigraph-crop.pdf}	
@@ -1603,9 +1605,9 @@ Then, the assembly can be simplified further by
 The result is the fully simplified bidirected string graph.  In this particular
 example, the final graph is trivial and can be used to assemble the read-sampled
 part of the original genome by walking $2 \to 1$.  Note that there is an implied
-50bp before we start at the end of the read now labeled as 2, so the actual
-assembled sequence is $113 + 50 = 163$ bp long.  The assembler should then
-generate the assembly:
+50bp before we start at the end of the read now labeled as 2 (which was
+originally read 5), so the actual assembled sequence is $113 + 50 = 163$ bp
+long.  The assembler should then generate the assembly:
 
 \begin{verbatim}
 >contig_1
@@ -1718,10 +1720,12 @@ A contained read may easily be mapped to the vertex corresponding to a read that
 contains it, but this is not sufficient because the A-statistic is calculated
 over the edges, not the vertices.  Instead, we need to map each end of each
 contained read to the edge, or in general the set of edges, in which the end
-might be located if it were included as its own vertex.
+might be located if it were included as its own vertex.  Note that this mapping
+makes more sense if we consider it in terms of the directed analogue of the
+bidirected graph introduced in \Subsection{subsec:directed}.
 
-The algorithm for doing so is outlined in \cite{Myers2005} and was implemented
-by the program \ProgramName{map-contained-reads}, which runs before
+The algorithm for doing this mapping is outlined in \cite{Myers2005} and was
+implemented by the program \ProgramName{map-contained-reads}, which runs before
 \ProgramName{collapse-unbranched-paths}.  Briefly, for each contained read $r$
 the algorithm identifies the uncontained read $R$ that contains $r$ and has the
 shortest distance from the end of $r$ to the end of $R$ (the shortest
@@ -1740,15 +1744,15 @@ it possible to account for contained reads when calculating the A-statistic.
 
 Formally, a minimum-cost circulation problem on a directed graph takes as input
 for each edge $e$ an lower bound $l(e) \ge 0$ and an upper bound $u(e) \ge 0$ on
-	flow and a cost per unit flow $v(e)$, and for each vertex $v$ a supply
-	(positive) or demand (negative) $b(v)$ for flow.  It produces as output a
-	flow $x(e)$ on each edge $e$ such that $\sum_e v(e)x(e)$ is minimized
-	subject to $x(e) \in [l(e), u(e)]$ and $\sum_{u \to v}x(u \to v) + b(v) =
-	\sum_{v \to w} x(v \to w)$ \cite{Myers2005}.  In the minimum-cost
-	circulation problem, as opposed to other network flow problems, no vertices are
-	treated specially as sources or sinks; instead, flow must be balanced at
-	every vertex $v$, but only after taking into account the supply or demand
-	$b(v)$ at that vertex.
+flow and a cost per unit flow $v(e)$, and for each vertex $v$ a supply
+(positive) or demand (negative) $b(v)$ for flow.  It produces as output a flow
+$x(e)$ on each edge $e$ such that $\sum_e v(e)x(e)$ is minimized subject to
+$x(e) \in [l(e), u(e)]$ and $\sum_{u \to v}x(u \to v) + b(v) = \sum_{v \to w}
+x(v \to w)$ \cite{Myers2005}.  In the minimum-cost circulation problem, as
+opposed to other network flow problems, no vertices are treated specially as
+sources or sinks; instead, ingoing and outgoing flow must be balanced at every
+vertex $v$, but only after taking into account the supply or demand $b(v)$ at
+that vertex.
 
 The A-statistic calculation on each edge $e$, as described in
 \Subsection{subsec:a_statistics}, allows us to assign a lower bound $l(e)$ and
@@ -1756,8 +1760,8 @@ an upper bound $u(e)$ on the traversal count for that edge.  Note that $u(e)$
 may be $\infty$.  We also have $b(v) = 0$ for all $v$, because the flow at every
 vertex must be balanced; this corresponds to the desired walk entering each
 vertex the same number of times that it is exited, making the graph as a whole
-be balanced.  Furthermore, we have $v(e) = 1$ because no edges are considered to
-be more costly to use than any other in this formulation.\footnote{Note that the
+be balanced.  Furthermore, we have $v(e) = 1$ because no edges are considered
+more costly to use than any other in this formulation.\footnote{Note that the
 goal of this assembly algorithm is not to minimize the assembled genome length,
 but rather to maximize the similarity of our assembled genome to the true
 genome.  Therefore, there is no need to assign greater costs to edges that
@@ -1790,8 +1794,8 @@ bidirected graph is addressed in \cite{Medvedev2009}, but not in
 graph algorithm.}
 A bidirected flow is not the same as a directed flow because of the
 presence of \BidirectedEdgeInnie and \BidirectedEdgeOutie edges, where the
-magnitude of the flow on that edge is counted as going into both vertices (in
-the case of a \BidirectedEdgeOutie edge) or out of both vertices (in the case of
+magnitude of the flow on that edge is incoming to both both vertices (in
+the case of a \BidirectedEdgeOutie edge) or outgoing from both vertices (in the case of
 an \BidirectedEdgeInnie edge).  This does not imply that the edge itself is a
 source or a sink, but rather than the flow is defined in a peculiar way that
 makes sense on bidirected graphs.
@@ -1821,10 +1825,10 @@ formulation of the bidirected flow problem, we can introduce a special vertex
 $s$ and unlabeled special edges between $s$ and every other vertex.  Each
 special edge $e$ can have any amount of flow ($l(e) = 0,\ u(e) = \infty$), but
 at great cost ($v(e) = X$, where $X$ is a very large number).  The addition of
-these edges will make the graph strongly connected, and therefore it will be
-possible to solve the minimum-cost circulation problem to find a flow that
-corresponds to balancing the in-degree and out-degree of every vertex by
-assigning a certain traversal count $t(e)$ to each edge $e$.
+these edges will make the graph strongly connected and possible to solve the
+minimum-cost circulation problem to find a flow that corresponds to balancing
+the in-degree and out-degree of every vertex by assigning a certain traversal
+count $t(e)$ to each edge $e$.
 
 For the implementation of this part of the algorithm, it should be possible to
 make the above-mentioned modifications to the graph, then solve the bidirected
@@ -1840,11 +1844,11 @@ on edge $e$ as calculated using the method in \Subsection{subsec:circulation}.
 A generalized Eulerian cycle is guaranteed to exist in the bidirected graph at
 this point because the graph was made strongly connected before solving the
 minimum-cost circulation problem.  (A more thorough explanation of this
-observation can be found in \cite{Medvedev2009}.)  The cycle corresponds to a
-consistent assembly of the genome, and it can be decomposed into a set of
-logical walks by placing a logical breakpoint every time the special vertex $s$
-is passed through.  Each of these logical walks represents the assembly of a
-separate contig.
+observation can be found in \cite{Medvedev2009}.)  The cycle corresponds to an
+assembly of the genome that is consistent with the original reads, and it can be
+decomposed into a set of logical walks by placing a logical breakpoint every
+time the special vertex $s$ is passed through.  Each of these logical walks
+represents the assembly of a separate contig.
 
 It should be possible to find this generalized Eulerian cycle by adapting an
 existing Eulerian path algorithm to work on a bidirected graph.
@@ -1894,7 +1898,7 @@ part of \ProgramName{compute-overlaps} or as a new stage of the algorithm.
 \item Consider more recent publications that explore variations on this
 algorithm, such as parallelizing the algorithm \cite{Jackson2008}, or using the
 Burrows-Wheeler transform to efficiently construct the transitively-reduced
-bidirected string graph directly from the reads \cite{Simpson2010}.
+bidirected string graph directly from the original reads \cite{Simpson2010}.
 \item Use mate-pair information to help resolve repeats and connect assembled
 sequences even when they are separated by unknown sequence, possibly using ideas
 from \cite{Medvedev2009}.
