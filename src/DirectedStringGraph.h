@@ -43,9 +43,6 @@ private:
 	v_idx_t  _v1_idx;
 	v_idx_t  _v2_idx;
 	BaseVec  _seq;
-	int _flow_lower_bound;
-	int _flow_upper_bound;
-	int _cost_per_unit_flow;
 
 	// Serialize or deserialize the directed string graph edge to/from a
 	// stream.
@@ -59,9 +56,6 @@ private:
 		ar & _seq;
 	}
 public:
-	static const int INFINITE_FLOW = 1000000;
-	static const int INFINITE_COST = 1000000;
-
 	// Return a reference to the sequence associated with this edge of the
 	// directed string graph.
 	BaseVec & get_seq() { return _seq; }
@@ -98,21 +92,6 @@ public:
 	void set_v1_idx(const v_idx_t v1_idx) { _v1_idx = v1_idx; }
 
 	void set_v2_idx(const v_idx_t v2_idx) { _v2_idx = v2_idx; }
-
-	void set_flow_bounds(const int flow_lower_bound,
-			     const int flow_upper_bound)
-	{
-		_flow_lower_bound = flow_lower_bound;
-		_flow_upper_bound = flow_upper_bound;
-	}
-
-	int get_flow_lower_bound() const { return _flow_lower_bound; }
-	int get_flow_upper_bound() const { return _flow_upper_bound; }
-
-	void set_cost_per_unit_flow(const int cost_per_unit_flow)
-	{
-		_cost_per_unit_flow = cost_per_unit_flow;
-	}
 
 	// Print this directed string graph edge.
 	void print(std::ostream & os = std::cout, const v_idx_t v_idx = 0,

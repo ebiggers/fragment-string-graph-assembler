@@ -706,24 +706,16 @@ void DirectedStringGraph::calculate_A_statistics()
 
 void DirectedStringGraph::min_cost_circulation()
 {
-	info("Initializing lower and upper flow bounds on %zu edges", num_edges());
-	foreach (DirectedStringGraphEdge & e, _edges) {
-		if (e.get_A_statistic() > 0) {
-			e.set_flow_bounds(1, 1);
-		} else if (e.get_num_inner_vertices() > 0) {
-			e.set_flow_bounds(1, DirectedStringGraphEdge::INFINITE_FLOW);
-		} else {
-			e.set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
-		}
-		e.set_cost_per_unit_flow(1);
-	}
+	static const int INFINITE_FLOW = 1000000;
+	static const int HUGE_COST = 1000000;
+	static const float SINGLE_COPY_THRESHOLD = 17.0;
 
+	info("Adding special vertex and edges");
 	v_idx_t n_verts = num_vertices();
 	_vertices.resize(n_verts + 2);
 	_vertices[n_verts].set_special();
 	_vertices[n_verts + 1].set_special();
 
-	info("Adding special vertex and edges");
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 		DirectedStringGraphEdge * e;
 
@@ -733,13 +725,9 @@ void DirectedStringGraph::min_cost_circulation()
 		     special_v_idx++)
 		{
 			e = &add_unlabeled_edge(v_idx, special_v_idx);
-			e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
-			e->set_cost_per_unit_flow(DirectedStringGraphEdge::INFINITE_COST);
 			e->set_special();
 
 			e = &add_unlabeled_edge(special_v_idx, v_idx);
-			e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
-			e->set_cost_per_unit_flow(DirectedStringGraphEdge::INFINITE_COST);
 			e->set_special();
 		}
 	}
@@ -747,13 +735,15 @@ void DirectedStringGraph::min_cost_circulation()
 	n_verts += 2;
 	edge_idx_t n_edges = num_edges();
 
-	info("Creating lemon::SmartDigraph with %zu nodes and %zu arcs",
+	info("Creating lemon::SmartDigraph with %zu nodes and %zu arcs "
+	     "and initializing network flow parameters",
 	     n_verts, n_edges);
 	lemon::SmartDigraph G;
 	G.reserveNode(n_verts);
 	G.reserveArc(n_edges);
 	lemon::SmartDigraph::ArcMap<int> lower_map(G);
 	lemon::SmartDigraph::ArcMap<int> upper_map(G);
+	lemon::SmartDigraph::ArcMap<int> cost_map(G);
 	lemon::SmartDigraph::NodeMap<int> supply_map(G);
 	for (v_idx_t i = 0; i < n_verts; i++) {
 		supply_map[G.addNode()] = 0;
@@ -762,16 +752,38 @@ void DirectedStringGraph::min_cost_circulation()
 		lemon::SmartDigraph::Node node1 = G.nodeFromId(e.get_v1_idx());
 		lemon::SmartDigraph::Node node2 = G.nodeFromId(e.get_v2_idx());
 		lemon::SmartDigraph::Arc arc = G.addArc(node1, node2);
-		lower_map[arc] = e.get_flow_lower_bound();
-		upper_map[arc] = e.get_flow_upper_bound();
+		int flow_lower_bound;
+		int flow_upper_bound;
+		int cost_per_unit_flow;
+		if (e.is_special()) {
+			flow_lower_bound = 0;
+			flow_upper_bound = INFINITE_FLOW;
+			cost_per_unit_flow = HUGE_COST;
+		} else {
+			if (e.get_A_statistic() >= SINGLE_COPY_THRESHOLD) {
+				flow_lower_bound = 1;
+				flow_upper_bound = 1;
+			} else {
+				if (e.get_num_inner_vertices() > 0)
+					flow_lower_bound = 1;
+				else
+					flow_lower_bound = 0;
+				flow_upper_bound = INFINITE_FLOW;
+			}
+			cost_per_unit_flow = 1;
+		}
+		lower_map[arc] = flow_lower_bound;
+		upper_map[arc] = flow_upper_bound;
+		cost_map[arc] = cost_per_unit_flow;
 	}
-	info("Initializing network simplex data");
+	info("Initializing lemon::NetworkSimplex<lemon::SmartDigraph>");
 
 	typedef lemon::NetworkSimplex<lemon::SmartDigraph> simplex_t;
 	simplex_t simplex(G);
 	simplex.lowerMap(lower_map);
 	simplex.upperMap(upper_map);
 	simplex.supplyMap(supply_map);
+	simplex.costMap(cost_map);
 	info("Running network simplex algorithm");
 	simplex_t::ProblemType res = simplex.run();
 	if (res == simplex_t::INFEASIBLE) {
@@ -779,7 +791,8 @@ void DirectedStringGraph::min_cost_circulation()
 	} else if (res == simplex_t::UNBOUNDED) {
 		fatal_error("Objective function unbounded");
 	}
-	info("Extracting network flow solution");
+	info("Extracting network flow solution (total cost: %zu)",
+	     simplex.totalCost());
 	for (edge_idx_t edge_idx = 0; edge_idx < n_edges; edge_idx++) {
 		lemon::SmartDigraph::Arc arc = G.arcFromId(edge_idx);
 		_edges[edge_idx].set_traversal_count(simplex.flow(arc));
