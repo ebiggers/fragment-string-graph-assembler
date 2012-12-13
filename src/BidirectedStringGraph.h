@@ -239,6 +239,9 @@ public:
 			} else {
 				os << " label=\"" << length() << "\"";
 			}
+			if (_traversal_count != 0) {
+				os << " color=red ";
+			}
 			os << " ];\n";
 		}
 	}

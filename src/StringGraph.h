@@ -66,6 +66,7 @@ public:
 	{
 		_traversal_count = traversal_count;
 	}
+	int get_traversal_count() const { return _traversal_count; }
 
 };
 
