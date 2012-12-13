@@ -6,6 +6,7 @@
 #include "BidirectedStringGraph.h"
 #include <math.h>
 #include <lemon/network_simplex.h>
+#include <lemon/smart_graph.h>
 
 const char DirectedStringGraph::magic[] =
 	{'D', 'i', 'g', 'r', 'a', 'p', 'h', '\0', '\0', '\0'};
@@ -729,4 +730,22 @@ void DirectedStringGraph::min_cost_circulation()
 		e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
 		e->set_cost_per_unit_flow(10000000);
 	}
+
+	n_verts++;
+	edge_idx_t n_edges = num_edges();
+
+	lemon::SmartDigraph G;
+	G.reserveNode(n_verts);
+	G.reserveArc(n_edges);
+	{
+		std::vector<lemon::SmartDigraph::Node> nodes(n_verts);
+		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
+			nodes[v_idx] = G.addNode();
+		}
+		foreach (DirectedStringGraphEdge & e, edges()) {
+			G.addArc(nodes[e.get_v1_idx()], nodes[e.get_v2_idx()]);
+		}
+	}
+	lemon::ArcMap lower_map(G);
+	lemon::NetworkSimplex<lemon::SmartDigraph> simplex(G);
 }
