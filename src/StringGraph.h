@@ -17,18 +17,24 @@ protected:
 	float _mapped_read_count;
 	unsigned _num_inner_vertices;
 	float _A_statistic;
+	int _traversal_count;
+	bool _is_special;
 
 	StringGraphEdge()
 	{
 		_mapped_read_count = 1.0;
 		_num_inner_vertices = 0;
 		_A_statistic = 0.0;
+		_traversal_count = 0;
+		_is_special = false;
 	}
 
 	void print(std::ostream & os) const {
 		os << "_mapped_read_count=" << _mapped_read_count << '\t';
 		os << "_num_inner_vertices=" << _num_inner_vertices << '\t';
 		os << "_A_statistic=" << _A_statistic << '\t';
+		os << "_traversal_count=" << _traversal_count << '\t';
+		os << "_is_special=" << _is_special << '\t';
 	}
 
 	friend class boost::serialization::access;
@@ -38,6 +44,8 @@ protected:
 		ar & _mapped_read_count;
 		ar & _num_inner_vertices;
 		ar & _A_statistic;
+		ar & _is_special;
+		ar & _traversal_count;
 	}
 public:
 	void increment_mapped_read_count(float n) { _mapped_read_count += n; }
@@ -50,6 +58,15 @@ public:
 
 	float get_A_statistic() const { return _A_statistic; }
 	void set_A_statistic(float f) { _A_statistic = f; }
+
+	void set_special() { _is_special = true; }
+	bool is_special() const { return _is_special; }
+
+	void set_traversal_count(const int traversal_count)
+	{
+		_traversal_count = traversal_count;
+	}
+
 };
 
 // Base class for vertices of the string graph.
@@ -61,6 +78,7 @@ public:
 protected:
 	// vector of the indices of the edges that go out from this vertex.
 	std::vector<edge_idx_t> _edge_indices;
+	bool _is_special;
 
 	// Serialize or deserialize the vertex to/from a stream.
 	friend class boost::serialization::access;
@@ -68,9 +86,10 @@ protected:
 	void serialize(Archive & ar, unsigned version)
 	{
 		ar & _edge_indices;
+		ar & _is_special;
 	}
 
-	StringGraphVertex() { }
+	StringGraphVertex() { _is_special = false; }
 public:
 	// Add a new edge index to the list of edge indices associated with this
 	// string graph vertex.
@@ -78,6 +97,9 @@ public:
 	{
 		_edge_indices.push_back(edge_idx);
 	}
+
+	void set_special() { _is_special = true; }
+	bool is_special() const { return _is_special; }
 
 	// Return a const reference to the vertex of edge indices of this string
 	// graph vertex.

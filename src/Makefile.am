@@ -13,6 +13,7 @@ bin_PROGRAMS =				\
 	digraph-to-bidigraph		\
 	extract-edge-seqs		\
 	map-contained-reads		\
+	min-cost-circulation		\
 	print-overlaps			\
 	print-string-graph		\
 	remove-contained-reads		\
@@ -40,6 +41,7 @@ libassemble_a_SOURCES =			\
 	util.h
 
 bidigraph_to_digraph_SOURCES          = bidigraph-to-digraph.cc
+min_cost_circulation_SOURCES          = min-cost-circulation.cc
 build_bidirected_string_graph_SOURCES = build-bidirected-string-graph.cc
 build_directed_string_graph_SOURCES   = build-directed-string-graph.cc
 calculate_A_statistics_SOURCES        = calculate-A-statistics.cc

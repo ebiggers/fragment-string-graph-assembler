@@ -330,3 +330,8 @@ void BidirectedStringGraph::calculate_A_statistics()
 {
 	unimplemented();
 }
+
+void BidirectedStringGraph::min_cost_circulation()
+{
+	unimplemented();
+}

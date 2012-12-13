@@ -706,7 +706,8 @@ void DirectedStringGraph::calculate_A_statistics()
 
 void DirectedStringGraph::min_cost_circulation()
 {
-	foreach (DirectedStringGraphEdge & e, edges()) {
+	info("Initializing lower and upper flow bounds on %zu edges", num_edges());
+	foreach (DirectedStringGraphEdge & e, _edges) {
 		if (e.get_A_statistic() > 0) {
 			e.set_flow_bounds(1, 1);
 		} else if (e.get_num_inner_vertices() > 0) {
@@ -718,34 +719,70 @@ void DirectedStringGraph::min_cost_circulation()
 	}
 
 	v_idx_t n_verts = num_vertices();
-	v_idx_t special_v_idx = n_verts;
-	_vertices.resize(n_verts + 1);
+	_vertices.resize(n_verts + 2);
+	_vertices[n_verts].set_special();
+	_vertices[n_verts + 1].set_special();
+
+	info("Adding special vertex and edges");
 	for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
 		DirectedStringGraphEdge * e;
 
-		e = &add_unlabeled_edge(v_idx, special_v_idx);
-		e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
-		e->set_cost_per_unit_flow(10000000);
-		e = &add_unlabeled_edge(special_v_idx, v_idx);
-		e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
-		e->set_cost_per_unit_flow(10000000);
+		//v_idx_t special_v_idx = n_verts | (v_idx & 1);
+		for (v_idx_t special_v_idx = n_verts;
+		     special_v_idx < n_verts + 2;
+		     special_v_idx++)
+		{
+			e = &add_unlabeled_edge(v_idx, special_v_idx);
+			e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
+			e->set_cost_per_unit_flow(DirectedStringGraphEdge::INFINITE_COST);
+			e->set_special();
+
+			e = &add_unlabeled_edge(special_v_idx, v_idx);
+			e->set_flow_bounds(0, DirectedStringGraphEdge::INFINITE_FLOW);
+			e->set_cost_per_unit_flow(DirectedStringGraphEdge::INFINITE_COST);
+			e->set_special();
+		}
 	}
 
-	n_verts++;
+	n_verts += 2;
 	edge_idx_t n_edges = num_edges();
 
+	info("Creating lemon::SmartDigraph with %zu nodes and %zu arcs",
+	     n_verts, n_edges);
 	lemon::SmartDigraph G;
 	G.reserveNode(n_verts);
 	G.reserveArc(n_edges);
-	{
-		std::vector<lemon::SmartDigraph::Node> nodes(n_verts);
-		for (v_idx_t v_idx = 0; v_idx < n_verts; v_idx++) {
-			nodes[v_idx] = G.addNode();
-		}
-		foreach (DirectedStringGraphEdge & e, edges()) {
-			G.addArc(nodes[e.get_v1_idx()], nodes[e.get_v2_idx()]);
-		}
+	lemon::SmartDigraph::ArcMap<int> lower_map(G);
+	lemon::SmartDigraph::ArcMap<int> upper_map(G);
+	lemon::SmartDigraph::NodeMap<int> supply_map(G);
+	for (v_idx_t i = 0; i < n_verts; i++) {
+		supply_map[G.addNode()] = 0;
 	}
-	lemon::ArcMap lower_map(G);
-	lemon::NetworkSimplex<lemon::SmartDigraph> simplex(G);
+	foreach (DirectedStringGraphEdge & e, _edges) {
+		lemon::SmartDigraph::Node node1 = G.nodeFromId(e.get_v1_idx());
+		lemon::SmartDigraph::Node node2 = G.nodeFromId(e.get_v2_idx());
+		lemon::SmartDigraph::Arc arc = G.addArc(node1, node2);
+		lower_map[arc] = e.get_flow_lower_bound();
+		upper_map[arc] = e.get_flow_upper_bound();
+	}
+	info("Initializing network simplex data");
+
+	typedef lemon::NetworkSimplex<lemon::SmartDigraph> simplex_t;
+	simplex_t simplex(G);
+	simplex.lowerMap(lower_map);
+	simplex.upperMap(upper_map);
+	simplex.supplyMap(supply_map);
+	info("Running network simplex algorithm");
+	simplex_t::ProblemType res = simplex.run();
+	if (res == simplex_t::INFEASIBLE) {
+		fatal_error("No feasible solution to min-cost circulation");
+	} else if (res == simplex_t::UNBOUNDED) {
+		fatal_error("Objective function unbounded");
+	}
+	info("Extracting network flow solution");
+	for (edge_idx_t edge_idx = 0; edge_idx < n_edges; edge_idx++) {
+		lemon::SmartDigraph::Arc arc = G.arcFromId(edge_idx);
+		_edges[edge_idx].set_traversal_count(simplex.flow(arc));
+	}
+	info("Done");
 }

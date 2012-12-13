@@ -1,4 +1,4 @@
-all:out.reduced.mapped.collapsed.calc.digraph out.reduced.mapped.collapsed.calc.bidigraph
+all:out.reduced.mapped.collapsed.calc.circ.digraph out.reduced.mapped.collapsed.calc.circ.bidigraph
 
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
@@ -77,6 +77,9 @@ out.reduced.mapped.digraph:reads.bvv out.overlaps out.indices_map out.reduced.di
 
 %.calc.digraph:%.digraph
 	calculate-A-statistics $+ $@
+
+%.circ.digraph:%.digraph
+	min-cost-circulation $+ $@
 
 %.reduced.digraph:%.digraph
 	transitive-reduction $+ $@
