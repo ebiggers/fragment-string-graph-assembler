@@ -342,8 +342,83 @@ void BidirectedStringGraph::min_cost_circulation()
 	unimplemented();
 }
 
+void BidirectedStringGraph::assert_eulerian_cycle_valid(const std::vector<size_t> & cycle) const
+{
+	unsigned long total_traversal_count = 0;
+	foreach (const BidirectedStringGraphEdge & e, _edges) {
+		total_traversal_count += e.get_traversal_count();
+	}
+
+	info("cycle.size() = %zu", cycle.size());
+	assert(cycle.size() == total_traversal_count);
+	if (cycle.empty())
+		return;
+
+	v_idx_t cur_v_idx = _edges[cycle[0]].get_v1_idx();
+	bool inward = _edges[cycle[0]].v1_inward();
+	for (size_t i = 1; i < cycle.size(); i++) {
+		const BidirectedStringGraphEdge & e = _edges[i];
+		if (e.get_v1_idx() == e.get_v2_idx()) {
+			// Loops
+			if (e.v1_inward() != inward) {
+				inward = e.v2_inward();
+				cur_v_idx = e.get_v2_idx();
+			} else {
+				assert(e.v2_inward() != inward);
+				inward = e.v1_inward();
+				cur_v_idx = e.get_v1_idx();
+			}
+		} else {
+			// Non-loops
+			if (e.get_v1_idx() == cur_v_idx) {
+				assert(e.v1_inward() != inward);
+				inward = e.v2_inward();
+				cur_v_idx = e.get_v2_idx();
+			} else {
+				assert(e.get_v2_idx() == cur_v_idx);
+				assert(e.v2_inward() != inward);
+				inward = e.v1_inward();
+				cur_v_idx = e.get_v1_idx();
+			}
+		}
+	}
+	assert(inward != _edges[cycle[0]].v2_inward());
+	assert(cur_v_idx == _edges[cycle[0]].get_v2_idx());
+}
+
+// XXX this only checks if in-degree == out-degree for all vertices.  The graph
+// must also be strongly connected for an eulerian cycle to exist.
+void BidirectedStringGraph::assert_eulerian_cycle_possible() const
+{
+	for (v_idx_t v_idx = 0; v_idx < num_vertices(); v_idx++) {
+		const BidirectedStringGraphVertex & v = _vertices[v_idx];
+		unsigned long in_degree = 0;
+		unsigned long out_degree = 0;
+		foreach (const edge_idx_t edge_idx, v.edge_indices()) {
+			const BidirectedStringGraphEdge & e = _edges[edge_idx];
+			v_idx_t v1_idx, v2_idx;
+			e.get_v_indices(v1_idx, v2_idx);
+			if (v_idx == v1_idx) {
+				if (e.v1_inward())
+					in_degree += e.get_traversal_count();
+				else
+					out_degree += e.get_traversal_count();
+			}
+			if (v_idx == v2_idx) {
+				if (e.v2_inward())
+					in_degree += e.get_traversal_count();
+				else
+					out_degree += e.get_traversal_count();
+			}
+		}
+		assert(in_degree == out_degree);
+	}
+}
+
 void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 {
+	assert_eulerian_cycle_possible();
+
 	v_idx_t n_verts = num_vertices();
 	edge_idx_t n_edges = num_edges();
 
@@ -380,66 +455,75 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 		info("WARNING: Empty Eulerian path!");
 		return;
 	}
-	info("start_v_idx = %lu", start_v_idx);
+	info("Starting at vertex %lu", start_v_idx + 1);
 
 	// Start with empty path and empty stack
 	cycle.clear();
 	cycle.reserve(total_traversal_count);
 
-	static const int IN = 0;
-	static const int OUT = 1;
 	struct stack_elem {
+		// index of vertex
 		v_idx_t v_idx;
+
+		// index of edge we're taking out of vertex v_idx
 		edge_idx_t edge_idx;
-		int dir;
+
+		// direction of head relative to vertex v_idx through which
+		// vertex v_idx was entered
+		bool inward;
 	};
 	std::vector<stack_elem> stack;
 
 	std::vector<edge_idx_t> in_indices(n_verts, 0);
 	std::vector<edge_idx_t> out_indices(n_verts, 0);
 	std::vector<unsigned> times_traversed(n_edges, 0);
-	int dir = IN;
+
+	// Start by looking for out heads; this implies that we consider the
+	// starting vertex to have been entered through an inward head.
+	bool inward = true;
 	v_idx_t v_idx = start_v_idx;
 	while (1) {
 		edge_idx_t edge_idx;
 		bool pop_stack = true;
 		const BidirectedStringGraphVertex & v = _vertices[v_idx];
-		if (dir == IN) {
-			for (edge_idx_t edge_idx_idx = in_indices[v_idx];
-			     edge_idx_idx < v.degree();
-			     edge_idx_idx++)
-			{
-				edge_idx = v.edge_indices()[edge_idx_idx];
-				const BidirectedStringGraphEdge & e = _edges[edge_idx];
+		const BidirectedStringGraphEdge *e;
+		if (inward) {
+			// v was entered through an inwards head, so look for
+			// adjacent edges that still have traversal count
+			// remaining and begin with a head pointed outwards
+			// relative to v.
+			for (; out_indices[v_idx] < v.degree(); out_indices[v_idx]++) {
+				edge_idx = v.edge_indices()[out_indices[v_idx]];
+				e = &_edges[edge_idx];
 
-				if (times_traversed[edge_idx] < e.get_traversal_count() &&
-				    e.this_v_outward(v_idx))
+				if (times_traversed[edge_idx] < e->get_traversal_count() &&
+				    e->v_outward(v_idx))
 				{
 					pop_stack = false;
 					break;
 				}
 			}
-			in_indices[v_idx] = edge_idx;
 		} else {
-			for (edge_idx_t edge_idx_idx = out_indices[v_idx];
-			     edge_idx_idx < v.degree();
-			     edge_idx_idx++)
-			{
-				edge_idx = v.edge_indices()[edge_idx_idx];
-				const BidirectedStringGraphEdge & e = _edges[edge_idx];
-				if (times_traversed[edge_idx] < e.get_traversal_count() &&
-				    e.this_v_inward(v_idx))
+			// v was entered through an outwards head, so look for
+			// adjacent edges that still have traversal count
+			// remaining and begin with a head pointed inwards
+			// relative to v.
+			for (; in_indices[v_idx] < v.degree(); in_indices[v_idx]++) {
+				edge_idx = v.edge_indices()[in_indices[v_idx]];
+				e = &_edges[edge_idx];
+				if (times_traversed[edge_idx] < e->get_traversal_count() &&
+				    e->v_inward(v_idx))
 				{
 					pop_stack = false;
 					break;
 				}
 			}
-			out_indices[v_idx] = edge_idx;
 		}
 		if (pop_stack) {
+
 			// v does not have an edge that can be traversed.
 			//
-			// Pop (v_idx, edge_idx, dir) from stack and add
+			// Pop (v_idx, edge_idx, inward) from stack and add
 			// edge_idx to cycle.  If stack is empty, the cycle is
 			// complete.
 			if (stack.empty())
@@ -447,29 +531,39 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			const stack_elem & elem = stack.back();
 			v_idx = elem.v_idx;
 			edge_idx = elem.edge_idx;
-			dir = elem.dir;
+			inward = elem.inward;
 			stack.pop_back();
+
+			info("Popped (v_idx=%u, edge_idx%u, inward=%d)",
+			     v_idx, edge_idx, inward);
 			_edges[edge_idx].print(std::cout, 0, false);
+
 			cycle.push_back(edge_idx);
 		} else {
-			// v has an edge that can be traversed.
+			// v has an edge (_edges[edge_idx]) that can be traversed.
 			//
-			// Push (v_idx, edge_idx, dir) onto the stack, then
-			// update v_idx and dir
+			// Push (v_idx, edge_idx, inward) onto the stack, then
+			// mark the edge as traversed one additional time, then
+			// move to the vertex at the other end of the edge by
+			// updating v_idx and edge_idx.
 			stack_elem elem;
 			elem.v_idx = v_idx;
 			elem.edge_idx = edge_idx;
-			elem.dir = dir;
+			elem.inward = inward;
+
+			info("Pushed (v_idx=%u, edge_idx=%u, inward=%d)",
+			     v_idx, edge_idx, inward);
 			stack.push_back(elem);
 			times_traversed[edge_idx]++;
 
 			v_idx = _edges[edge_idx].get_other_v_idx(v_idx);
-			if (_edges[edge_idx].this_v_inward(v_idx))
-				dir = IN;
-			else
-				dir = OUT;
+			if (_edges[edge_idx].is_loop()) {
+				inward ^= (_edges[edge_idx].v1_inward() ==
+					   _edges[edge_idx].v2_inward());
+			} else {
+				inward = _edges[edge_idx].this_v_inward(v_idx);
+			}
 		}
 	}
-	info("cycle.size() = %zu", cycle.size());
-	assert(cycle.size() == total_traversal_count);
+	assert_eulerian_cycle_valid(cycle);
 }

@@ -9,6 +9,7 @@
 #include <math.h>
 
 class DirectedStringGraph;
+class BidirectedStringGraphEdge;
 
 // A vertex of a bidirected string graph.
 class BidirectedStringGraphVertex : public StringGraphVertex {
@@ -88,7 +89,7 @@ public:
 	const BaseVec & get_seq_2_to_1() const { return _seq_2_to_1; }
 	BaseVec::size_type length() const { return _seq_1_to_2.size(); }
 
-	v_idx_t get_other_v_idx(v_idx_t this_v_idx) const
+	v_idx_t get_other_v_idx(const v_idx_t this_v_idx) const
 	{
 		v_idx_t v1_idx, v2_idx;
 		get_v_indices(v1_idx, v2_idx);
@@ -110,19 +111,19 @@ public:
 		return (_data >> 31) & 0x7fffffffULL;
 	}
 
-	void set_v1_idx(v_idx_t v1_idx)
+	void set_v1_idx(const v_idx_t v1_idx)
 	{
 		_data &= ~0x7fffffffULL;
 		_data |= v1_idx;
 	}
 
-	void set_v2_idx(v_idx_t v2_idx)
+	void set_v2_idx(const v_idx_t v2_idx)
 	{
 		_data &= ~(0x7fffffffULL << 31);
 		_data |= (uint64_t(v2_idx) << 31);
 	}
 
-	void set_v_indices(v_idx_t v1_idx, v_idx_t v2_idx)
+	void set_v_indices(const v_idx_t v1_idx, const v_idx_t v2_idx)
 	{
 		_data = (_data & (3ULL << 62)) | (uint64_t(v2_idx) << 31) | v1_idx;
 	}
@@ -142,6 +143,31 @@ public:
 	bool v2_inward() const { return (get_dirs() & 0x1) != 0; }
 	bool v1_inward() const { return !(v1_outward()); }
 	bool v2_outward() const { return !(v2_inward()); }
+
+	bool is_loop() const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		return (v1_idx == v2_idx);
+	}
+
+	bool v_outward(const v_idx_t v_idx) const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		assert2(v_idx == v1_idx || v_idx == v2_idx);
+		return ((v_idx == v1_idx && v1_outward()) ||
+			(v_idx == v2_idx && v2_outward()));
+	}
+
+	bool v_inward(const v_idx_t v_idx) const
+	{
+		v_idx_t v1_idx, v2_idx;
+		get_v_indices(v1_idx, v2_idx);
+		assert2(v_idx == v1_idx || v_idx == v2_idx);
+		return ((v_idx == v1_idx && v1_inward()) ||
+			(v_idx == v2_idx && v2_inward()));
+	}
 
 	bool this_v_outward(const v_idx_t this_v_idx) const
 	{
@@ -336,4 +362,7 @@ public:
 	}
 
 	void eulerian_cycle(std::vector<size_t> & cycle) const;
+private:
+	void assert_eulerian_cycle_possible() const;
+	void assert_eulerian_cycle_valid(const std::vector<size_t> & cycle) const;
 };
