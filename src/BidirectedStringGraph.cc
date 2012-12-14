@@ -397,7 +397,7 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 
 	std::vector<edge_idx_t> in_indices(n_verts, 0);
 	std::vector<edge_idx_t> out_indices(n_verts, 0);
-	std::vector<bool> visited(n_edges, false);
+	std::vector<unsigned> times_traversed(n_edges, 0);
 	int dir = IN;
 	v_idx_t v_idx = start_v_idx;
 	while (1) {
@@ -410,7 +410,11 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			     edge_idx_idx++)
 			{
 				edge_idx = v.edge_indices()[edge_idx_idx];
-				if (_edges[edge_idx].this_v_outward(v_idx)) {
+				const BidirectedStringGraphEdge & e = _edges[edge_idx];
+
+				if (times_traversed[edge_idx] < e.get_traversal_count() &&
+				    e.this_v_outward(v_idx))
+				{
 					pop_stack = false;
 					break;
 				}
@@ -422,7 +426,10 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			     edge_idx_idx++)
 			{
 				edge_idx = v.edge_indices()[edge_idx_idx];
-				if (_edges[edge_idx].this_v_inward(v_idx)) {
+				const BidirectedStringGraphEdge & e = _edges[edge_idx];
+				if (times_traversed[edge_idx] < e.get_traversal_count() &&
+				    e.this_v_inward(v_idx))
+				{
 					pop_stack = false;
 					break;
 				}
@@ -430,6 +437,8 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			out_indices[v_idx] = edge_idx;
 		}
 		if (pop_stack) {
+			// v does not have an edge that can be traversed.
+			//
 			// Pop (v_idx, edge_idx, dir) from stack and add
 			// edge_idx to cycle.  If stack is empty, the cycle is
 			// complete.
@@ -443,6 +452,8 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			_edges[edge_idx].print(std::cout, 0, false);
 			cycle.push_back(edge_idx);
 		} else {
+			// v has an edge that can be traversed.
+			//
 			// Push (v_idx, edge_idx, dir) onto the stack, then
 			// update v_idx and dir
 			stack_elem elem;
@@ -450,6 +461,7 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			elem.edge_idx = edge_idx;
 			elem.dir = dir;
 			stack.push_back(elem);
+			times_traversed[edge_idx]++;
 
 			v_idx = _edges[edge_idx].get_other_v_idx(v_idx);
 			if (_edges[edge_idx].this_v_inward(v_idx))
@@ -458,4 +470,6 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 				dir = OUT;
 		}
 	}
+	info("cycle.size() = %zu", cycle.size());
+	assert(cycle.size() == total_traversal_count);
 }
