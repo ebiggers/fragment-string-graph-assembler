@@ -234,6 +234,14 @@ public:
 		os << '\r';
 	}
 
+	// Print the string graph vertex.
+	friend std::ostream & operator<<(std::ostream & os,
+					 const BidirectedStringGraphEdge & e)
+	{
+		e.print(os, e.get_v1_idx());
+		return os;
+	}
+
 	// Print a bidirected string graph edge in DOT format
 	void print_dot(std::ostream & os, const v_idx_t v_idx,
 		       const bool print_seqs) const

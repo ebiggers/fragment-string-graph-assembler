@@ -455,7 +455,14 @@ void BidirectedStringGraph::assert_eulerian_cycle_possible() const
 					out_degree += e.get_traversal_count();
 			}
 		}
-		assert(in_degree == out_degree);
+		if (in_degree != out_degree) {
+			std::cerr << _vertices[v_idx] << std::endl;
+			foreach (const edge_idx_t edge_idx, v.edge_indices()) {
+				std::cerr << _edges[edge_idx] << std::endl;
+			}
+			fatal_error("Vertex %u: in_degree(=%u) != out_degree(=%u)",
+				    v_idx + 1, in_degree, out_degree);
+		}
 	}
 }
 
