@@ -237,6 +237,10 @@ void BidirectedStringGraph::build_from_digraph(const DirectedStringGraph & digra
 				//}
 				e.set_num_inner_vertices((w_v.get_num_inner_vertices() +
 							 v_w.get_num_inner_vertices()) / 2);
+				if (v_w.is_special()) {
+					assert(w_v.is_special());
+					e.set_special();
+				}
 
 				edge_idx_t edge_idx = this->push_back_edge(e);
 				_vertices[v1_idx].add_edge_idx(edge_idx);
@@ -336,4 +340,62 @@ void BidirectedStringGraph::calculate_A_statistics()
 void BidirectedStringGraph::min_cost_circulation()
 {
 	unimplemented();
+}
+
+void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
+{
+	v_idx_t n_verts = num_vertices();
+	edge_idx_t n_edges = num_edges();
+
+	info("Finding Eulerian path in bidirected graph");
+	info("num_vertices = %lu", n_verts);
+	info("num_edges = %lu", n_edges);
+
+	unsigned long total_traversal_count = 0;
+	unsigned long num_special_edges = 0;
+	unsigned long special_traversal_count = 0;
+	v_idx_t start_v_idx;
+	bool found_start_v_idx = false;
+	foreach (const BidirectedStringGraphEdge & e, _edges) {
+		if (e.is_special()) {
+			num_special_edges++;
+			special_traversal_count += e.get_traversal_count();
+		}
+		total_traversal_count += e.get_traversal_count();
+		if (!found_start_v_idx) {
+			if (e.v1_outward()) {
+				start_v_idx = e.get_v1_idx();
+				found_start_v_idx = true;
+			} else if (e.v2_outward()) {
+				start_v_idx = e.get_v2_idx();
+				found_start_v_idx = true;
+			}
+		}
+	}
+	info("total_traversal_count = %lu", total_traversal_count);
+	info("num_special_edges = %lu", num_special_edges);
+	info("special_traversal_count = %lu", special_traversal_count);
+
+	if (!found_start_v_idx) {
+		info("WARNING: Empty Eulerian path!");
+		return;
+	}
+	info("start_v_idx = %lu", start_v_idx);
+
+	// Start with empty path and empty stack
+	path.clear();
+	path.reserve(total_traversal_count);
+
+	static const int IN = 0;
+	static const int OUT = 1;
+	struct stack_elem {
+		v_idx_t v_idx;
+		edge_idx_t edge_idx;
+		int dir;
+	};
+	std::vector<stack_elem> stack;
+
+	std::vector<edge_idx_t> in_idx(n_verts, 0);
+	std::vector<edge_idx_t> out_idx(n_verts, 0);
+	std::vector<bool> visited(n_edges, false);
 }

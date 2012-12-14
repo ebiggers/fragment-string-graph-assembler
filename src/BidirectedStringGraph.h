@@ -327,4 +327,6 @@ public:
 			bvv.push_back(e.get_seq_2_to_1());
 		}
 	}
+
+	void eulerian_path(std::vector<edge_idx_t> & path) const;
 };
