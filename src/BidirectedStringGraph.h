@@ -25,6 +25,8 @@ public:
 		unimplemented();
 	}
 
+	size_t degree() const { return _edge_indices.size(); }
+
 	// Print a bidirected string graph vertex in DOT format
 	void print_dot(std::ostream & os, size_t v_idx) const
 	{
@@ -141,7 +143,7 @@ public:
 	bool v1_inward() const { return !(v1_outward()); }
 	bool v2_outward() const { return !(v2_inward()); }
 
-	bool this_v_outward(v_idx_t this_v_idx) const
+	bool this_v_outward(const v_idx_t this_v_idx) const
 	{
 		v_idx_t v1_idx, v2_idx;
 		get_v_indices(v1_idx, v2_idx);
@@ -153,7 +155,12 @@ public:
 		}
 	}
 
-	bool other_v_outward(v_idx_t this_v_idx) const
+	bool this_v_inward(const v_idx_t this_v_idx) const
+	{
+		return !this_v_outward(this_v_idx);
+	}
+
+	bool other_v_outward(const v_idx_t this_v_idx) const
 	{
 		v_idx_t v1_idx, v2_idx;
 		get_v_indices(v1_idx, v2_idx);
@@ -166,7 +173,7 @@ public:
 	}
 
 
-	void set_dirs(unsigned dirs)
+	void set_dirs(const unsigned dirs)
 	{
 		_data = (_data & ~(3ULL << 62)) | (uint64_t(dirs) << 62);
 	}

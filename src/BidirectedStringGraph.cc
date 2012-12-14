@@ -395,7 +395,45 @@ void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
 	};
 	std::vector<stack_elem> stack;
 
-	std::vector<edge_idx_t> in_idx(n_verts, 0);
-	std::vector<edge_idx_t> out_idx(n_verts, 0);
+	std::vector<edge_idx_t> in_indices(n_verts, 0);
+	std::vector<edge_idx_t> out_indices(n_verts, 0);
 	std::vector<bool> visited(n_edges, false);
+	int dir = IN;
+	v_idx_t v_idx = start_v_idx;
+	while (1) {
+		const BidirectedStringGraphVertex & v = _vertices[v_idx];
+		edge_idx_t edge_idx;
+		bool pop_stack = true;
+		const BidirectedStringGraphEdge * e;
+		if (dir == IN) {
+			for (edge_idx = in_indices[v_idx];
+			     edge_idx < v.degree();
+			     edge_idx++)
+			{
+				e = &_edges[edge_idx];
+				if (e->this_v_outward(v_idx)) {
+					pop_stack = false;
+					break;
+				}
+			}
+			in_indices[v_idx] = edge_idx;
+		} else {
+			for (edge_idx = out_indices[v_idx];
+			     edge_idx < v.degree();
+			     edge_idx++)
+			{
+				e = &_edges[edge_idx];
+				if (e->this_v_inward(v_idx)) {
+					pop_stack = false;
+					break;
+				}
+			}
+			out_indices[v_idx] = edge_idx;
+		}
+		if (pop_stack) {
+			if (stack.size() == 0)
+				break;
+		} else {
+		}
+	}
 }
