@@ -4,6 +4,7 @@ AM_CXXFLAGS =
 
 bin_PROGRAMS =				\
 	bidigraph-to-digraph		\
+	bidigraph-eulerian-cycle	\
 	build-bidirected-string-graph	\
 	build-directed-string-graph	\
 	calculate-A-statistics		\
@@ -41,7 +42,7 @@ libassemble_a_SOURCES =			\
 	util.h
 
 bidigraph_to_digraph_SOURCES          = bidigraph-to-digraph.cc
-min_cost_circulation_SOURCES          = min-cost-circulation.cc
+bidigraph_eulerian_cycle_SOURCES      = bidigraph-eulerian-cycle.cc
 build_bidirected_string_graph_SOURCES = build-bidirected-string-graph.cc
 build_directed_string_graph_SOURCES   = build-directed-string-graph.cc
 calculate_A_statistics_SOURCES        = calculate-A-statistics.cc
@@ -51,6 +52,7 @@ convert_reads_SOURCES                 = convert-reads.cc
 digraph_to_bidigraph_SOURCES          = digraph-to-bidigraph.cc
 extract_edge_seqs_SOURCES             = extract-edge-seqs.cc
 map_contained_reads_SOURCES           = map-contained-reads.cc
+min_cost_circulation_SOURCES          = min-cost-circulation.cc
 print_overlaps_SOURCES                = print-overlaps.cc
 print_string_graph_SOURCES            = print-string-graph.cc
 remove_contained_reads_SOURCES        = remove-contained-reads.cc

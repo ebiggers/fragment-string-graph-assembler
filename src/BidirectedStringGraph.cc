@@ -342,7 +342,7 @@ void BidirectedStringGraph::min_cost_circulation()
 	unimplemented();
 }
 
-void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
+void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 {
 	v_idx_t n_verts = num_vertices();
 	edge_idx_t n_edges = num_edges();
@@ -383,8 +383,8 @@ void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
 	info("start_v_idx = %lu", start_v_idx);
 
 	// Start with empty path and empty stack
-	path.clear();
-	path.reserve(total_traversal_count);
+	cycle.clear();
+	cycle.reserve(total_traversal_count);
 
 	static const int IN = 0;
 	static const int OUT = 1;
@@ -401,29 +401,28 @@ void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
 	int dir = IN;
 	v_idx_t v_idx = start_v_idx;
 	while (1) {
-		const BidirectedStringGraphVertex & v = _vertices[v_idx];
 		edge_idx_t edge_idx;
 		bool pop_stack = true;
-		const BidirectedStringGraphEdge * e;
+		const BidirectedStringGraphVertex & v = _vertices[v_idx];
 		if (dir == IN) {
-			for (edge_idx = in_indices[v_idx];
-			     edge_idx < v.degree();
-			     edge_idx++)
+			for (edge_idx_t edge_idx_idx = in_indices[v_idx];
+			     edge_idx_idx < v.degree();
+			     edge_idx_idx++)
 			{
-				e = &_edges[edge_idx];
-				if (e->this_v_outward(v_idx)) {
+				edge_idx = v.edge_indices()[edge_idx_idx];
+				if (_edges[edge_idx].this_v_outward(v_idx)) {
 					pop_stack = false;
 					break;
 				}
 			}
 			in_indices[v_idx] = edge_idx;
 		} else {
-			for (edge_idx = out_indices[v_idx];
-			     edge_idx < v.degree();
-			     edge_idx++)
+			for (edge_idx_t edge_idx_idx = out_indices[v_idx];
+			     edge_idx_idx < v.degree();
+			     edge_idx_idx++)
 			{
-				e = &_edges[edge_idx];
-				if (e->this_v_inward(v_idx)) {
+				edge_idx = v.edge_indices()[edge_idx_idx];
+				if (_edges[edge_idx].this_v_inward(v_idx)) {
 					pop_stack = false;
 					break;
 				}
@@ -431,9 +430,32 @@ void BidirectedStringGraph::eulerian_path(std::vector<edge_idx_t> & path) const
 			out_indices[v_idx] = edge_idx;
 		}
 		if (pop_stack) {
-			if (stack.size() == 0)
+			// Pop (v_idx, edge_idx, dir) from stack and add
+			// edge_idx to cycle.  If stack is empty, the cycle is
+			// complete.
+			if (stack.empty())
 				break;
+			const stack_elem & elem = stack.back();
+			v_idx = elem.v_idx;
+			edge_idx = elem.edge_idx;
+			dir = elem.dir;
+			stack.pop_back();
+			_edges[edge_idx].print(std::cout, 0, false);
+			cycle.push_back(edge_idx);
 		} else {
+			// Push (v_idx, edge_idx, dir) onto the stack, then
+			// update v_idx and dir
+			stack_elem elem;
+			elem.v_idx = v_idx;
+			elem.edge_idx = edge_idx;
+			elem.dir = dir;
+			stack.push_back(elem);
+
+			v_idx = _edges[edge_idx].get_other_v_idx(v_idx);
+			if (_edges[edge_idx].this_v_inward(v_idx))
+				dir = IN;
+			else
+				dir = OUT;
 		}
 	}
 }

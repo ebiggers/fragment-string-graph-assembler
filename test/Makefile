@@ -1,4 +1,4 @@
-all:out.reduced.mapped.collapsed.calc.circ.digraph out.reduced.mapped.collapsed.calc.circ.bidigraph
+all:out.eulerian_cycle
 
 SAMPLE_SIZE     ?= 300
 READ_LEN        ?= 100
@@ -74,6 +74,9 @@ out.bidigraph:reads.uncontained.bvv out.uncontained.overlaps
 out.reduced.mapped.digraph:reads.bvv out.overlaps out.indices_map out.reduced.digraph
 	map-contained-reads reads.bvv out.overlaps out.indices_map \
 			    out.reduced.digraph out.reduced.mapped.digraph
+
+out.eulerian_cycle:out.reduced.mapped.collapsed.calc.circ.bidigraph
+	bidigraph-eulerian-cycle $+ $@
 
 %.calc.digraph:%.digraph
 	calculate-A-statistics $+ $@

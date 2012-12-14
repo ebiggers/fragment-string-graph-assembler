@@ -335,5 +335,5 @@ public:
 		}
 	}
 
-	void eulerian_path(std::vector<edge_idx_t> & path) const;
+	void eulerian_cycle(std::vector<size_t> & cycle) const;
 };
