@@ -205,8 +205,9 @@ public:
 	}
 
 	// Print a bidirected string graph edge
-	void print(std::ostream & os, const v_idx_t v_idx,
-		   const bool print_seqs) const
+	void print(std::ostream & os = std::cout,
+		   const v_idx_t v_idx = 0,
+		   const bool print_seqs = false) const
 	{
 		v_idx_t read_1_idx = get_v1_idx();
 		v_idx_t read_2_idx = get_v2_idx();

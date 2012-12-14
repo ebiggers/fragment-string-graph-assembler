@@ -344,43 +344,71 @@ void BidirectedStringGraph::min_cost_circulation()
 
 void BidirectedStringGraph::assert_eulerian_cycle_valid(const std::vector<size_t> & cycle) const
 {
-	unsigned long total_traversal_count = 0;
-	foreach (const BidirectedStringGraphEdge & e, _edges) {
-		total_traversal_count += e.get_traversal_count();
+	{
+		std::vector<edge_idx_t> times_traversed(num_edges(), 0);
+		foreach (const size_t edge_idx, cycle) {
+			times_traversed[edge_idx]++;
+		}
+		for (size_t i = 0; i < num_edges(); i++) {
+			assert(times_traversed[i] == _edges[i].get_traversal_count());
+		}
 	}
-
-	info("cycle.size() = %zu", cycle.size());
-	assert(cycle.size() == total_traversal_count);
 	if (cycle.empty())
 		return;
 
-	v_idx_t cur_v_idx = _edges[cycle[0]].get_v1_idx();
-	bool inward = _edges[cycle[0]].v1_inward();
-	for (size_t i = 1; i < cycle.size(); i++) {
-		const BidirectedStringGraphEdge & e = _edges[i];
-		if (e.get_v1_idx() == e.get_v2_idx()) {
-			// Loops
-			if (e.v1_inward() != inward) {
-				inward = e.v2_inward();
-				cur_v_idx = e.get_v2_idx();
-			} else {
-				assert(e.v2_inward() != inward);
-				inward = e.v1_inward();
-				cur_v_idx = e.get_v1_idx();
-			}
-		} else {
-			// Non-loops
-			if (e.get_v1_idx() == cur_v_idx) {
-				assert(e.v1_inward() != inward);
-				inward = e.v2_inward();
-				cur_v_idx = e.get_v2_idx();
-			} else {
-				assert(e.get_v2_idx() == cur_v_idx);
-				assert(e.v2_inward() != inward);
-				inward = e.v1_inward();
-				cur_v_idx = e.get_v1_idx();
-			}
+	const BidirectedStringGraphEdge & first_edge = _edges[cycle[0]];
+	v_idx_t cur_v_idx = first_edge.get_v1_idx();
+
+	// Direction of head through which cur_v_idx was entered
+	bool inward = !first_edge.v1_inward();
+
+	if (cycle.size() > 1) {
+		v_idx_t second_v_idx = first_edge.get_v2_idx();
+		// We want to go around the cycle in the direction indicated.
+		// So, for the first edge between vertices A and B, check to
+		// make sure the second edge in the cycle includes vertex B with
+		// the direction of the adjacent head consistent with the first
+		// head.  If not, flip vertices B and A so we go the other way
+		// around the cycle.
+		const BidirectedStringGraphEdge & second_edge = _edges[cycle[1]];
+		if ((second_edge.get_v1_idx() != second_v_idx ||
+		     second_edge.v1_inward() == first_edge.v2_inward())
+		    && (second_edge.get_v2_idx() != second_v_idx ||
+			second_edge.v2_inward() == first_edge.v2_inward()))
+		{
+			cur_v_idx = first_edge.get_v2_idx();
+			inward = !first_edge.v2_inward();
 		}
+	}
+
+	for (size_t i = 0; i < cycle.size(); i++) {
+		// Given that cur_v_idx has been entered through a head in
+		// direction @inward relative to @cur_v_idx, assert that the
+		// next edge e in the cycle contains vertex cur_v_idx and can be
+		// traversed.
+		info("cur_v_idx = %u", cur_v_idx);
+		const BidirectedStringGraphEdge & e = _edges[i];
+
+		e.print(std::cout, cur_v_idx);
+
+		assert(cur_v_idx == e.get_v1_idx() ||
+		       cur_v_idx == e.get_v2_idx());
+
+		if (e.get_v1_idx() == cur_v_idx &&
+		    e.v1_inward() != inward)
+		{
+			inward = e.v2_inward();
+			cur_v_idx = e.get_v2_idx();
+			continue;
+		} 
+		if (e.get_v2_idx() == cur_v_idx &&
+		    e.v2_inward() != inward)
+		{
+			inward = e.v1_inward();
+			cur_v_idx = e.get_v1_idx();
+			continue;
+		}
+		assert(0);
 	}
 	assert(inward != _edges[cycle[0]].v2_inward());
 	assert(cur_v_idx == _edges[cycle[0]].get_v2_idx());
@@ -534,9 +562,9 @@ void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 			inward = elem.inward;
 			stack.pop_back();
 
-			info("Popped (v_idx=%u, edge_idx%u, inward=%d)",
+			info("Popped (v_idx=%u, edge_idx=%u, inward=%d)",
 			     v_idx, edge_idx, inward);
-			_edges[edge_idx].print(std::cout, 0, false);
+			_edges[edge_idx].print(std::cout, v_idx, false);
 
 			cycle.push_back(edge_idx);
 		} else {
