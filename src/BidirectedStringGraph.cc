@@ -459,6 +459,21 @@ void BidirectedStringGraph::assert_eulerian_cycle_possible() const
 	}
 }
 
+//
+// Finds a generalized Eulerian cycle in this bidirected graph.
+//
+// A cycle in a bidirected graph is defined as a valid walk that begins and ends
+// at the same vertex in such a way that it would be valid to continue the walk
+// in the same way it started.  A generalized Eulerian cycle in a bidirected
+// graph is a cycle that traverses each edge e in the graph in either direction
+// exactly some specified number t(e) >= 0 times.  Here, t(e) is provided by
+// calling BidirectedStringGraphEdge::get_traversal_count().
+//
+// If a generalized Eulerian cycle can be found in this bidirected graph, the
+// indices of the edges in the cycle, in order, are returned in the vector
+// @cycle, which is resized to the length of the cycle.  Otherwise, this
+// function aborts the program with an error message.
+//
 void BidirectedStringGraph::eulerian_cycle(std::vector<size_t> & cycle) const
 {
 	assert_eulerian_cycle_possible();
