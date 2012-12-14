@@ -7,7 +7,7 @@ USE_PIRS        ?= false
 MIN_OVERLAP_LEN ?= 25
 GENOME          ?= random_genome.fa
 BIDIGRAPH_OPS   ?= false
-COVERAGE        ?= 50
+COVERAGE        ?= 10
 SEED            ?= 1
 
 ifeq ($(GENOME),random_genome.fa)
