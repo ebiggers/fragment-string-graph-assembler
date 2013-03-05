@@ -1,5 +1,20 @@
-hw6.pdf:hw6.tex
+#
+# Generic Makefile for tex documents
+#
+
+SHELL := bash
+TEX   := $(wildcard *.tex)
+BASE  := $(basename $(TEX))
+PDF   := $(addsuffix .pdf,$(BASE))
+
+all:$(PDF)
+
+$(PDF): %.pdf:%.tex
 	pdflatex $+
 
 clean:
-	rm -f hw6.{pdf,log,aux}
+	for base in $(BASE); do \
+		rm -f $${base}.{log,out,aux,pdf}; \
+	done
+
+.PHONY: all clean
