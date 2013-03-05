@@ -1,3 +1,5 @@
+SHELL = bash
+
 all:presentation.pdf paper.pdf
 
 presentation.pdf:presentation.tex programs.pdf
@@ -14,6 +16,6 @@ paper.pdf:paper.tex refs.bib
 
 
 clean:
-	rm -f presentation.{pdf,log,aux,nav,out,snm,toc} paper.{pdf,log,aux}
+	rm -f {paper,presentation}.{pdf,log,aux,nav,out,snm,toc,bbl,blg,fff,lot,ttt,lof,vrb}
 
 .PHONY: all clean
