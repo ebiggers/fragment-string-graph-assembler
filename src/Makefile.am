@@ -1,6 +1,6 @@
 
 LDADD = libassemble.a -lboost_serialization
-AM_CXXFLAGS = 
+AM_CXXFLAGS = -std=c++11
 
 bin_PROGRAMS =				\
 	bidigraph-to-digraph		\

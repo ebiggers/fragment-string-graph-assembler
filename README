@@ -3,4 +3,7 @@ ideas described in Eugene W. Myers' 2005 paper:
 	
 	The fragment string assembly graph
 
-as well as some other publications.  See presentation/paper.pdf.
+as well as some other publications.  See docs/MATH469-paper.pdf.
+
+The source code is provided under the license in COPYING.  The files in docs/
+are included here for convenience and may only be used for educational use.
