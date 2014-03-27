@@ -1,0 +1,98 @@
+============================================================
+Outline - A Bidirected String Graph Model of Genome Assembly
+============================================================
+
+- Introduction to genome sequencing and assembly
+
+    1. Genomes [general, biological]
+        - A genome is the entirety of an organism's genetic material
+        - A genome consists of one or more DNA molecules
+        - DNA molecules are double-stranded and consist of paired nucleotides
+          (A, C, G, T)
+        - [Figures: model of DNA molecule; table of genome lengths]
+
+    2. Genome sequencing [general, biological]
+        - Genome sequencing is the process of determining the informational content
+          of the genome
+        - Genome sequencing, and more generally, DNA sequencing, has developed over
+          the past several decades and is increasing being applied to biology,
+          medicine, and other fields.
+        - [Figure: something representing the growth of DNA sequencing]
+
+    3. De novo whole-genome shotgun sequencing [methods]
+        - Currently the fastest and cheapest way to acquire sequences for an
+          entire, *new* genome
+        - Represented by multiple technologies:
+            - Sanger sequencing
+            - 454 pyrosequencing
+            - Illumina (Solexa) sequencing
+        - All can only sequence short pieces of DNA
+        - Lab work:
+            - Obtain a DNA sample
+            - Break DNA into much smaller fragments
+            - Sequence the fragments using commercially available DNA sequencer
+        - Computational work:
+            - Manufacturer-specific postprocessing
+            - Given the sequenced fragments, reconstruct the original genome
+
+    4. Reads
+        - A read is a short sequence that represents a piece of DNA that was
+          sequenced by the sequencing machine
+        - A read may came from any location on the genome, from either strind
+        - Reads from opposite strands go in opposite directions
+            - Consequently, a read and its *reverse complement* are often
+              considered equivalent
+
+    5. Genome assembly
+        - Genome assembly is the process of reconstructing a genome from a set
+          of reads that came from it
+        - Genome assembly is performed by a genome assembler
+        - Minimal input: a set of reads (35-5000 bp each)
+        - Minimal output: the reconstructed genome, or as close to it as
+          possible (maximally length substrings)
+
+    6. Difficulties & simplifications
+        - Genome assembly seems *at least* as hard as shortest common
+          superstring problem, which is already NP-complete
+        - Problems not considered in this talk:
+            - Sequencing errors (substitution & indels)
+            - Quality scores
+            - Mate pair information
+            - Heterozygosity
+            - Contamination DNA
+            - Contamination from mitochondria & chloroplasts
+        - I *will* consider the double-strandedness DNA
+
+- A bidirected string graph model for genome assembly
+    7.
+        - Inspired by "The fragment string assembly graph" (Myers, 2005)
+        - Draws on ideas used in previous assemblers and also introduces new ideas
+        - The overall algorithm
+            - Use overlaps between reads to build a graph that models the assembly
+              problem
+            - Simplify and analyze the graph
+            - Find paths through the graph to reconstruct the original sequence
+        - I only have time to briefly outline the main ideas of this approach
+
+    8. Examples and usefulness of overlaps
+        - Two reads that overlap may come from adjacent positions on the genome
+        - Overlaps may be from different strands, in which case the overlapped
+          regions are reverse-complement from each other
+
+    9. Definition of an overlap
+
+    10. Three types of overlaps
+
+    11. Building the fragment string assembly graph
+
+        - read => vertex
+        - overlap => edge
+
+    12. Accounting for double-standedness
+
+    13. Walking through the bidirected string graph
+
+    14. Examples
+
+    15. Implementation
+
