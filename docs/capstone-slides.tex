@@ -35,6 +35,14 @@
 \date{April 16, 2014}
 %\titlegraphic{\includegraphics[width=\textwidth,clip=true,trim=0 300 0 500]{puzzle.jpg}}
 
+
+\definecolor{darkyellow}{rgb}{0.65,0.60,0.00}
+\definecolor{darkgreen}{rgb}{0.00,0.40,0.00}
+\newcommand\A{\textcolor{darkyellow}{A}}
+\newcommand\T{\textcolor{darkgreen}{T}}
+\newcommand\G{\textcolor{red}{G}}
+\newcommand\C{\textcolor{blue}{C}}
+
 \frame{\titlepage}
 
 \begin{frame}{Outline}
@@ -151,11 +159,11 @@
             \item Each paired nucleotide is a {\bf base pair} (abbreviation: {\bf bp})
         \end{itemize}
             \begin{center}
-                {\tt {\bf $\leftarrow$}GTTGCTATAAATACGGGTCATGGTATTTACCG{\bf $\leftarrow$}} \\
+                {\tt {\bf $\leftarrow$}\G{}\T{}\T{}\G{}\C{}\T{}\A{}\T{}\A{}\A{}\A{}\T{}\A{}\C{}\G{}\G{}\G{}\T{}\C{}\A{}\T{}\G{}\G{}\T{}\A{}\T{}\T{}\T{}\A{}\C{}\C{}\G{}{\bf $\leftarrow$}} \\
                 \vspace{-0.14cm}
                 {\tt                     ||||||||||||||||||||||||||||||||} \\
                 \vspace{-0.14cm}
-                {\tt {\bf $\rightarrow$}CAACGATATTTATGCCCAGTACCATAAATGGC{\bf $\rightarrow$}}
+                {\tt {\bf $\rightarrow$}\C{}\A{}\A{}\C{}\G{}\A{}\T{}\A{}\T{}\T{}\T{}\A{}\T{}\G{}\C{}\C{}\C{}\A{}\G{}\T{}\A{}\C{}\C{}\A{}\T{}\A{}\A{}\A{}\T{}\G{}\G{}\C{}{\bf $\rightarrow$}}
             \end{center}
     \end{minipage}
     \begin{minipage}{0.23\textwidth}
@@ -190,7 +198,7 @@
     \end{tabular}
 \end{frame}
 
-\begin{frame}{De novo whole-genome shotgun sequencing}
+\begin{frame}{De novo whole genome shotgun sequencing}
     \begin{minipage}{0.66\textwidth}
         \begin{itemize}
             \item Currently the fastest and cheapest way to sequence an entire
@@ -235,9 +243,9 @@
     \end{itemize}
         {\scriptsize
             {\tt \ \ }
-            \hspace*{0.01cm}{\tt\color{red}$\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACA$\leftarrow$ }\\
+            \hspace*{0.004cm}{\tt\color{red}$\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACA$\leftarrow$ }\\
             {\tt \ \ }
-            \hspace*{1.80cm}{\tt \color{red} $\leftarrow$TTATCTATCTTCAGACGACTATTATAGCGCGG$\leftarrow$}\\
+            \hspace*{1.794cm}{\tt \color{red} $\leftarrow$TTATCTATCTTCAGACGACTATTATAGCGCGG$\leftarrow$}\\
             {\tt \ \ }
             {\tt $\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACTATTATAGCGCGGCCAAGACTACGCGGAGCCCC$\leftarrow$} \\
             \vspace{-0.1cm}
@@ -246,7 +254,7 @@
             {\tt \ \ }
             {\tt $\rightarrow$ACTCGAATTCCGAATAGATAGAAGTCTGCTGATAATATCGCGCCGGTTCTGATGCGCCTCGGGG$\rightarrow$} \\
             \vspace{-0.16cm}
-            {\tt \ \ } \hspace*{3.59cm}{\tt \color{blue} $\rightarrow$TCTGCTGATAATATCGCGCCGGTTCTGATGCG$\rightarrow$}
+            {\tt \ \ } \hspace*{3.585cm}{\tt \color{blue} $\rightarrow$TCTGCTGATAATATCGCGCCGGTTCTGATGCG$\rightarrow$}
             \vspace{0.5cm}
         }
         \\
