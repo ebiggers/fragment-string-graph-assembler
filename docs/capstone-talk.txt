@@ -96,3 +96,65 @@ Outline - A Bidirected String Graph Model of Genome Assembly
 
     15. Implementation
 
+--------------------------------------------------
+
+Hi, my name is Eric, and I'm going to be talking about a bidirected string graph
+model for genome assembly.
+
+[Outline]
+I'm going to start with a short introduction to genome sequencing and assembly,
+then I'll briefly explain how a special type of graph called a bidirected string
+graph can be applied to genome assembly.  One thing to keep in mind is that
+although I'm giving this is a math capstone, this really is a bioinformatics
+talk, so it's at the intersection of biology, computer science, and mathematics.
+
+[Genomes]
+Just to make sure we're all on the same page, every organism contains one or
+more copies of its genome.  A genome consists of one or more DNA molecules.  A
+DNA molecule consists of two complementary strands of nucleotides.  Each
+nucleotide can be A, C, G, or T, and is paired with a specific nucleotide on the
+other strand --- A pairs with T and C pairs with G.  Each such pair is also
+called a base pair, abbreviated as bp.  Finally, something that will be
+important later is that each strand of a DNA molecule has a direction, and it's
+always opposite the direction of the other strand.
+
+[Genome size]
+I'm going to be talking about genome sequencing, which is the process of
+determining the exact sequence of base pairs in all the DNA molecules of a
+genome.  One reason this is a hard problem is that genomes can be very very
+large.  Even the simplest organisms have genomes with millions of base pairs.
+This size increases by about 3 orders of magnitude as organisms become more
+complex.  Also, there also some organisms, such as the loblolly pine, which just
+have really really huge genomes for various reasons.
+
+[De novo whole genome shotgun sequencing]
+I'll be focusing specifically on de novo whole genome shotgun sequencing.  This
+approach is currently the fastest and cheapest way to sequence the genome of a
+species for which no prior genome sequence is available.  It relies on the fact
+that sequencing by synthesis technology, represented by machines from Illumina
+and 454 Life Sciences, can quickly sequence huge numbers of short DNA molecules,
+but not small numbers of long DNA molecules.  Therefore, this approach to genome
+sequencing relies on random sampling of the genome.  In the lab, a DNA sample is
+randomly broken up into small fragments, and those fragments are sequenced using
+the sequencing machine.  This produces a huge number of short DNA sequences,
+which then must be used to computationally reconstruct the original genome ---
+and it's this last step that I'm going to be talking about.
+
+[De novo whole genome shotgun sequencing]
+As I mentioned, sequencing by synthesis technology can currently only sequence
+short pieces of DNA.  Each of these short sequences is called a read, and each
+read may come from any location on the genome, from either strand.  Also as I
+mentioned earlier, the two strands of each DNA molecule run in opposite
+directions from each other.  Because of this, reads from different strands will
+be oriented in opposite directions.  Furthermore, if we consider 2 reads that
+came from exactly the same location on the genome but from opposite strands, the
+reads will contain the complement sequence from each other, but in reverse.  We
+say that these two reads are reverse-complement from each other.
+
+[Genome assembly]
+Genome assembly is done by a program called an assembler, which is a program or
+algorithm that can take in a set of reads, usually 35 to 5000 bp long, and
+produce as output the reconstructed genome.  Ideally, the assembler would output
+the entire original genome as one continuous sequence, but in reality, this may
+be impossible, so in this case the output should take the form of a set of
+substrings of the original genome that are as long as possible.

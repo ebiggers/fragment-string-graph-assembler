@@ -153,7 +153,7 @@
         \begin{itemize}
             \item A {\bf genome} is an organism's genetic material
             \item A genome consists of one or more {\bf DNA molecules}
-            \item DNA molecules are double-stranded strings or loops of paired
+            \item DNA molecules are double-stranded sequences of paired
                   nucleotides
             \item A pairs with T; C pairs with G
             \item Each paired nucleotide is a {\bf base pair} (abbreviation: {\bf bp})
@@ -282,8 +282,8 @@
 
 \begin{frame}{Difficulties of genome assembly}
     \begin{itemize}
-        \item The {\em Shortest Common Superstring} (SCS) problem is NP-complete
-            but is in many ways simpler than genome assembly
+        \item The {\em Shortest Common Supersequence} (SCS) problem is
+            NP-complete but is, in many ways, simpler than genome assembly
         \item Problems and issues not considered in this talk:
             \begin{itemize}
                 \item Sequencing errors
@@ -375,131 +375,111 @@
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{Overlaps (formal definition)}
-    Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and $g'$.
-    The reads $f$ and $g$ are said to {\bf exactly overlap} by some length
-    $\LengthVar$ iff at least one of the following is true:
-    \begin{itemize}
-        \item The last $\LengthVar$ bp of $f$ exactly match the first
-        $\LengthVar$ bp of $g$.
-        \item The last $\LengthVar$ bp of $f$ exactly match the first
-        $\LengthVar$ bp of $g'$.
-        \item The last $\LengthVar$ bp of $f'$ exactly match the first
-        $\LengthVar$ bp of $g$.
-        \item The last $\LengthVar$ bp of $f'$ exactly match the first
-        $\LengthVar$ bp of $g'$.
-    \end{itemize}
-    An overlap $o$ is fully described by the 7-tuple $(f, g, f_{begin}, f_{end},
-    g_{begin}, g_{end}, rc)$.
-    %there $f$ and $g$ are the reads of the overlap,
-    %$f_{beg}$ and $g_{beg}$ and the starting position of the overlap on each
-    %read, $len$ is the length of the overlap, and $rc$ indicates whether the
-    %overlap is reverse-complement or not.
-\end{frame}
-
-\begin{frame}{Build the fragment string assembly graph}
-    \begin{itemize}
-        \item Use the overlaps to construct a graph modeling how the reads could
-              be put together
-        \item Make each read be a vertex
-        \item Make each edge be an overlap
+    %
+    % Motivating example:                              
+    %
+    % 3 reads:
+    %   f. ----------------->
+    %   g. ----------------->
+    %   h. ----------------->
+    %
+    % 3 overlaps:
+    %   f. ------------------>
+    %   g.        ---------------->
+    %
+    %   g. ------------------>
+    %   h.       <------------------
+    %
+    %   f. ------------------->
+    %   h.              <------------------
+\begin{frame}{Towards a bidirected graph assembly model}
+    %     <-----
+    % GAATGCACAA
+    % CTTACGTGTT
+    % ----->
+    %   ----->
+    \vspace{-1.0cm}
+    \begin{center}
+        {\bf Motivating example}
+    \end{center}
+    \vspace{-0.5cm}
+    \begin{minipage}{0.49\textwidth}
+        3 reads:
         \begin{itemize}
-            \item Two vertices are connected with an edge iff the
-            corresponding reads share an overlap.
+            \item {\tt f. CTTACG$\rightarrow$}
+            \item {\tt g. TACGTG$\rightarrow$}
+            \item {\tt h. AACACG$\rightarrow$}
         \end{itemize}
-        \item Label each edge with an appropriate DNA sequence; this makes the
-        graph a {\bf string graph}.
-        \item Should the edges be directed or undirected?  \\Or $\dots$ something
-        else?
-    \end{itemize}
+        3 overlaps:
+        \begin{itemize}
+            \item {\tt f. CT\textcolor{red}{TACG}$\rightarrow$} \\
+                {\tt g. \ \ \textcolor{red}{TACG}TG$\rightarrow$}
+
+            \item {\tt g. TA\textcolor{red}{CGTG}$\rightarrow$} \\
+                {\tt h. \hspace{0.023cm}$\leftarrow$\textcolor{red}{GCAC}AA}
+
+            \item {\tt f. CTTA\textcolor{red}{CG}$\rightarrow$} \\
+                {\tt h. \ \ \hspace{0.023cm}$\leftarrow$\textcolor{red}{GC}ACAA}
+        \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
+        \begin{itemize}
+            \item Make a vertex for each read:
+                \begin{center}
+                    \begin{tikzpicture}[>=triangle 45]
+                        \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+                        \node (f) at (0, 0) {f};
+                        \node (g) at (1.7, 0) {g};
+                        \node (h) at (3.4, 0) {h};
+                    \end{tikzpicture}
+                \end{center}
+            \item Make an edge for each overlap:
+                \begin{center}
+                    \begin{tikzpicture}[>=triangle 45]
+                        \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+                        \node (f) at (0, 0) {f};
+                        \node (g) at (1.7, 0) {g};
+                        \node (h) at (3.4, 0) {h};
+                        \draw[style=very thick] (f) edge (g);
+                        \draw[style=very thick] (g) edge (h);
+                        \draw[style=very thick,bend left] (f) edge (h);
+                    \end{tikzpicture}
+                \end{center}
+            \item But $...$ do undirected edges make sense here?
+        \end{itemize}
+    \end{minipage}
 \end{frame}
 
-%\begin{frame}{Build the fragment string assembly graph (cont.)}
-    %\begin{itemize}
-        %\item Consider three reads $f$, $g$, and $h$, that overlap as follows:
-    %\end{itemize}
-    %\vspace{-0.4cm}
-    %\begin{center}
-        %\begin{tikzpicture}[>=\ReadArrowType]
-            %\draw[->,style=very thick] (0,   0.6) node[anchor=east] {f} -- (3.0, 0.6);
-            %\draw[->,style=very thick] (1.0, 0.3) node[anchor=east] {g} -- (4.0, 0.3);
-            %\draw[<-,style=very thick] (2.0, 0.0) node[anchor=east] {h} -- (5.0, 0.0);
-        %\end{tikzpicture}
-    %\end{center}
-    %\vspace{-0.5cm}
-    %\begin{itemize}
-        %\item {There are 3 overlaps so there will be 3 edges, and we'd like for
-        %the graph to allow exactly the following four walks:}
-        %\vspace{-0.3cm}
-        %\begin{multicols}{2}
-            %\begin{itemize}
-                %\item $f \to g \to h$
-                %\item $h \to g \to f$
-                %\item $f \to h$
-                %\item $h \to f$
-            %\end{itemize}
-        %\end{multicols}
-    %\end{itemize}
-    %\begin{tabular}{ccp{3.4cm}}
-        %{\small Undirected graph?}
-            %&
-            %\begin{tikzpicture}[>=triangle 45]
-                %\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-                %\node (f) at (0, 0) {f};
-                %\node (g) at (1.7, 0) {g};
-                %\node (h) at (3.4, 0) {h};
-                %\draw[-,style=very thick] (f) edge (g);
-                %\draw[-,style=very thick] (g) edge (h);
-                %\draw[-,style=very thick,bend left] (f) edge (h);
-            %\end{tikzpicture}
-            %&
-            %\vspace{-1.1cm}
-            %{\footnotesize Not what we want; nothing indicates we can't walk \mbox{$g \to h \to
-            %f$}.}
-            %\\
-        %{\small Directed graph?}
-            %&
-            %\begin{tikzpicture}[>=triangle 45]
-                %\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-                %\node (f) at (0, 0) {f};
-                %\node (g) at (1.7, 0) {g};
-                %\node (h) at (3.4, 0) {h};
-                %\draw[->,style=very thick] (f) edge (g);
-                %\draw[->,style=very thick] (g) edge (h);
-                %\draw[->,style=very thick,bend left] (f) edge (h);
-            %\end{tikzpicture}
-            %&
-            %\vspace{-0.8cm}
-            %{\footnotesize
-                %Not what we want; this doesn't allow the walks $h \to g \to f$ and $h \to f$.}
-            %\\
-    %\end{tabular}
-%\end{frame}
-
-\begin{frame}{Build the fragment string assembly graph (cont.)}
-    \begin{itemize}
-        \item At this stage, we don't know which strands the reads are from!
-
-        \begin{center}
-            \begin{tikzpicture}[>=\ReadArrowType]
-                \draw[->,style=thick] (0,0) -- (2,0);
-                \draw[->,style=thick] (3,0.3) -- (1,0.3);
-            \end{tikzpicture}
-            \hspace{5mm}or\hspace{5mm}
-            \begin{tikzpicture}[>=\ReadArrowType]
-                \draw[->,style=thick] (0,0.3) -- (2,0.3);
-                \draw[->,style=thick] (3, 0) -- (1, 0);
-            \end{tikzpicture}
-            \hspace{5mm} ?
-        \end{center}
-
-        \item We must allow each read to be used either in the
-        reverse-complement or forward direction.
-        \item We must allow the edges to be traversed in either direction.
-        \item However, each read must still be used in a consistent way
-        at a location within any single assembly.
-        \item Solution: use a {\bf bidirected graph}.
-    \end{itemize}
+\begin{frame}{Towards a bidirected graph assembly model}
+    Our possible {\bf undirected} graph: \\
+    \vspace{-0.5cm}
+    \begin{center}
+        \begin{tikzpicture}[>=triangle 45]
+            \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+            \node (f) at (0, 0) {f};
+            \node (g) at (1.7, 0) {g};
+            \node (h) at (3.4, 0) {h};
+            \draw[style=very thick] (f) edge (g);
+            \draw[style=very thick] (g) edge (h);
+            \draw[style=very thick,bend left] (f) edge (h);
+        \end{tikzpicture}
+    \end{center}
+    \vspace{-0.2cm}
+    Here's how we'd like to ``lay out'' and assemble the reads: \\
+    \vspace{-0.2cm}
+    \begin{center}
+        \begin{tabular}{m{3.8cm}m{1.0cm}m{2.0cm}}
+        {\tt f.\ CTTACG$\rightarrow$\ \ \ \ \ } \newline
+        {\tt g.\ \ \ TACGTG$\rightarrow$\ \ \ } \newline
+        {\tt h.\ \ \ \hspace{0.030cm}$\leftarrow$GCACAA\ \ \ }
+        & $\Rightarrow$ & {\tt CTTACGTGTT} \\
+        \end{tabular}
+    \end{center}
+    \vspace{-0.2cm}
+    That is, we want to assemble $f \to g \to h$ OR $h \to g \to f$ OR $f \to h$ OR $h
+    \to f$, BUT NOT something like $g \to h \to f$.
+    Solution:  Use a {\bf bidirected} graph:
+    \vspace{-0.2cm}
     \begin{center}
         \begin{tikzpicture}[>=triangle 45]
             \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
@@ -563,7 +543,12 @@
                 \end{tikzpicture}
             \end{tabular}
         \end{center}
-
+        %\item A {\bf walk in a bidirected graph} must pass through each vertex in a
+            %consistent way.
+        \item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
+        edges in $G$ such that if any vertex $v$ is entered through a head
+        inwards, it is exited through a head outwards (unless it is the end of the
+        path), and vice versa.
         %\item Two vertices (reads) may have multiple {\bf bidirected edges}
         %between them if they overlap in different ways, but there can be at most
         %one bidirected edge {\em of the same type} between two vertices if we
@@ -571,34 +556,6 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Walks in a bidirected graph}
-    \begin{itemize}
-        \item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
-        edges in $G$ such that if any vertex $v$ is entered through a head
-        inwards, it is exited through a head outwards (unless it is the end of the
-        path), and vice versa.
-        \item A bidirected edge may be traversed in both directions
-        (possibly even during the same walk).
-        \item The reverse of a walk in a bidirected graph is also a
-        valid walk.
-        \item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
-        walks in the bidirected graph below.  (Check circled pairs of
-        heads.)
-    \end{itemize}
-        \begin{center} {\small
-        \begin{tikzpicture}[>=triangle 45]
-            \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-            \node (1) at (0.00, 0) {1};
-            \node (2) at (2.00, 0) {2};
-            \node (3) at (4.00, 0) {3};
-            \node (4) at (6.00, 0) {4};
-            \draw[<->,very thick] (1) edge (2);
-            \draw[>-<,very thick] (2) edge (3);
-            \draw[<-<,very thick] (3) edge (4);
-            \draw[color=red,thick] (2.00, 0) circle (0.8);
-            \draw[color=red,thick] (4.00, 0) circle (0.8);
-        \end{tikzpicture} } \end{center}
-\end{frame}
 
 \begin{frame}{Walking through the bidirected string graph}
     \begin{itemize}
@@ -639,6 +596,126 @@
         \caption{A bidirected graph and the implied assembly of the
         corresponding reads}
     \end{figure}
+\end{frame}
+
+
+%make -B SAMPLE_SIZE=450 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf GENOME=rep.fa COVERAGE=5
+
+%make -B SAMPLE_SIZE=200 READ_LEN=50 MIN_OVERLAP_LEN=15 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf COVERAGE=3.0 SEED=5 USE_PIRS=false
+\begin{frame}{Extremely small example}
+    \begin{figure}[H]
+        \includegraphics[scale=0.25]{example.bidigraph-crop.pdf}
+        \caption{Bidirected string graph built from 100 bp reads sampled
+        randomly at 5 $\times$ coverage from a 450 bp genome, using minimum 25
+        bp overlaps.  Note: edges are labeled with the lengths of their DNA
+        sequences (always the same each way in this example).}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Extremely small example (cont.)}
+    \begin{figure}[H]
+        \includegraphics[scale=0.7]{example.reduced.mapped.bidigraph-crop.pdf}
+        \caption{The bidirected string graph from the previous slide, after
+        transitive reduction.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Extremely small example (cont.)}
+    \begin{figure}[H]
+        \includegraphics[scale=0.7]{example.reduced.mapped.collapsed.bidigraph-crop.pdf}
+        \caption{The bidirected string graph from the previous slide, after
+        collapsing unbranched paths.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Small example}
+    \begin{itemize}
+        \item Graph built from 1000bp reads sampled from {\it E. coli} genome
+            (after transitive reduction \& collapsing unbranched paths)
+    \end{itemize}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{E_coli.pdf}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Next steps}
+    \begin{itemize}
+        \item We need to determine the best way to walk through the graph to
+            assemble the genome, but genomic repeats make the graph very
+            complicated
+        \item One approach:
+            \begin{enumerate}
+                \item Statistical analysis to determine approx. edge traversal counts
+                \item Minimum-cost circulation {\bf on the bidirected graph} to
+                      determine traversal counts
+                \item Compute a generalized Eulerian cycle {\bf on the bidirected graph}
+                      with dummy vertex added to allow discontinuities
+                \item Read off the genome sequences from the generalized Eulerian cycle,
+                      starting a new fragment whenever the dummy vertex is traversed
+            \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Acknowledgments}
+    \begin{itemize}
+        \item Talk advisor: Andrew Beveridge
+        \item Project advisor: Stan Wagon
+        \item {\em The fragment assembly string graph} (Eugene W. Myers, 2005)
+        \item {\em Maximum likelihood genome assembly} (P. Medvedev  and M. Brudno, 2008)
+        \item Also Michael Schatz at Cold Spring Harbor Laboratory, with whom
+              I've worked on assembling the pineapple genome
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Overlaps (formal definition)}
+    Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and $g'$.
+    The reads $f$ and $g$ are said to {\bf exactly overlap} by some length
+    $\LengthVar$ iff at least one of the following is true:
+    \begin{itemize}
+        \item The last $\LengthVar$ bp of $f$ exactly match the first
+        $\LengthVar$ bp of $g$.
+        \item The last $\LengthVar$ bp of $f$ exactly match the first
+        $\LengthVar$ bp of $g'$.
+        \item The last $\LengthVar$ bp of $f'$ exactly match the first
+        $\LengthVar$ bp of $g$.
+        \item The last $\LengthVar$ bp of $f'$ exactly match the first
+        $\LengthVar$ bp of $g'$.
+    \end{itemize}
+    An overlap $o$ is fully described by the 7-tuple $(f, g, f_{begin}, f_{end},
+    g_{begin}, g_{end}, rc)$.
+    %there $f$ and $g$ are the reads of the overlap,
+    %$f_{beg}$ and $g_{beg}$ and the starting position of the overlap on each
+    %read, $len$ is the length of the overlap, and $rc$ indicates whether the
+    %overlap is reverse-complement or not.
+\end{frame}
+
+\begin{frame}{Walks in a bidirected graph}
+    \begin{itemize}
+        \item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
+        edges in $G$ such that if any vertex $v$ is entered through a head
+        inwards, it is exited through a head outwards (unless it is the end of the
+        path), and vice versa.
+        \item A bidirected edge may be traversed in both directions
+        (possibly even during the same walk).
+        \item The reverse of a walk in a bidirected graph is also a
+        valid walk.
+        \item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
+        walks in the bidirected graph below.  (Check circled pairs of
+        heads.)
+    \end{itemize}
+        \begin{center} {\small
+        \begin{tikzpicture}[>=triangle 45]
+            \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+            \node (1) at (0.00, 0) {1};
+            \node (2) at (2.00, 0) {2};
+            \node (3) at (4.00, 0) {3};
+            \node (4) at (6.00, 0) {4};
+            \draw[<->,very thick] (1) edge (2);
+            \draw[>-<,very thick] (2) edge (3);
+            \draw[<-<,very thick] (3) edge (4);
+            \draw[color=red,thick] (2.00, 0) circle (0.8);
+            \draw[color=red,thick] (4.00, 0) circle (0.8);
+        \end{tikzpicture} } \end{center}
 \end{frame}
 
 \begin{frame}{Walking through the bidirected string graph (cont.)}
@@ -715,61 +792,67 @@
     %\end{itemize}
 \end{frame}
 
-%make -B SAMPLE_SIZE=450 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf GENOME=rep.fa COVERAGE=5
+\begin{frame}{Transitive reduction}
+	\begin{itemize}
+		\item Very commonly, given three adjacent reads $f$, $g$, and $h$, $f$
+		will overlap $h$ as well as $g$.  This is redundant because we can,
+		equivalently, walk $f$ to $g$ to $h$ rather than directly walking from
+		$f$ to $h$.
 
-%make -B SAMPLE_SIZE=200 READ_LEN=50 MIN_OVERLAP_LEN=15 out.reduced.mapped.bidigraph.pdf out.reduced.mapped.collapsed.bidigraph.pdf out.bidigraph.pdf COVERAGE=3.0 SEED=5 USE_PIRS=false
-\begin{frame}{Extremely small example}
-    \begin{figure}[H]
-        \includegraphics[scale=0.25]{example.bidigraph-crop.pdf}
-        \caption{Bidirected string graph built from 100 bp reads sampled
-        randomly at 5 $\times$ coverage from a 450 bp genome, using minimum 25
-        bp overlaps.  Note: edges are labeled with the lengths of their DNA
-        sequences (always the same each way in this example).}
-    \end{figure}
+		\begin{center}
+			\begin{tikzpicture}
+				\draw[->,style=very thick] (0,0) node[anchor=east] {f} -- (2,0);
+				\draw[->,style=very thick] (0.6,0.25) node[anchor=east] {g} -- (2.6,0.25);
+				\draw[->,style=very thick] (1.2,0.5) node[anchor=east] {h} -- (3.2,0.5);
+			\end{tikzpicture}
+			\begin{tikzpicture}[>=triangle 45]
+				\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+				\node (f) at (0, 0) {f};
+				\node (g) at (1.7, 0) {g};
+				\node (h) at (3.4, 0) {h};
+				\draw[>->,style=very thick] (f) edge (g);
+				\draw[>->,style=very thick] (g) edge (h);
+				\draw[>->,style=very thick,bend left] (f) edge (h);
+			\end{tikzpicture}
+		\end{center}
+
+		\item Walks visiting more vertices are preferred because they are
+		supported by more reads and the overlaps tend to be longer.  So, we
+		would like to throw away \BidirectedEdgeForward{$f$}{$h$} but keep
+		\BidirectedEdgeForward{$f$}{$g$} and \BidirectedEdgeForward{$g$}{$h$}.
+
+		\item To remove these redundant edges, {\bf transitive reduction} is
+		performed on the bidirected string graph.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Extremely small example (cont.)}
-    \begin{figure}[H]
-        \includegraphics[scale=0.7]{example.reduced.mapped.bidigraph-crop.pdf}
-        \caption{The bidirected string graph from the previous slide, after
-        transitive reduction.}
-    \end{figure}
+\begin{frame}{Arrival rate statistic (A-statistic)}
+	\begin{itemize}
+		\item The {\bf A-statistic} $A(e)$ of an edge $e$ in a
+		bidirected string graph is:
+	\end{itemize}
+	\[ A(e) = \frac{n}{G} \Delta - \ln{2} \cdot {k} \]
+	where $n$ is the total number of reads, $G$ is the estimated genome
+	length, $\Delta$ is the length of the edge in bp, and $k$ is the number
+	of reads that support that edge.
+	\begin{itemize}
+		\item The A-statistic is the logarithm of the probability that
+		an edge represents unique sequence rather than duplicate
+		sequence.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Extremely small example (cont.)}
-    \begin{figure}[H]
-        \includegraphics[scale=0.7]{example.reduced.mapped.collapsed.bidigraph-crop.pdf}
-        \caption{The bidirected string graph from the previous slide, after
-        collapsing unbranched paths.}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Small example}
-    \begin{itemize}
-        \item Graph built from 1000bp reads sampled from {\it E. coli} genome
-            (after transitive reduction \& collapsing unbranched paths)
-    \end{itemize}
-    \begin{center}
-        \includegraphics[width=0.8\textwidth]{E_coli.pdf}
-    \end{center}
-\end{frame}
-
-\begin{frame}{Next steps}
-    \begin{itemize}
-        \item We need to determine the best way to walk through the graph to
-            assemble the genome, but genomic repeats make the graph very
-            complicated
-        \item One approach:
-            \begin{enumerate}
-                \item Statistical analysis to determine approx. edge traversal counts
-                \item Minimum-cost circulation {\bf on the bidirected graph} to
-                      determine traversal counts
-                \item Compute a generalized Eulerian cycle {\bf on the bidirected graph}
-                      with dummy vertex added to allow discontinuities
-                \item Read off the genome sequences from the generalized Eulerian cycle,
-                      starting a new fragment whenever the dummy vertex is traversed
-            \end{enumerate}
-    \end{itemize}
+\begin{frame}{Implementation}
+	\begin{minipage}{0.3\textwidth}
+		\begin{itemize}
+			\item A set of C++ programs that iteratively transform
+			the data on-disk into the final assembly.
+			\item Shaded programs are not yet implemented.
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}{0.67\textwidth}
+		\includegraphics[width=1.0\textwidth]{programs.pdf}
+	\end{minipage}
 \end{frame}
 
 \end{document}

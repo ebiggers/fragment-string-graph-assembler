@@ -10,8 +10,8 @@ digraph {
 	remove_contained_reads [label="remove-contained-reads"];
 	map_contained_reads [label="map-contained-reads"];
 	calculate_a_statistics [label="calculate-A-statistics"];
-	bidigraph_network_flow [label="bidigraph-network-flow",style=filled,fillcolor=gray];
-	bidigraph_eulerian_path [label="bidigraph-eulerian-path",style=filled,fillcolor=gray];
+	bidigraph_network_flow [label="bidigraph-min-cost-circulation",style=filled,fillcolor=gray];
+	bidigraph_eulerian_path [label="bidigraph-eulerian-cycle"];
 	transitive_reduction [label="transitive-reduction"];
 	convert_reads2 [label="convert-reads"];
 
