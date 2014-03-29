@@ -451,7 +451,7 @@
 \end{frame}
 
 \begin{frame}{Towards a bidirected graph assembly model}
-    Our possible {\bf undirected} graph: \\
+    Possible {\bf undirected} and {\bf directed} graphs: \\
     \vspace{-0.5cm}
     \begin{center}
         \begin{tikzpicture}[>=triangle 45]
@@ -462,6 +462,16 @@
             \draw[style=very thick] (f) edge (g);
             \draw[style=very thick] (g) edge (h);
             \draw[style=very thick,bend left] (f) edge (h);
+        \end{tikzpicture}
+        \hspace{1cm}
+        \begin{tikzpicture}[>=triangle 45]
+            \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+            \node (f) at (0, 0) {f};
+            \node (g) at (1.7, 0) {g};
+            \node (h) at (3.4, 0) {h};
+            \draw[->,style=very thick] (f) edge (g);
+            \draw[->,style=very thick] (g) edge (h);
+            \draw[->,style=very thick,bend left] (f) edge (h);
         \end{tikzpicture}
     \end{center}
     \vspace{-0.2cm}

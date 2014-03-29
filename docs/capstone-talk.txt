@@ -1,160 +1,185 @@
-============================================================
-Outline - A Bidirected String Graph Model of Genome Assembly
-============================================================
-
-- Introduction to genome sequencing and assembly
-
-    1. Genomes [general, biological]
-        - A genome is the entirety of an organism's genetic material
-        - A genome consists of one or more DNA molecules
-        - DNA molecules are double-stranded and consist of paired nucleotides
-          (A, C, G, T)
-        - [Figures: model of DNA molecule; table of genome lengths]
-
-    2. Genome sequencing [general, biological]
-        - Genome sequencing is the process of determining the informational content
-          of the genome
-        - Genome sequencing, and more generally, DNA sequencing, has developed over
-          the past several decades and is increasing being applied to biology,
-          medicine, and other fields.
-        - [Figure: something representing the growth of DNA sequencing]
-
-    3. De novo whole-genome shotgun sequencing [methods]
-        - Currently the fastest and cheapest way to acquire sequences for an
-          entire, *new* genome
-        - Represented by multiple technologies:
-            - Sanger sequencing
-            - 454 pyrosequencing
-            - Illumina (Solexa) sequencing
-        - All can only sequence short pieces of DNA
-        - Lab work:
-            - Obtain a DNA sample
-            - Break DNA into much smaller fragments
-            - Sequence the fragments using commercially available DNA sequencer
-        - Computational work:
-            - Manufacturer-specific postprocessing
-            - Given the sequenced fragments, reconstruct the original genome
-
-    4. Reads
-        - A read is a short sequence that represents a piece of DNA that was
-          sequenced by the sequencing machine
-        - A read may came from any location on the genome, from either strind
-        - Reads from opposite strands go in opposite directions
-            - Consequently, a read and its *reverse complement* are often
-              considered equivalent
-
-    5. Genome assembly
-        - Genome assembly is the process of reconstructing a genome from a set
-          of reads that came from it
-        - Genome assembly is performed by a genome assembler
-        - Minimal input: a set of reads (35-5000 bp each)
-        - Minimal output: the reconstructed genome, or as close to it as
-          possible (maximally length substrings)
-
-    6. Difficulties & simplifications
-        - Genome assembly seems *at least* as hard as shortest common
-          superstring problem, which is already NP-complete
-        - Problems not considered in this talk:
-            - Sequencing errors (substitution & indels)
-            - Quality scores
-            - Mate pair information
-            - Heterozygosity
-            - Contamination DNA
-            - Contamination from mitochondria & chloroplasts
-        - I *will* consider the double-strandedness DNA
-
-- A bidirected string graph model for genome assembly
-    7.
-        - Inspired by "The fragment string assembly graph" (Myers, 2005)
-        - Draws on ideas used in previous assemblers and also introduces new ideas
-        - The overall algorithm
-            - Use overlaps between reads to build a graph that models the assembly
-              problem
-            - Simplify and analyze the graph
-            - Find paths through the graph to reconstruct the original sequence
-        - I only have time to briefly outline the main ideas of this approach
-
-    8. Examples and usefulness of overlaps
-        - Two reads that overlap may come from adjacent positions on the genome
-        - Overlaps may be from different strands, in which case the overlapped
-          regions are reverse-complement from each other
-
-    9. Definition of an overlap
-
-    10. Three types of overlaps
-
-    11. Building the fragment string assembly graph
-
-        - read => vertex
-        - overlap => edge
-
-    12. Accounting for double-standedness
-
-    13. Walking through the bidirected string graph
-
-    14. Examples
-
-    15. Implementation
-
---------------------------------------------------
-
+    [A Bidirected String Graph Model of Genome Assembly]
 Hi, my name is Eric, and I'm going to be talking about a bidirected string graph
-model for genome assembly.
+model of genome assembly.
 
-[Outline]
+    [Outline]
 I'm going to start with a short introduction to genome sequencing and assembly,
 then I'll briefly explain how a special type of graph called a bidirected string
 graph can be applied to genome assembly.  One thing to keep in mind is that
-although I'm giving this is a math capstone, this really is a bioinformatics
-talk, so it's at the intersection of biology, computer science, and mathematics.
+although I'm giving this as a math capstone, this really is a bioinformatics
+talk that's at the intersection of biology, computer science, and mathematics.
 
-[Genomes]
+    [Genomes]
 Just to make sure we're all on the same page, every organism contains one or
-more copies of its genome.  A genome consists of one or more DNA molecules.  A
-DNA molecule consists of two complementary strands of nucleotides.  Each
-nucleotide can be A, C, G, or T, and is paired with a specific nucleotide on the
-other strand --- A pairs with T and C pairs with G.  Each such pair is also
-called a base pair, abbreviated as bp.  Finally, something that will be
-important later is that each strand of a DNA molecule has a direction, and it's
-always opposite the direction of the other strand.
+more copies of its genome.  A genome consists of one or more DNA molecules, and
+a DNA molecule consists of two complementary strands of nucleotides.  Each
+nucleotide can be A, C, G, or T, and is paired with a complementary nucleotide
+on the other strand --- specifically, A pairs with T and C pairs with G.  Each
+such nucleotide pair is also called a base pair, abbreviated as bp.  Finally,
+something that will be important later is that each strand of a DNA molecule has
+a direction, and it's always opposite the direction of the opposing strand.
 
-[Genome size]
+    [Genome size]
 I'm going to be talking about genome sequencing, which is the process of
-determining the exact sequence of base pairs in all the DNA molecules of a
-genome.  One reason this is a hard problem is that genomes can be very very
-large.  Even the simplest organisms have genomes with millions of base pairs.
-This size increases by about 3 orders of magnitude as organisms become more
-complex.  Also, there also some organisms, such as the loblolly pine, which just
-have really really huge genomes for various reasons.
+determining the sequence of base pairs in all the DNA molecules of a genome.
+One reason this is a hard problem is that genomes can be extremely large.  Even
+the simplest organisms have genomes with millions of base pairs.  This size
+increases by several orders of magnitude as organisms become more complex.
+Also, there also some organisms, such as the loblolly pine, which just have
+really huge genomes, even larger than the human genome.
 
-[De novo whole genome shotgun sequencing]
+    [De novo whole genome shotgun sequencing]
 I'll be focusing specifically on de novo whole genome shotgun sequencing.  This
-approach is currently the fastest and cheapest way to sequence the genome of a
-species for which no prior genome sequence is available.  It relies on the fact
-that sequencing by synthesis technology, represented by machines from Illumina
-and 454 Life Sciences, can quickly sequence huge numbers of short DNA molecules,
-but not small numbers of long DNA molecules.  Therefore, this approach to genome
-sequencing relies on random sampling of the genome.  In the lab, a DNA sample is
-randomly broken up into small fragments, and those fragments are sequenced using
-the sequencing machine.  This produces a huge number of short DNA sequences,
-which then must be used to computationally reconstruct the original genome ---
-and it's this last step that I'm going to be talking about.
+approach is currently the fastest and cheapest way to sequence the genome of an
+individual from a species for which no prior genome sequence is available.  It
+relies on the fact that sequencing by synthesis technology, represented by
+machines from Illumina and 454 Life Sciences, can quickly sequence huge numbers
+of short DNA molecules, but not small numbers of very long DNA molecules.
+Therefore, this approach to genome sequencing relies on random sampling of the
+genome, which is what the "shotgun" in the name refers to.  For this approach,
+in the lab, a DNA sample is randomly broken up into small fragments, and those
+fragments are sequenced using the sequencing machine.  This produces a huge
+number of short DNA sequences, which then must be used to computationally
+reconstruct the original genome, similar to putting together a puzzel.  It's
+this last step that I'm going to be talking about, since it is a very
+computationally and mathematically hard problem.
 
-[De novo whole genome shotgun sequencing]
+    [De novo whole genome shotgun sequencing]
 As I mentioned, sequencing by synthesis technology can currently only sequence
 short pieces of DNA.  Each of these short sequences is called a read, and each
-read may come from any location on the genome, from either strand.  Also as I
-mentioned earlier, the two strands of each DNA molecule run in opposite
-directions from each other.  Because of this, reads from different strands will
-be oriented in opposite directions.  Furthermore, if we consider 2 reads that
-came from exactly the same location on the genome but from opposite strands, the
-reads will contain the complement sequence from each other, but in reverse.  We
-say that these two reads are reverse-complement from each other.
+read may come from any DNA molecule in the genome, from any location on either
+strand.
 
-[Genome assembly]
-Genome assembly is done by a program called an assembler, which is a program or
-algorithm that can take in a set of reads, usually 35 to 5000 bp long, and
-produce as output the reconstructed genome.  Ideally, the assembler would output
-the entire original genome as one continuous sequence, but in reality, this may
-be impossible, so in this case the output should take the form of a set of
-substrings of the original genome that are as long as possible.
+Also, reads always are oriented in the direction of the underlying strand of
+DNA.  Because of this, reads from opposing strands will be oriented in opposite
+directions.  Furthermore, if we consider two reads that came from exactly the
+same location but from opposing strands, the reads will contain the complement
+sequence from each other, but in reverse.  We say that these two reads are
+reverse-complement from each other.
+
+    [Genome assembly]
+Genome assembly is the process of reconstructing a genome from a set of reads
+that came from it.  This is done by a program called a genome assembler, which
+takes as input a set of reads, usually 35 to 5000 bp long, and produces as
+output the reconstructed genome.  Ideally, the assembler would output the full
+sequence of one strand of each DNA molecule of the original genome.  However, in
+reality, this may be impossible for various reasons such as genomic repeats,
+which are sequences that are repeated in multiple locations in the genome.  In
+such cases, the assembler's output should be a set of hypothesized substrings of
+the original genome that are as long as possible.
+
+    [Difficulties of genome assembly]
+Before I get too much farther it's important to note that genome assembly is a
+very difficult problem.  It can be thought of as similar to the shortest common
+supersequence problem, which has been proven to be NP complete.  But actually,
+there are a number of problems and issues listed on the slide that make genome
+assembly harder than the shortest common superstring problem.  At the same time,
+we can "cheat" a little bit because we only want a likely genome assembly, not
+necessarily the shortest possible or the optimal assembly, and we want something
+that works on real genomes but not necessarily on completely arbitrary or
+degenerate genomes.  Finally, although I will ignore some problems, I will still
+account for the fact that DNA is double-stranded, and this is, in fact, key to
+the approach that I will present.
+
+    [An algorithm for genome assembly]
+There are a number of algorithms that have been designed for genome assembly.
+I'll be talking about a general graph theoretical approach that is used in
+multiple algorithms, one of which was proposed by Eugene Myers in a 2005 paper
+titled "The Fragment String Assembly Graph".  The Myers 2005 algorithm is
+interesting because it combines techniques from the two main classes of
+algorithms that had previously been proposed.  However, like many other assembly
+algorithms it relies on graph theory; specifically, the first step of the
+algorithm uses overlaps between the reads to build a graph that models the
+assembly problem.  Then, after this, we can perform various mathematical
+simplications and calculations on the graph, and finally we can compute a
+possible reconstruction of the original genome by finding a walk through the
+graph.  The algorithm relies on several well known concepts from graph theory
+such as minimum cost circulation and Eulerian paths.  But, since I only have 20
+minutes I'll mostly just be covering how we can model genome assembly with a
+graph.
+
+    [Overlaps between reads]
+
+As I mentioned, this approach to genome assembly uses the idea of overlaps
+between reads.  Overlaps are important because they indicate ways in which reads
+can potentially be merged to form a longer sequence.  For time reasons I have to
+skip over the formal definition of an overlap, but, essentially, an overlap is a
+situation in which you can lay out two reads such that they overlap and the
+reads have matching sequence in the overlapping region.
+
+Matching sequence can mean two different things.  If the overlap is made such
+that the reads are oriented in the same direction, then the overlap is
+essentially proposing that the reads came from the same strand of the DNA
+molecule.  In that case, the sequences in the overlapping region must be
+letter-for-letter identical.  You can see an example of that case in the upper
+half of the slide.
+
+However, if the overlap is made such that the two reads are oriented in opposite
+directions, then the overlap is essentially proposing that the reads came from
+opposing strands of a DNA molecule.  In that case, the sequences in the
+overlapping region must be reverse-complement from each other.  You can see an
+example of that case in the lower half of the slide.
+
+    [Three types of overlaps]
+If we abstract a little, there really are 3 different types of overlaps.  In a
+normal overlap, the two reads overlap when they are arranged in the same
+direction.  In an "innie" overlap, the two reads overlap when they are arranged
+pointing inwards.  And in an "outie" overlap, the two reads overlap when they
+are arranged pointing outwards.  Note that in normal overlaps the overlapped
+region must be an exact match, whereas in innie and outie overlaps the
+overlapped region must be a reverse complement match.
+
+    [Towards a bidirected graph model]
+I'm going to skip forward a little bit and say that given a set of reads, we've
+computed all the pairwise overlaps of some minimal length among them.  Although
+that by itself is a significant computational problem, for this talk I'd like to
+move on to the graph theory stuff.
+
+On this slide I've illustrated an extremely tiny example that motivates the way
+that we can model genome assembly using a graph.  On the left we have 3 reads f,
+g, and h, as well as 3 overlaps that were computed from them.  The overlaps are
+between f and g, g and h, and f and h; note that we have a normal overlap as
+well as two outie overlaps.
+
+What we want to do is build a graph that models the different ways in which the
+reads can be assembled together when the overlaps are used as evidence.
+
+To do this, we define a graph with one vertex per read.  Then, for each overlap
+between two reads, we create an edge between the corresponding two reads.
+This is simple enough, but there's a big problem here, and it's that because DNA
+is double stranded, the edges can be neither undirected nor directed.
+
+    [Towards a bidirected graph model]
+To see this, we need to look at which we want the graph to represent.  At the
+center-left we can see the reads laid out manually, and at the center-right, we
+can see the desired assembly of the reads.  This indicates that we want to use
+read f, then read g, then read h BUT read h in its reverse complement
+orientation, and that needs to be represented in the graph.  It also makes sense
+to allow skipping read g, since it is covered by the overlap between f and h,
+but we also don't want to allow nonsensical assemblies such as g then h then f.
+Finally, if we expand the example and suppose that these 3 reads are merely a
+local part of some much larger assembly problem, then we have no idea which
+strand we're actually assembling when we start the sequence beginning with CTT.
+Consequently, we need to design the graph such that any walk in the graph is
+also a valid walk in reverse, but it means that all the reads are used in
+opposite orientation so that they assemble the other strand of the DNA.
+
+Anyway, it turns out that we can solve these problems by using a special type of
+graph called a bidirected graph.
+
+    [Bidirected graph]
+A bidirected graph is simply a graph where a directed head is attached to both
+ends of each edge.
+
+Consequently, there are 3 (or 4 if you ignore symmetry) types of bidirected
+edges.  In our application, they result directly from the different types of
+overlaps --- you can see how the directions of the reads in an overlap map
+directly to the heads of the corresponding bidirected edge.
+
+We also have the definition of a walk in a bidirected graph, which is somewhat
+peculiar but it is exactly what we need to represent a genome assembly.
+Specifically, a walk in a bidirected graph is a continuous sequence of edges
+such that if any vertex is entered through a head inwards it is exited through a
+head outwards, and vice versa.
+
+    [Walking through the bidirected string graph]
