@@ -217,17 +217,14 @@
 \begin{frame}{De novo whole genome shotgun sequencing}
     \begin{minipage}{0.66\textwidth}
         \begin{itemize}
-            \item Currently the fastest and cheapest way to sequence an entire
-                  new genome
-            \item Relies on one of several technologies, each of which can only
-                sequence short pieces of DNA
-            \item Step 1: Lab work
+            \item Relies on high-throughput short read sequencing machines
+            \item Lab work:
                 \begin{itemize}
                     \item Obtain a DNA sample
                     \item Break DNA into small fragments
                     \item Sequence the fragments
                 \end{itemize}
-            \item Step 2: Computational work
+            \item Computational work:
                 \begin{itemize}
                     \item Reconstruct the original genome from the sequenced
                           fragments
@@ -247,17 +244,12 @@
 
 \begin{frame}{Reads}
     \begin{itemize}
-        \item A {\bf read} is a short sequence of base pairs that represents
-        some DNA that was sequenced by the sequencing machine
-        \item A read may come from any location in the genome, from either
-        strand
-        \item Reads from opposite strands always have opposite directions
-            \begin{itemize}
-                \item As a result, a sequence and its {\bf reverse-complement}
-                (the corresponding sequence on the other strand, going
-                backwards) are usually considered equivalent
-            \end{itemize}
+        \item A {\bf read} is a DNA sequence that may have come from anywhere in
+              the genome, from either strand
+        \item Two reads from the same location but different strands are {\bf
+              reverse complements}
     \end{itemize}
+        \vspace{0.5cm}
         {\scriptsize
             {\tt \ \ }
             \hspace*{0.004cm}{\tt\color{red}$\leftarrow$TGAGCTTAAGGCTTATCTATCTTCAGACGACA$\leftarrow$ }\\
@@ -284,7 +276,7 @@
         \begin{itemize}
             \item {\bf Genome assembly} reconstructs
                   a genome from a set of reads
-            \item Performed by a genome {\bf assembler}
+            \item Performed by a {\bf genome assembler}
             \item Minimal input: a set of reads (35--5000 bp each)
             \item Minimal output: approximation of the original genome
         \end{itemize}
@@ -338,7 +330,7 @@
     {\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 
     \begin{itemize}
-        \item Overlapping reads may be from different strands (a {\bf reverse-complement}
+        \item Overlapping reads may be from different strands (a {\bf reverse complement}
               overlap):
     \end{itemize}
 
@@ -567,9 +559,8 @@
         %\item A {\bf walk in a bidirected graph} must pass through each vertex in a
             %consistent way.
         \item {\bf walk in a bidirected graph}: a continuous sequence of
-        edges such that if any vertex is entered through a head inwards, it is
-        exited through a head outwards (unless it is the end of the path), and
-        vice versa.
+        edges where both heads adjacent to any inner vertex have same
+        walk-relative direction
         %\item Two vertices (reads) may have multiple {\bf bidirected edges}
         %between them if they overlap in different ways, but there can be at most
         %one bidirected edge {\em of the same type} between two vertices if we
@@ -585,7 +576,7 @@
             \begin{itemize}
               \item (The ``strings'' are DNA sequences)
             \end{itemize}
-        \item Each read may be used in forward or reverse-complement
+        \item Each read may be used in forward or reverse complement
               orientation:
     \end{itemize}
     \begin{figure}[H]
@@ -698,7 +689,7 @@
 \end{frame}
 
 \begin{frame}{Overlaps (formal definition)}
-    Consider two reads, $f$ and $g$, and their reverse-complements $f'$ and $g'$.
+    Consider two reads, $f$ and $g$, and their reverse complements $f'$ and $g'$.
     The reads $f$ and $g$ are said to {\bf exactly overlap} by some length
     $\LengthVar$ iff at least one of the following is true:
     \begin{itemize}
@@ -716,7 +707,7 @@
     %there $f$ and $g$ are the reads of the overlap,
     %$f_{beg}$ and $g_{beg}$ and the starting position of the overlap on each
     %read, $len$ is the length of the overlap, and $rc$ indicates whether the
-    %overlap is reverse-complement or not.
+    %overlap is reverse complement or not.
 \end{frame}
 
 \begin{frame}{Walks in a bidirected graph}

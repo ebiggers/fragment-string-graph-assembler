@@ -2,81 +2,67 @@
 
 Hi, my name is Eric, and my presentation is titled "A Bidirected String Graph
 Model of Genome Assembly".  This is based on a project I did in Discrete Applied
-Mathematics with Stan Wagon.
+Mathematics.
 
 -------------------------------------------------------------------------------
 
-I'm going to start with a short introduction to genome sequencing and assembly,
-then I'll briefly explain how a special type of graph called a bidirected string
-graph can be applied to genome assembly.  One thing to keep in mind is that
-although I'm giving this as a math capstone talk, this really is a
-bioinformatics talk that's at the intersection of biology, computer science, and
-mathematics.
+This topic is at the intersection of biology, computer science, and mathematics,
+so before I can really get into any mathematics at all I need to give a short
+introduction to genome sequencing and assembly.  Afterwards, I'll explain how a
+special type of graph called a bidirected string graph can be applied to genome
+assembly.
 
 -------------------------------------------------------------------------------
 
-Just to make sure we're all on the same page, every organism contains one or
-more copies of its genome.  A genome consists of one or more DNA molecules, and
-a DNA molecule consists of two complementary strands of nucleotides.  Each
-nucleotide can be A, C, G, or T, and is paired with a complementary nucleotide
-on the other strand --- specifically, A always pairs with T, and C always pairs
-with G.  Each such nucleotide pair is also called a base pair, which is often
-abbreviated as bp.  Finally, something that will be important later is that each
-strand of a DNA molecule has a direction, and it's always opposite the direction
-of the opposing strand.
+I'm assuming that everyone here knows the basics about genomes and DNA, even if
+just from a high school biology class, so I'm not spending much time on this
+slide.  However, something that is worth noting is that each strand of a DNA
+molecule has a direction, and it is always opposite the direction of the
+opposing strand.
 
 -------------------------------------------------------------------------------
 
 I'm going to be talking about genome sequencing, which is the process of
 determining the sequence of base pairs in all the DNA molecules of a genome.
-One reason this is a hard problem is that genomes can be extremely large.  Even
-the simplest organisms, namely bacteria, have genomes containing millions of
-base pairs.  This size increases by several orders of magnitude as organisms
-become more complex.  In addition, there also some organisms which just have
-unexpectedly large genomes; for example, the loblolly pine tree's genome is
-about 7 times larger than the human genome.
+One reason this is a hard problem is that genomes can be extremely large.  As
+illustrated by this table, they can range in size from millions of base pairs to
+billions of base pairs.  Clearly we need to use computer algorithms and
+mathematical models to create and process data sets this large.
 
 -------------------------------------------------------------------------------
 
-I'll be focusing specifically on de novo whole genome shotgun sequencing.  This
-approach is currently the fastest and cheapest way to sequence the genome of an
-individual from a species for which no prior genome sequence is available.  It
-relies on the fact that sequencing by synthesis technology, represented by
-machines from Illumina and 454 Life Sciences, can quickly sequence huge numbers
-of short DNA molecules, but not small numbers of very long DNA molecules.
-Therefore, this approach to genome sequencing relies on random sampling of the
-genome, which is what the "shotgun" in the name refers to.  For this approach,
-in the lab, a DNA sample is randomly broken up into small fragments, and those
-fragments are sequenced using the sequencing machine.  This produces a huge
-number of short DNA sequences, which then must be used to computationally
+I'll be focusing on de novo whole genome shotgun sequencing.  This approach to
+genome sequencing is based on currently available technology, which can very
+quickly sequence huge numbers of short DNA molecules, but not small numbers of
+long DNA molecules.  Therefore, to sequence an entire genome, we must break a
+DNA sample into small fragments, then sequence those fragments.  This produces a
+huge number of short DNA sequences, which then must be used to computationally
 reconstruct the original genome, similar to putting together a puzzle.  It's
 this last step that I'm going to be talking about, since it is a very
 computationally and mathematically hard problem.
 
 -------------------------------------------------------------------------------
 
-As I mentioned, sequencing by synthesis technology can currently only sequence
-short pieces of DNA.  Each of these short sequences is called a read, and each
-read may come from any DNA molecule in the genome, from any location on either
-strand.  Reads are always oriented in the direction of the underlying strand of
-DNA.  Because of this, reads from opposing strands will be oriented in opposite
-directions.  Furthermore, if we consider two reads that came from exactly the
-same location but from opposing strands, the reads will contain the complement
-sequence from each other, but in reverse.  We say that these two reads are
-reverse-complement from each other.
+Each of these short DNA sequences is called a read, and each read may come from
+any DNA molecule in the genome, from any location, on either strand.  Reads are
+always oriented in the direction of the underlying strand of DNA.  Because of
+this, reads from opposing strands will be oriented in opposite directions.
+Furthermore, if we consider two reads that came from exactly the same location
+but from opposing strands, the reads will contain the complement sequence from
+each other, but in reverse.  We say that these two reads are reverse-complement
+from each other.
 
 -------------------------------------------------------------------------------
 
 Genome assembly is the process of reconstructing a genome from a set of reads
-that came from it.  This is done by a program called a genome assembler, which
-takes as input a set of reads, which might be 35 to 5000 bp long, and produces
-as output the reconstructed genome.  Ideally, the assembler would output the
-full sequence of one strand of each DNA molecule of the original genome.
-However, in reality, this may be impossible for various reasons.  For example,
-some parts of the genome may not be covered by reads, or some parts of the
-genome might be sufficiently repetitive as to be unassemblable by short reads.
-In such cases, the assembler's output should be a set of hypothesized substrings
-of the original genome that are as long as possible.
+that came from it.  This is done by a computer program called a genome
+assembler.  Ideally, a genome assembler would produce the full sequence of one
+strand of each DNA molecule of the original genome.  However, in reality, this
+may be impossible for various reasons.  For example, some parts of the genome
+may not be covered by reads, or some parts of the genome might be sufficiently
+repetitive as to be unassemblable by short reads.  In such cases, the
+assembler's output should be a set of hypothesized substrings of the original
+genome that are as long as possible.
 
 -------------------------------------------------------------------------------
 
@@ -87,14 +73,13 @@ important.  Unfortunately, genome assembly can be thought of as similar to the
 shortest common supersequence problem, which has been proven to be NP complete.
 In addition, there are a number of problems and issues, which I've listed on
 this slide, that potentially make genome assembly even harder than the shortest
-common superstring problem.
+common supersequence problem.
 
-At the same time, we can "cheat" a little bit because we only want a likely
-genome assembly, not necessarily the shortest possible or the optimal assembly,
-and we want something that works on real genomes but not necessarily on
-completely arbitrary or degenerate genomes.  Finally, although I will ignore
-some problems, I will still account for the fact that DNA is double-stranded,
-and this will be key to the approach that I will present.
+At the same time, we can "cheat" a little bit because we can make do with a
+likely genome assembly, not necessarily the shortest possible or the optimal
+assembly.  Finally, although I will ignore some problems, I will still account
+for the fact that DNA is double-stranded, and this will be key to the approach
+that I will present.
 
 -------------------------------------------------------------------------------
 
@@ -151,7 +136,7 @@ overlapped region must be a reverse complement match.
 I'm going to skip forward a little bit and say that given a set of reads, we've
 computed all the pairwise overlaps of some minimal length among them.  Although
 that by itself is a significant computational problem, for this talk I'd like to
-move on to the graph theory stuff.
+move on to building the graph itself.
 
 On this slide I've illustrated an extremely tiny example that motivates the way
 that we can model genome assembly using a graph.  On the left we have 3 reads f,
