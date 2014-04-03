@@ -1,7 +1,8 @@
 -------------------------------------------------------------------------------
 
 Hi, my name is Eric, and my presentation is titled "A Bidirected String Graph
-Model of Genome Assembly".
+Model of Genome Assembly".  This is based on a project I did in Discrete Applied
+Mathematics with Stan Wagon.
 
 -------------------------------------------------------------------------------
 
@@ -32,9 +33,8 @@ One reason this is a hard problem is that genomes can be extremely large.  Even
 the simplest organisms, namely bacteria, have genomes containing millions of
 base pairs.  This size increases by several orders of magnitude as organisms
 become more complex.  In addition, there also some organisms which just have
-unexpectedly large genomes; for example, the loblolly pine tree has a genome
-size of about 23.2 billion base pairs, which is about 7 times larger than the
-human genome.
+unexpectedly large genomes; for example, the loblolly pine tree's genome is
+about 7 times larger than the human genome.
 
 -------------------------------------------------------------------------------
 
@@ -80,13 +80,13 @@ of the original genome that are as long as possible.
 
 -------------------------------------------------------------------------------
 
-Before I get too much farther it's important to note that genome assembly is a
-very difficult problem.  Since genome assembly deals with such large amounts of
-data, the asymptotic running time of the algorithms used are very important.
-Unfortunately, genome assembly can be thought of as similar to the shortest
-common supersequence problem, which has been proven to be NP complete.  In
-addition, there are a number of problems and issues, which I've listed on this
-slide, that potentially make genome assembly even harder than the shortest
+Before I get too much farther it's important to emphasize that genome assembly
+is a very difficult problem.  Since genome assembly deals with such large
+amounts of data, the asymptotic running time of the algorithms used are very
+important.  Unfortunately, genome assembly can be thought of as similar to the
+shortest common supersequence problem, which has been proven to be NP complete.
+In addition, there are a number of problems and issues, which I've listed on
+this slide, that potentially make genome assembly even harder than the shortest
 common superstring problem.
 
 At the same time, we can "cheat" a little bit because we only want a likely

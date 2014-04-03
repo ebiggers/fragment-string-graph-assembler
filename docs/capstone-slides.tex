@@ -43,7 +43,23 @@
 \newcommand\G{\textcolor{red}{G}}
 \newcommand\C{\textcolor{blue}{C}}
 
-\frame{\titlepage}
+\frame{\titlepage
+    \vspace{-0.7cm}
+    \begin{center}
+        \begin{minipage}{0.35\textwidth}
+            \begin{flushleft} \small
+                \emph{Project advisor:}\\
+                Stan Wagon
+            \end{flushleft}
+        \end{minipage}
+        \begin{minipage}{0.35\textwidth}
+            \begin{flushright} \small
+                \emph{Talk advisor:} \\
+                Andrew Beveridge
+            \end{flushright}
+        \end{minipage}
+    \end{center}
+}
 
 \begin{frame}{Outline}
     \vspace{1cm}
@@ -151,7 +167,7 @@
 \begin{frame}{Genomes}
     \begin{minipage}{0.75\textwidth}
         \begin{itemize}
-            \item A {\bf genome} is an organism's genetic material
+            \item A {\bf genome} is an organism's hereditary information
             \item A genome consists of one or more {\bf DNA molecules}
             \item DNA molecules are double-stranded sequences of paired
                   nucleotides
@@ -213,7 +229,8 @@
                 \end{itemize}
             \item Step 2: Computational work
                 \begin{itemize}
-                    \item Given the sequenced fragments, reconstruct the original genome
+                    \item Reconstruct the original genome from the sequenced
+                          fragments
                 \end{itemize}
         \end{itemize}
     \end{minipage}
@@ -258,21 +275,18 @@
             \vspace{0.5cm}
         }
         \\
-        {Above: a very short genome and three reads that came from it}.
+        {Above: a very short genome and three reads that came from it}
 \end{frame}
 
 
 \begin{frame}{Genome assembly}
     \begin{minipage}{0.63\textwidth}
         \begin{itemize}
-            \item {\bf Genome assembly} is the process of reconstructing
-                  a genome from a set of reads that came from it
-            \item Genome assembly is performed by a complicated computer program
-                called a genome {\bf assembler}
-            \item Minimal input: a set of reads (35--5000 bp each), often in a
-                simple plain-text format
-            \item Minimal output: the reconstructed genome, or as close to it as
-                possible (e.g. maximal length substrings)
+            \item {\bf Genome assembly} reconstructs
+                  a genome from a set of reads
+            \item Performed by a genome {\bf assembler}
+            \item Minimal input: a set of reads (35--5000 bp each)
+            \item Minimal output: approximation of the original genome
         \end{itemize}
     \end{minipage}
     \begin{minipage}{0.35\textwidth}
@@ -307,16 +321,14 @@
             \item Simplify and analyze the graph
             \item Walk through the graph to reconstruct the original genome
         \end{enumerate}
-        \item This talk won't cover the full algorithm; it only introduces the
-              general graph-theoretical approach
+        \item This talk only introduces the general graph-theoretical approach!
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Overlaps between reads}
 
     \begin{itemize}
-    \item Two reads that overlap are likely to come from adjacent positions on
-          the genome:
+    \item Overlapping reads probably came from adjacent positions:
     \end{itemize}
 
     {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
@@ -326,8 +338,8 @@
     {\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 
     \begin{itemize}
-    \item Overlapping reads may be from different strands, in which case the
-          overlapped regions are reverse-complement from each other:
+        \item Overlapping reads may be from different strands (a {\bf reverse-complement}
+              overlap):
     \end{itemize}
 
     {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
@@ -505,11 +517,10 @@
 
 \begin{frame}{Bidirected Graphs}
     \begin{itemize}
-        \item A {\bf bidirected graph} is a graph where a directed head is
-        attached to both ends of each edge.
+        \item {\bf bidirected graph}: a directed head is
+        attached to both ends of each edge
 
-        \item There are 3 (or 4, ignoring symmetry) types of {\bf bidirected
-        edges}.  They follow directly from the different types of overlaps.
+        \item 3 (or 4, ignoring symmetry) types of {\bf bidirected edges}:
 
         \begin{center}
             \begin{tabular}{p{1cm}cccc}
@@ -555,10 +566,10 @@
         \end{center}
         %\item A {\bf walk in a bidirected graph} must pass through each vertex in a
             %consistent way.
-        \item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
-        edges in $G$ such that if any vertex $v$ is entered through a head
-        inwards, it is exited through a head outwards (unless it is the end of the
-        path), and vice versa.
+        \item {\bf walk in a bidirected graph}: a continuous sequence of
+        edges such that if any vertex is entered through a head inwards, it is
+        exited through a head outwards (unless it is the end of the path), and
+        vice versa.
         %\item Two vertices (reads) may have multiple {\bf bidirected edges}
         %between them if they overlap in different ways, but there can be at most
         %one bidirected edge {\em of the same type} between two vertices if we
@@ -569,14 +580,13 @@
 
 \begin{frame}{Walking through the bidirected string graph}
     \begin{itemize}
-        \item A walk through a bidirected string graph constructed from
-        reads and overlaps models a way in which the reads can be
-        assembled together consistently.
-
+        \item A walk through a bidirected string graph represents a possible
+              assembly
+            \begin{itemize}
+              \item (The ``strings'' are DNA sequences)
+            \end{itemize}
         \item Each read may be used in forward or reverse-complement
-        orientation, depending on the direction, relative to the walk,
-        of the adjacent arrow heads when the corresponding vertex is
-        passed through.
+              orientation:
     \end{itemize}
     \begin{figure}[H]
         {\small
@@ -603,8 +613,7 @@
                 \draw (-0.3, -0.6) node {3.};
                 \draw (-0.3, -0.9) node {4.};
         \end{tikzpicture}
-        \caption{A bidirected graph and the implied assembly of the
-        corresponding reads}
+        \caption{A bidirected graph and the implied assembly of the corresponding reads}
     \end{figure}
 \end{frame}
 
@@ -617,8 +626,7 @@
         \includegraphics[scale=0.25]{example.bidigraph-crop.pdf}
         \caption{Bidirected string graph built from 100 bp reads sampled
         randomly at 5 $\times$ coverage from a 450 bp genome, using minimum 25
-        bp overlaps.  Note: edges are labeled with the lengths of their DNA
-        sequences (always the same each way in this example).}
+        bp overlaps.  (Edge labels show string lengths.) }
     \end{figure}
 \end{frame}
 
@@ -626,7 +634,7 @@
     \begin{figure}[H]
         \includegraphics[scale=0.7]{example.reduced.mapped.bidigraph-crop.pdf}
         \caption{The bidirected string graph from the previous slide, after
-        transitive reduction.}
+        transitive reduction}
     \end{figure}
 \end{frame}
 
@@ -634,7 +642,7 @@
     \begin{figure}[H]
         \includegraphics[scale=0.7]{example.reduced.mapped.collapsed.bidigraph-crop.pdf}
         \caption{The bidirected string graph from the previous slide, after
-        collapsing unbranched paths.}
+        collapsing unbranched paths}
     \end{figure}
 \end{frame}
 
@@ -664,6 +672,18 @@
                       starting a new fragment whenever the dummy vertex is traversed
             \end{enumerate}
     \end{itemize}
+\end{frame}
+
+\begin{frame}{Implementation}
+	\begin{minipage}{0.3\textwidth}
+		\begin{itemize}
+			\item A set of C++ programs that iteratively transform
+			the data on-disk into the final assembly
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}{0.67\textwidth}
+		\includegraphics[width=1.0\textwidth]{programs.pdf}
+	\end{minipage}
 \end{frame}
 
 \begin{frame}{Acknowledgments}
