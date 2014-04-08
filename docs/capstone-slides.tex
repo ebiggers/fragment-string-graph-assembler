@@ -9,6 +9,8 @@
 \usepackage{textcomp}
 \usepackage{multicol}
 \usepackage{grffile}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 %\usepackage[dvips]{graphics}
 
 \usetikzlibrary{arrows}
@@ -324,9 +326,9 @@
     \end{itemize}
 
     {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
-        ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
+        ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
     {\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\rightarrow$
-        \textcolor{red}{GCTGGTTACTT}TGATAGATA $\rightarrow$ } \\
+        \G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{}TGATAGATA $\rightarrow$ } \\
     {\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 
     \begin{itemize}
@@ -335,9 +337,9 @@
     \end{itemize}
 
     {\tt Read 1: \ \ \ \ \ \ \ \ \ $\rightarrow$
-        ATATAT\textcolor{red}{GCTGGTTACTT} $\rightarrow$ } \\
+ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
     {\tt Read 2: \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $\leftarrow$
-        \textcolor{red}{CGACCAATGAA}ACTATCTAT $\leftarrow$ } \\
+        \C{}\G{}\A{}\C{}\C{}\A{}\A{}\T{}\G{}\A{}\A{}ACTATCTAT $\leftarrow$ } \\
     {\tt Possible genome: $\rightarrow$ ATATATGCTGGTTACTTTGATAGATA $\rightarrow$}
 \end{frame}
 

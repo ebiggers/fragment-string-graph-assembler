@@ -18,7 +18,7 @@ You probably remember from a biology class that a genome is made of DNA
 molecules, and a DNA molecule is made of a sequence of paired nucleotides.  Each
 of these paired nucleotides is called a base pair, and there's a specific
 pairing that occurs due to the chemical structure.  Consequently, given the
-sequence of nucleotides on one strand of a DNA molecule, you can always
+sequence of nucleotides on one strand of a DNA molecule, we can always
 reconstruct the other strand.  Something else that is worth noting is that each
 strand of a DNA molecule has a direction, and it is always opposite the
 direction of the opposing strand.
@@ -57,82 +57,50 @@ from each other.
 
 -------------------------------------------------------------------------------
 
-Genome assembly is the process of reconstructing a genome from a set of reads
-that came from it.  This is done by a computer program called a genome
-assembler.  Ideally, a genome assembler would output the full sequence of one
-strand of each DNA molecule of the original genome.  However, in reality, this
-may be impossible for various reasons.  For example, some parts of the genome
-may not be covered by reads, or some parts of the genome might be sufficiently
-repetitive as to be unassemblable by short reads.  In such cases, the
-assembler's output should be a set of hypothesized substrings of the original
-genome that are as long as possible.
+The problem of genome assembly is to take in a set of reads and produce as
+output an approximation of the reconstructed genome.  Note that, depending on
+the data, it might not even be possible to reconstruct the original genome
+exactly, so that is why we must only require an approximation.
 
 -------------------------------------------------------------------------------
 
-Before I get too much farther it's important to emphasize that genome assembly
-is a very difficult problem.  Since genome assembly deals with such large
-amounts of data, the asymptotic running times of the algorithms used are very
-important.  Unfortunately, genome assembly can be thought of as similar to the
-Shortest Common Supersequence problem, which has been proven to be NP complete,
-which means that it almost certainly cannot be solved quickly by any possible
-algorithm.  In addition, there are a number of problems and issues, which I've
-listed on this slide, that potentially make genome assembly even harder than the
-Shortest Common Supersequence problem.
-
-At the same time, we can "cheat" a little bit because we can make do with a
-likely genome assembly, not necessarily the shortest possible or the optimal
-assembly.  Finally, although I will ignore some problems, I will still account
-for the fact that DNA is double-stranded, and this will be key to the approach
-I will present.
+I need to emphasize that genome assembly is a very difficult problem.  It is
+comparable to the Shortest Common Supersequence problem, which probably cannot
+be solved in faster than exponential time.  In addition, there are a number of
+complications specific to genome assembly which I don't even have time to
+consider in this talk.  However, I *will* take into account the fact that DNA is
+double-stranded, and this will be key to the approach I will present.
 
 -------------------------------------------------------------------------------
 
 There are a number of overall algorithms that have been designed for genome
 assembly.  The one I'm going to focus on was proposed by Eugene Myers in a 2005
-paper entitled "The Fragment String Assembly Graph".  This algorithm is
-interesting because it combines techniques from the two main classes of
-assembly algorithms that had previously been proposed.
-
-Like many other assembly algorithms it borrows from graph theory.  Specifically,
-the first step of the algorithm uses pairwise overlaps between reads to build a
-graph that models the assembly problem.  Then, after this, the algorithm
+paper.  Briefly, the first step of the algorithm uses pairwise overlaps between
+reads to build a graph that models the assembly problem.  The second step
 performs various mathematical simplifications and calculations on the graph.
-Finally, the algorithm computes a possible assembly of the original genome by
-finding a walk through the graph.
+The last step computes a possible assembly of the original genome by finding a
+walk through the graph, using concepts from graph theory such as minimum cost
+circulation and Eulerian cycles.
 
-Besides the mere fact that this algorithm uses a graph data structure, it also
-relies on known mathematical concepts, such as minimum cost circulation and
-Eulerian cycles.  But, because of the time limitation, I will primarily be
-explaining just how we can model the genome assembly problem using a graph.
+This is obviously a very complicated algorithm that consists of many different
+sub-algorithms, so for this talk I will primarily just be explaining one of the
+main ideas which is how we can model genome assembly using a graph.
 
 -------------------------------------------------------------------------------
 
 As I mentioned, the algorithm uses the idea of overlaps between reads.  Overlaps
 are important because they indicate ways in which reads can potentially be
-merged to form a longer sequence.  Essentially, an overlap is a situation in
-which you can lay out two reads such that an overlapping region is created, and
-the reads have matching sequence in that region.
-
-However, matching sequence can mean two different things.  If the overlap is
-made such that the reads are oriented in the same direction, then the overlap is
-essentially proposing that the reads came from the same strand of a DNA
-molecule.  In that case, the sequences in the overlapping region must be
-letter-for-letter identical.
-
-If, instead, the overlap is made such that the two reads are oriented in
-opposite directions, then the overlap is essentially proposing that the reads
-came from opposing strands of a DNA molecule.  In that case, the sequences in
-the overlapping region must be reverse-complement from each other.
+merged to form a longer sequence.  The obvious case is that when reads are
+oriented in the same direction and the sequence at the end of one read matches
+the sequence at the beginning of the other, then we have an overlap.  However,
+we can also have overlaps when two reads are oriented in opposite directions.
+In that case the sequences in the overlapping region must be reverse
+complements.
 
 -------------------------------------------------------------------------------
 
-If we abstract a little, there really are 3 different types of overlaps.  In a
-normal overlap, the two reads overlap when they are arranged in the same
-direction.  In an "innie" overlap, the two reads overlap when they are arranged
-pointing inwards.  And in an "outie" overlap, the two reads overlap when they
-are arranged pointing outwards.  Note that in normal overlaps the overlapped
-region must be an exact match, whereas in innie and outie overlaps the
-overlapped region must be a reverse complement match.
+If we abstract a little, there really are 3 different types of overlaps: normal
+overlaps, innie overlaps, and outie overlaps.
 
 -------------------------------------------------------------------------------
 
@@ -152,7 +120,7 @@ different ways in which the reads can be assembled together when the overlaps
 are used as evidence.
 
 To do this, we define a graph with one vertex per read.  Then, for each overlap
-between two reads, we create an edge between the corresponding two reads.
+between two reads, we create an edge between the corresponding two vertices.
 This is simple enough, but there's a big problem here, and it has to do with the
 fact that DNA is double stranded and any given read may be from any strand.
 
@@ -161,12 +129,12 @@ fact that DNA is double stranded and any given read may be from any strand.
 To see what the problem is, we need consider exactly what we want the graph to
 represent.  At the center-left we can see the reads laid out manually, and at
 the center-right, we can see the desired assembly of the reads.  This indicates
-that we want to use read f, then read g, then read h.  However, we want to use
-read h in its reverse complement orientation, and that needs to be represented
-in the graph.  And also, if you think about it, it makes sense to allow skipping
-read g, since we still have an overlap between f and h.  However, we also don't
-want to allow nonsensical assemblies such as g then h then f, which would be
-legal if we used an undirected graph.
+that we want to use read f, then read g, then read h in our assembly.  However,
+we want to use read h in its reverse complement orientation, and that needs to
+be represented in the graph somehow.  And also, if you think about it, it makes
+jense to allow skipping read g, since we still have an overlap between f and h.
+However, we don't want to allow nonsensical assemblies such as g then h then f,
+which would be legal if we used an undirected graph.
 
 Finally, if we expand the example and suppose that these 3 reads are merely a
 local part of some much larger assembly problem, then we have no idea which
@@ -206,16 +174,12 @@ application, any such walk represents a possible genome assembly produced by the
 layout of the reads in the order that the corresponding vertices are encountered
 in the walk.  Furthermore, each read may be used in either forward or reverse
 complement orientation, depending on the direction of the arrow heads when the
-walk passes through the corresponding vertex.  If the walk passes through a
-vertex with the heads in the direction of the walk, then we use the
-corresponding read in forward orientation.  In contrast, if the walk passes
-through a vertex with the heads opposite the direction of the walk, then we use
-the corresponding read in reverse complement orientation.
+walk passes through the corresponding vertex.
 
 -------------------------------------------------------------------------------
 
 This slide shows the graph built from a slightly larger data set.  This was
-simulated data consisting ofhas 11 100 bp reads from a random 450 bp genome.  Do
+simulated data consisting of 11 100 bp reads from a random 450 bp genome.  Do
 note that real genomes are thousands of times larger than this, which is why
 I've labeled this an "extremely small example".
 
@@ -228,27 +192,26 @@ before trying to find a walk.
 
 -------------------------------------------------------------------------------
 
-This slide shows the graph after transitive reduction, which is a simplification
-that essentially removes edges that are redundant with other edges ...
+This slide shows the graph after doing one type of simplification ...
 
 -------------------------------------------------------------------------------
 
-... and this slide shows the graph after collapsing all unbranched paths.  So
-our task is now to find a walk through this graph, which is trivial; we just go
-from one vertex to the other, and that produces all of our genome except a few
-bp on the ends that happened to not appear in any read.
+... and this slide shows the graph after doing another type of simplification.
+So our task is now to find a walk through this graph, which is trivial; we just
+go from one vertex to the other, and this essentially produces the original
+genome.
 
 -------------------------------------------------------------------------------
 
 Now, the question is, will it always be that easy, and of course the answer is
 no.  The graph shown here is *already* simplified, so it's the equivalent of the
-two vertex one I just showed you.  However, I made it from 1000bp reads randomly
-sampled from the E. coli genome, which is a real genome that is 4.6 million base
-pairs in length.  Despite the complexity of the graph, this *is* still a "small"
-example; it's 700 times smaller than the human genome.  But, in any case, the
-reason that the graph is so complicated is that some sequences in the genome are
-too repetitive to be disambiguated even with our 1000 bp reads.  Consequently,
-we get branches in our graph, and now the problem is essentially to compute a
+two vertex graph I just showed you.  However, I made it from 1000bp reads
+randomly sampled from the E. coli genome, which is a real genome that is 4.6
+million base pairs in length.  Despite the complexity of the graph, this *is*
+still a "small" example; it's 700 times smaller than the human genome.  But, in
+any case, the reason that the graph is so complicated is that some sequences in
+the genome are too repetitive to be disambiguated even with our 1000 bp reads.
+Consequently, we get branches in our graph, and now the problem is to compute a
 way to walk through this graph that produces a likely assembly of the genome.
 
 -------------------------------------------------------------------------------
@@ -282,7 +245,7 @@ I'd like to acknowledge Andrew Beveridge and Stan Wagon for advising me on the
 project, and also the main papers that I borrowed ideas from.  And also, I
 didn't talk about this it all, but during the summer of 2012 I worked with
 Michael Schatz at Cold Spring Harbor Laboratory on assembling the genome of the
-F153 cultivar of the domesticated pineapple plant, which is where I first became
-interested in genome assembly.
+domesticated pineapple plant, which is where I first became interested in genome
+assembly.
 
 -------------------------------------------------------------------------------
