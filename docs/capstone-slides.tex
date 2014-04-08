@@ -288,8 +288,8 @@
 
 \begin{frame}{Difficulties of genome assembly}
     \begin{itemize}
-        \item The {\em Shortest Common Supersequence} (SCS) problem is
-            NP-complete but is, in many ways, simpler than genome assembly
+        \item {\em Shortest Common Supersequence} (SCS) problem:
+              NP-complete, but simpler than genome assembly?
         \item Problems and issues not considered in this talk:
             \begin{itemize}
                 \item Sequencing errors
@@ -845,6 +845,36 @@
 		\item To remove these redundant edges, {\bf transitive reduction} is
 		performed on the bidirected string graph.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}{Transitive reduction (cont.)}
+		Transitive reduction algorithm:  Go through each vertex $v$ and
+		examine vertices up to 2 edges away from $v$ to identify all
+		transitive edges leaving $v$.
+	\begin{algorithm}[H]
+		\caption{{\sc TransitiveReduction}($G$)}
+	{\footnotesize
+		\begin{algorithmic}
+			\FOR{{\bf each} vertex $v \in G$}
+				\STATE{Mark all neighbors of $v$ as {\tt INPLAY}}
+				\STATE{Set {\tt longest} $\gets$ length of the longest edge leaving $v$}
+				\FOR{{\bf each} edge $v \to w$ in order of length}
+					\FOR{{\bf each} edge $w \to x$ in order of length}
+						\IF{$x$ is not marked {\tt INPLAY}}
+							\STATE{\bf continue}
+						\ENDIF
+						\IF{$len(v \to w) + len(w \to x) > $ {\tt longest}}
+							\STATE{\bf break}
+						\ENDIF
+						\STATE{Mark $x$ as {\tt ELIMINATED}}
+					\ENDFOR
+				\ENDFOR
+				\STATE{Mark as transitive all edges $v \to x$ where $x$ is marked {\tt ELIMINATED}}
+			\ENDFOR
+			\STATE{Eliminate all edges marked transitive}
+		\end{algorithmic}
+	}
+	\end{algorithm}
 \end{frame}
 
 \begin{frame}{Arrival rate statistic (A-statistic)}
