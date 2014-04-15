@@ -58,9 +58,9 @@ from each other.
 -------------------------------------------------------------------------------
 
 The problem of genome assembly is to take in a set of reads and produce as
-output an approximation of the reconstructed genome.  Note that, depending on
-the data, it might not even be possible to reconstruct the original genome
-exactly, so that is why we must only require an approximation.
+output an approximation of the original genome.  Note that, depending on the
+data, it might not even be possible to reconstruct the original genome exactly,
+so that is why we must only require an approximation.
 
 -------------------------------------------------------------------------------
 

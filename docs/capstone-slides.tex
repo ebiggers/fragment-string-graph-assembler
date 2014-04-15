@@ -514,8 +514,19 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
         \item {\bf bidirected graph}: a directed head is
         attached to both ends of each edge
 
-        \item 3 (or 4, ignoring symmetry) types of {\bf bidirected edges}:
+        \begin{center}
+            \begin{tikzpicture}[>=triangle 45]
+                \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+                \node (f) at (0, 0) {f};
+                \node (g) at (1.7, 0) {g};
+                \node (h) at (3.4, 0) {h};
+                \draw[>->,style=very thick] (f) edge (g);
+                \draw[>-<,style=very thick] (g) edge (h);
+                \draw[>-<,style=very thick,bend left] (f) edge (h);
+            \end{tikzpicture}
+        \end{center}
 
+        \item Types of {\bf bidirected edges}:
         \begin{center}
             \begin{tabular}{p{1cm}cccc}
                 {\footnotesize Overlap} &
@@ -558,15 +569,46 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
                 \end{tikzpicture}
             \end{tabular}
         \end{center}
-        %\item A {\bf walk in a bidirected graph} must pass through each vertex in a
-            %consistent way.
-        \item {\bf walk in a bidirected graph}: a continuous sequence of
-        edges where both heads adjacent to any inner vertex have same
-        walk-relative direction
-        %\item Two vertices (reads) may have multiple {\bf bidirected edges}
-        %between them if they overlap in different ways, but there can be at most
-        %one bidirected edge {\em of the same type} between two vertices if we
-        %always prefer the best overlap of a given type.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Walks in a bidirected graph}
+    \begin{itemize}
+       \item {\bf walk in a bidirected graph}: a continuous sequence of edges
+               where both heads adjacent to any inner vertex have same
+               walk-relative direction
+        \item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are valid walks in
+            this graph:
+        \begin{center} {\small
+            \begin{tikzpicture}[>=triangle 45]
+                \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+                \node (1) at (0.00, 0) {1};
+                \node (2) at (2.00, 0) {2};
+                \node (3) at (4.00, 0) {3};
+                \node (4) at (6.00, 0) {4};
+                \draw[<->,very thick] (1) edge (2);
+                \draw[>-<,very thick] (2) edge (3);
+                \draw[<-<,very thick] (3) edge (4);
+                %\draw[color=red,thick] (2.00, 0) circle (0.8);
+                %\draw[color=red,thick] (4.00, 0) circle (0.8);
+            \end{tikzpicture} }
+        \end{center}
+
+    \item $\dots$ but not in this graph:
+        \begin{center} {\small
+            \begin{tikzpicture}[>=triangle 45]
+                \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+                \node (1) at (0.00, 0) {1};
+                \node (2) at (2.00, 0) {2};
+                \node (3) at (4.00, 0) {3};
+                \node (4) at (6.00, 0) {4};
+                \draw[<->,very thick] (1) edge (2);
+                \draw[<-<,very thick] (2) edge (3);
+                \draw[>-<,very thick] (3) edge (4);
+                %\draw[color=red,thick] (2.00, 0) circle (0.8);
+                %\draw[color=red,thick] (4.00, 0) circle (0.8);
+            \end{tikzpicture} }
+        \end{center}
     \end{itemize}
 \end{frame}
 
@@ -578,8 +620,6 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
             \begin{itemize}
               \item (The ``strings'' are DNA sequences)
             \end{itemize}
-        \item Each read may be used in forward or reverse complement
-              orientation:
     \end{itemize}
     \begin{figure}[H]
         {\small
@@ -712,35 +752,6 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
     %overlap is reverse complement or not.
 \end{frame}
 
-\begin{frame}{Walks in a bidirected graph}
-    \begin{itemize}
-        \item A {\bf walk in a bidirected graph} $G$ is a continuous sequence of
-        edges in $G$ such that if any vertex $v$ is entered through a head
-        inwards, it is exited through a head outwards (unless it is the end of the
-        path), and vice versa.
-        \item A bidirected edge may be traversed in both directions
-        (possibly even during the same walk).
-        \item The reverse of a walk in a bidirected graph is also a
-        valid walk.
-        \item $1 \to 2 \to 3 \to 4$ and $4 \to 3 \to 2 \to 1$ are both valid
-        walks in the bidirected graph below.  (Check circled pairs of
-        heads.)
-    \end{itemize}
-        \begin{center} {\small
-        \begin{tikzpicture}[>=triangle 45]
-            \tikzstyle{every node} = [circle,fill=blue!20,draw=black];
-            \node (1) at (0.00, 0) {1};
-            \node (2) at (2.00, 0) {2};
-            \node (3) at (4.00, 0) {3};
-            \node (4) at (6.00, 0) {4};
-            \draw[<->,very thick] (1) edge (2);
-            \draw[>-<,very thick] (2) edge (3);
-            \draw[<-<,very thick] (3) edge (4);
-            \draw[color=red,thick] (2.00, 0) circle (0.8);
-            \draw[color=red,thick] (4.00, 0) circle (0.8);
-        \end{tikzpicture} } \end{center}
-\end{frame}
-
 \begin{frame}{Walking through the bidirected string graph (cont.)}
     \begin{center}
         \vspace{-1cm}
@@ -850,9 +861,9 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
 \end{frame}
 
 \begin{frame}{Transitive reduction (cont.)}
-		Transitive reduction algorithm:  Go through each vertex $v$ and
-		examine vertices up to 2 edges away from $v$ to identify all
-		transitive edges leaving $v$.
+		%Transitive reduction algorithm:  Go through each vertex $v$ and
+		%examine vertices up to 2 edges away from $v$ to identify all
+		%transitive edges leaving $v$.
 	\begin{algorithm}[H]
 		\caption{{\sc TransitiveReduction}($G$)}
 	{\footnotesize
@@ -879,6 +890,52 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
 	\end{algorithm}
 \end{frame}
 
+\begin{frame}{Collapsing unbranched paths}
+
+Vertex 4 below is an {\bf inner vertex} that is part of an unbranched path that
+can be collapsed.
+
+\begin{center}
+	{\small
+	\begin{tikzpicture}[>=triangle 45]
+		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+		\node (1) at (0.0, -1) {1};
+		\node (2) at (0.0, 1) {2};
+		\node (3) at (1.5, 0) {3};
+		\node[fill=green!25] (4) at (3.25, 0) {4};
+		\node (5) at (5.0, 0) {5};
+		\node (6) at (6.5, 1) {6};
+		\node (7) at (6.5, -1) {7};
+		\draw[>->,very thick] (1) edge (3);
+		\draw[>->,very thick] (2) edge (3);
+		\draw[>->,very thick] (3) edge (4);
+		\draw[>->,very thick] (4) edge (5);
+		\draw[>->,very thick] (5) edge (6);
+		\draw[>->,very thick] (5) edge (7);
+	\end{tikzpicture}
+	}
+
+becomes:
+
+	{\small
+	\begin{tikzpicture}[>=triangle 45]
+		\tikzstyle{every node} = [circle,fill=blue!20,draw=black];
+		\node (1) at (0.0, -1) {1};
+		\node (2) at (0.0, 1) {2};
+		\node (3) at (1.5, 0) {3};
+		\node (5) at (3.25, 0) {5};
+		\node (6) at (4.75, 1) {6};
+		\node (7) at (4.75, -1) {7};
+		\draw[>->,very thick] (1) edge (3);
+		\draw[>->,very thick] (2) edge (3);
+		\draw[>->,very thick] (3) edge (5);
+		\draw[>->,very thick] (5) edge (6);
+		\draw[>->,very thick] (5) edge (7);
+	\end{tikzpicture}
+	}
+\end{center}
+\end{frame}
+
 \begin{frame}{Arrival rate statistic (A-statistic)}
 	\begin{itemize}
 		\item The {\bf A-statistic} $A(e)$ of an edge $e$ in a
@@ -893,19 +950,6 @@ ATATAT\G{}\C{}\T{}\G{}\G{}\T{}\T{}\A{}\C{}\T{}\T{} $\rightarrow$ } \\
 		an edge represents unique sequence rather than duplicate
 		sequence.
 	\end{itemize}
-\end{frame}
-
-\begin{frame}{Implementation}
-	\begin{minipage}{0.3\textwidth}
-		\begin{itemize}
-			\item A set of C++ programs that iteratively transform
-			the data on-disk into the final assembly.
-			\item Shaded programs are not yet implemented.
-		\end{itemize}
-	\end{minipage}
-	\begin{minipage}{0.67\textwidth}
-		\includegraphics[width=1.0\textwidth]{programs.pdf}
-	\end{minipage}
 \end{frame}
 
 \end{document}
